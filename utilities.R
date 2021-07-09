@@ -103,6 +103,6 @@ process_usps <- function(data) {
     unnest(cols = results)
 }
 
-validate_data <- function(data) {
-  
-}
+# validate_data <- function(data) {
+#   
+# }
