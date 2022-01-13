@@ -1,0 +1,56 @@
+---
+title: "Eviction Address Entry Guide"
+author: "Brancen Gregory"
+date: "1/12/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  fig.height = 6,
+  fig.width = 12
+)
+
+library(patchwork)
+library(figpatch)
+```
+
+# Overview
+
+The goal of this project is to accurately transcribe addresses from court documents so community partners can use this information to quickly respond to situations of need. This document should help explain the process and make it easy to get started.
+
+# Court Documents
+
+Court records are stored on [OSCN](https://www.oscn.net/dockets/Search.aspx). Usually people type in whatever information they have about a case, whether the case number itself, or simply the name of a party involved in the case. This would bring up case information and a list of any documents associated with the case.
+
+For our purposes, we are interested in the document with the code **FEDS**. This stands for **Forcible Entry Detainer Served**, and is where the address of interest is located.
+
+## Sample
+
+### Case Details
+
+```{r}
+oscn_case_details_1 <- fig("oscn_case_details_1.png")
+oscn_case_details_2 <- fig("oscn_case_details_2.png")
+
+wrap_plots(oscn_case_details_1, oscn_case_details_2, ncol = 2)
+```
+
+The FEDS document link is highlighted in the red box on the second image.
+
+### FEDS Document
+
+```{r, fig.width=10}
+feds_sample_1 <- fig("feds_sample_1.png")
+feds_sample_2 <- fig("feds_sample_2.png")
+
+wrap_plots(feds_sample_1, feds_sample_2)
+```
+
+The address of interest is the **defendent's residence**, highlighted by a red box along with the case number.
+
+
+# Entry
+
+
