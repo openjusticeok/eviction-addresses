@@ -2,8 +2,12 @@ library(plumber)
 library(tidyverse)
 library(future)
 library(promises)
+library(bigrquery)
 
 plan(multisession)
+bigrquery::bq_auth(
+  path = "ojo-database-641c4256497c.json"
+)
 
 # The only data going back and forth is a GET call to plumber which provides the client with case info, a link to the case-specific OSCN page, and an image of the Forcible Entry and Detainer (FED) document.
 # Then a POST call which delivers an address to the api for storage.
@@ -27,21 +31,38 @@ function(case_num = as.character(NA)) {
   return()
 }
 
-#*Take an HTML form as input and return a new case
+#* Get a new case that has no address, return its id
+#* @get /case
+function() {
+  con <- dbConnect(
+    bigrquery::bigquery(),
+    project = "ojo-database",
+    dataset = "ojo_eviction_addresses"
+  )
+  on.exit(dbDisconnect(con))
+
+  res <- tbl(con, "case") |>
+    arrange(desc(created_at)) |>
+    head(1) |>
+    collect()
+
+  return(res)
+}
+
+#* Take an HTML form as input and return an indicator of validation
 #* @post /address
 #* @param street_num
 #* @param street_dir
 #* @param street_name
 #* @param street_type
-#* @param street_dir2
 #* @param unit
 #* @param city
 #* @param zip
 function(street_num = "", street_dir = "", street_name = "", street_type = "",
-         street_dir2 = "", unit = "", city = "", zip = "") {
+         unit = "", city = "", zip = "") {
   return(
     str_c(
-      street_num, street_dir, street_name, street_type, street_dir2, ",",
+      street_num, street_dir, street_name, street_type, ",",
       unit, ",",
       city, ",OK", zip
     )
