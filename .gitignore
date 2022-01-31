@@ -38,3 +38,8 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 renv/
+ojo-database-641c4256497c.json
+ojo-database-40842d68fe7b.json
+client_secret.json
+cr_service_account.json
+eviction-addresses-service-account.json

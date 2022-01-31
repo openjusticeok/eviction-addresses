@@ -1,3 +1,20 @@
+
+library(ojodb)
+eviction_cases <- ojo_civ_cases(
+  districts = "TULSA",
+  case_types = "SC",
+  file_years = 2020:year(today())
+) |>
+  filter(str_detect(description, "FORCIBLE ENTRY"))
+
+feds_minutes <- ojo_tbl("minute") |>
+  filter(code == "FEDS")
+
+eviction_cases |>
+  left_join(feds_minutes, by = c("id" = "case_id"))
+
+
+
 get_document_num <- function(casenum) {
   url <- str_c("https://www.oscn.net/dockets/GetCaseInformation.aspx?db=tulsa&number=", casenum)
   
