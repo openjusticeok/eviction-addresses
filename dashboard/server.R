@@ -6,6 +6,8 @@ library(ojodb)
 library(bigrquery)
 library(here)
 library(googleCloudRunner)
+library(shinydashboard)
+library(shinyjs)
 
 bigrquery::bq_auth(path = here("ojo-database-40842d68fe7b.json"))
 
