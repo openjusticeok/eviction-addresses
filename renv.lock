@@ -832,10 +832,15 @@
     },
     "googleAuthR": {
       "Package": "googleAuthR",
-      "Version": "1.4.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "e23b6491200014cd292d92bdf4564e08",
+      "Version": "2.0.0.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "googleAuthR",
+      "RemoteUsername": "MarkEdmondson1234",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "b57ebbe872f8069f34bfebefe4ff0249e8765a4b",
+      "Hash": "dba1e584fa658a58eb7231056c2f57a0",
       "Requirements": [
         "assertthat",
         "cli",
@@ -988,6 +993,16 @@
         "tibble",
         "tidyselect",
         "vctrs"
+      ]
+    },
+    "here": {
+      "Package": "here",
+      "Version": "1.0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "24b224366f9c2e7534d2344d10d59211",
+      "Requirements": [
+        "rprojroot"
       ]
     },
     "highr": {

@@ -16,7 +16,7 @@ library(here)
 
 options(gargle_verbosity = "debug")
 plan(multisession)
-bigrquery::bq_auth(path = here("ojo-database-40842d68fe7b.json"), email = "bq-test@ojo-database.iam.gserviceaccount.com")
+bigrquery::bq_auth(path = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
 
 message(bq_user())
 
