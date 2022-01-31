@@ -12,6 +12,7 @@ library(shinyjs)
 bigrquery::bq_auth(path = here("ojo-database-40842d68fe7b.json"))
   
 cr_region_set(region = "us-central1")
+cr_project_set("ojo-database")
 
 cr <- cr_run_get("eviction-addresses-api")
 api_url <- cr$status$url
