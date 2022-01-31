@@ -1,18 +1,12 @@
+library(shiny)
 library(shinydashboard)
+library(shinyjs)
 
 dashboardPage(
   title = "Open Justice Oklahoma Eviction Addresses",
   skin = "blue",
   dashboardHeader(
     title = "Eviction Addresses",
-    tags$li(
-      actionLink(
-        inputId = "header-refresh",
-        label = "Refresh",
-        icon = icon("sync")
-      ),
-      class = "dropdown"
-    ),
     tags$li(
       actionLink(
         inputId = "header-help",
@@ -38,24 +32,47 @@ dashboardPage(
     )
   ),
   dashboardBody(
+    useShinyjs(),
     tabItems(
       tabItem(
         tabName = "entry",
         fluidRow(
           column(
-            width = 12,
-            textOutput("current_case_ui")
+            width = 8,
+            actionButton(
+              inputId = "case_refresh",
+              label = "Refresh",
+              icon = icon("sync")
+            ),
+            box(
+              textOutput("current_case_ui")
+            ),
+            box(
+              textOutput("total_documents_ui"),
+              actionButton(inputId = "previous_document", label = "Previous"),
+              textOutput("current_document_num_ui"),
+              actionButton(inputId = "next_document", label = "Next")
+            )
+          ),
+          column(
+            width = 3,
+            offset = 1,
+            box(
+              uiOutput("address_validation_ui")
+            )
           )
         ),
         fluidRow(
           column(
             width = 8,
-            htmlOutput("feds_document_ui")
+            htmlOutput("current_document_ui")
           ),
           column(
             width = 3,
             offset = 1,
-            uiOutput("address_entry_ui")
+            box(
+              uiOutput("address_entry_ui")
+            )
           )
         )
       ),
