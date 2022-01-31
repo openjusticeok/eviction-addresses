@@ -65,7 +65,7 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
   steps = c(
     cr_buildstep_secret(
       secret = "eviction-addresses-service-account",
-      decrypted = "/srv/shiny-server/eviction-addresses-service-account.json"
+      decrypted = "dashboard/eviction-addresses-service-account.json"
     ),
     cr_buildstep_docker(
       image = "eviction-addresses-dashboard",
