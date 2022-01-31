@@ -3,8 +3,9 @@ library(googleCloudRunner)
 # library(containerit)
 # 
 # api_dockerfile <- containerit::dockerfile(from = "api/plumber.R",
-#                                           filter_baseimage_pkgs = T,
-#                                           copy = "script_dir")
+#                                           filter_baseimage_pkgs = T)
+# 
+# write(api_dockerfile, file = "api/Dockerfile")
 
 eviction_addresses_api_yaml <- cr_build_yaml(
   steps = c(
@@ -39,6 +40,8 @@ eviction_addresses_api_trigger <- cr_buildtrigger_repo(
   repo_name = "openjusticeok/eviction-addresses",
   branch = "main"
 )
+
+cr_buildtrigger_delete("eviction-addresses-api-trigger")
 
 cr_buildtrigger(
   build = eviction_addresses_api_build,
