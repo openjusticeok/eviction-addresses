@@ -1,4 +1,4 @@
 # eviction-addresses
 
-![Infrastructure Diagram](infrastructure.jpeg)
+![Infrastructure Diagram](assets/infrastructure.jpeg)
 
