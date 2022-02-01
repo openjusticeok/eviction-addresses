@@ -33,6 +33,7 @@ dashboardPage(
   ),
   dashboardBody(
     useShinyjs(),
+    googleAuth_jsUI("auth", login_text = "Test login"),
     tabItems(
       tabItem(
         tabName = "entry",
