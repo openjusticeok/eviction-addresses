@@ -12,7 +12,7 @@ library(shinydashboard)
 library(shinyjs)
 library(shinyauthr)
 
-googleAuthR::gar_set_client(web_json = "client.json", scopes = c("https://www.googleapis.com/auth/cloud-platform"))
+googleAuthR::gar_set_client(web_json = "client.json", scopes = c("https://www.googleapis.com/auth/cloud-platform"), activate = "web")
 
 cr_region_set(region = "us-central1")
 cr_project_set("ojo-database")
