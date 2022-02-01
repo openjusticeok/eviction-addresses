@@ -10,10 +10,12 @@ library(googleAuthR)
 library(shinydashboard)
 library(shinyjs)
 
+googleAuthR::gar_set_client(web_json = "client.json", scopes = c("https://www.googleapis.com/auth/cloud-platform"))
+
 cr_region_set(region = "us-central1")
 cr_project_set("ojo-database")
 
-bigrquery::bq_auth(path = here("ojo-database-40842d68fe7b.json"))
+bigrquery::bq_auth(path = "client.json")
 
 cr <- cr_run_get("eviction-addresses-api")
 api_url <- cr$status$url
@@ -21,8 +23,12 @@ jwt <- cr_jwt_create(api_url)
 
 function(input, output) {
   
+  auth <- callModule(googleAuth_js, "auth")
+  
   current_case <- reactive({
     input$case_refresh
+    
+    req(auth())
     
     con <- dbConnect(
       bigrquery::bigquery(),
@@ -31,8 +37,13 @@ function(input, output) {
     )
     on.exit(dbDisconnect(con))
     
-    dbGetQuery(con, str_c('SELECT t.case FROM `ojo_eviction_addresses.document` t WHERE t.internal_link IS NOT NULL ORDER BY RAND() LIMIT 1')) |>
+    query <- dbGetQuery(con, str_c('SELECT t.case FROM `ojo_eviction_addresses.document` t WHERE t.internal_link IS NOT NULL ORDER BY RAND() LIMIT 1')) |>
       pull()
+    
+    with_shiny(
+      query(),
+      shiny_access_token = auth()
+    )
     # input$case_refresh
     # 
     # url <- "127.0.0.1:8201/case"
