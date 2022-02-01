@@ -10,6 +10,7 @@ library(googleCloudRunner)
 library(googleAuthR)
 library(shinydashboard)
 library(shinyjs)
+library(shinyauthr)
 
 googleAuthR::gar_set_client(web_json = "client.json", scopes = c("https://www.googleapis.com/auth/cloud-platform"))
 
