@@ -12,16 +12,16 @@ library(shinydashboard)
 library(shinyjs)
 library(shinyauthr)
 
-googleAuthR::gar_set_client(web_json = "client.json", scopes = c("https://www.googleapis.com/auth/cloud-platform"), activate = "web")
+# googleAuthR::gar_set_client(web_json = "client.json", scopes = c("https://www.googleapis.com/auth/cloud-platform"), activate = "web")
 
-cr_region_set(region = "us-central1")
-cr_project_set("ojo-database")
+# cr_region_set(region = "us-central1")
+# cr_project_set("ojo-database")
 
 bigrquery::bq_auth(path = "client.json")
 
-cr <- cr_run_get("eviction-addresses-api")
-api_url <- cr$status$url
-jwt <- cr_jwt_create(api_url)
+# cr <- cr_run_get("eviction-addresses-api")
+# api_url <- cr$status$url
+# jwt <- cr_jwt_create(api_url)
 
 user_base <- tibble(
   user = c("user1", "user2"),
