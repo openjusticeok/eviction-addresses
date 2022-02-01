@@ -15,8 +15,6 @@ cr_project_set("ojo-database")
 
 bigrquery::bq_auth(path = here("ojo-database-40842d68fe7b.json"))
 
-googleAuthR::gar_auth("eviction-addresses-service-account.json")
-
 cr <- cr_run_get("eviction-addresses-api")
 api_url <- cr$status$url
 jwt <- cr_jwt_create(api_url)
