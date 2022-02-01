@@ -2,6 +2,7 @@ library(shiny)
 library(shinydashboard)
 library(shinyjs)
 library(tidyverse)
+library(shinyauthr)
 
 cookie_expiry <- 7
 
