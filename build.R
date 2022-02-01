@@ -64,6 +64,10 @@ cr_buildtrigger(
 eviction_addresses_dashboard_yaml <- cr_build_yaml(
   steps = c(
     cr_buildstep_secret(
+      secret = "eviction-addresses-oauth-client-id",
+      decrypted = "dashboard/client-id.json"
+    ),
+    cr_buildstep_secret(
       secret = "eviction-addresses-client-id",
       decrypted = "dashboard/client.json"
     ),
