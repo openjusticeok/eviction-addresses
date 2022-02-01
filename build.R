@@ -64,12 +64,8 @@ cr_buildtrigger(
 eviction_addresses_dashboard_yaml <- cr_build_yaml(
   steps = c(
     cr_buildstep_secret(
-      secret = "eviction-addresses-service-account",
-      decrypted = "dashboard/eviction-addresses-service-account.json"
-    ),
-    cr_buildstep_secret(
-      secret = "eviction-addresses-dashboard-renviron",
-      decrypted = "dashboard/.Renviron"
+      secret = "eviction-addresses-client-id",
+      decrypted = "dashboard/client.json"
     ),
     cr_buildstep_docker(
       image = "eviction-addresses-dashboard",
