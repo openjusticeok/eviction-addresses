@@ -130,25 +130,26 @@ function(input, output, session) {
         tabName = "entry",
         fluidRow(
           column(
-            width = 8,
-            actionButton(
-              inputId = "case_refresh",
-              label = "Refresh",
-              icon = icon("sync")
-            ),
+            width = 4,
             box(
+              width = 12,
+              actionButton(
+                inputId = "case_refresh",
+                label = "Refresh",
+                icon = icon("sync")
+              ),
               textOutput("current_case_ui")
-            ),
-            box(
-              textOutput("total_documents_ui"),
-              actionButton(inputId = "previous_document", label = "Previous"),
-              textOutput("current_document_num_ui"),
-              actionButton(inputId = "next_document", label = "Next")
             )
           ),
           column(
-            width = 3,
-            offset = 1,
+            width = 4,
+            box(
+              width = 12
+            )
+          ),
+          column(
+            width = 4,
+            offset = 0,
             box(
               uiOutput("address_validation_ui")
             )
@@ -157,12 +158,22 @@ function(input, output, session) {
         fluidRow(
           column(
             width = 8,
-            htmlOutput("current_document_ui")
+            box(
+              width = 12,
+              div(
+                style = "display: flex; justify-content: center; gap: 10px;",
+                actionButton(inputId = "previous_document", label = "Previous"),
+                textOutput("document_selector_ui"),
+                actionButton(inputId = "next_document", label = "Next")
+              ),
+              htmlOutput("current_document_ui")
+            )
           ),
           column(
-            width = 3,
-            offset = 1,
+            width = 4,
+            offset = 0,
             box(
+              width = 12,
               uiOutput("address_entry_ui")
             )
           )
@@ -260,10 +271,14 @@ function(input, output, session) {
     return(glue('<iframe style="height:600px; width:100%" src="', '{current_document()}', '"></iframe>'))
   })
 
+  
+  
   output$total_documents_ui <- renderText(str_c("Total Documents: ", total_documents()))
 
   output$current_document_num_ui <- renderText(str_c("Current Document: ", current_document_num()))
 
+  output$document_selector_ui <- renderText(str_c(current_document_num(), " / ", total_documents()))
+  
   output$address_entry_ui <- renderUI({
     tagList(
       textInput(
