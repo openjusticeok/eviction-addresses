@@ -14,7 +14,7 @@ library(shinyauthr)
 
 options(gargle_verbosity = "debug")
 
-bigrquery::bq_auth(path = "client.json")
+bigrquery::bq_auth(path = "eviction-addresses-service-account.json")
 
 
 #cr_region_set(region = "us-central1")

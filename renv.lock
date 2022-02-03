@@ -216,10 +216,10 @@
     },
     "broom": {
       "Package": "broom",
-      "Version": "0.7.11",
+      "Version": "0.7.12",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "e4487657db580ae1fe0f85237a88ff1f",
+      "Hash": "bfa8a039d77ae8d5413254e572c8abea",
       "Requirements": [
         "backports",
         "dplyr",
@@ -724,10 +724,10 @@
     },
     "generics": {
       "Package": "generics",
-      "Version": "0.1.1",
+      "Version": "0.1.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "3f6bcfb0ee5d671d9fd1893d2faa79cb",
+      "Hash": "177475892cf4a55865868527654a7741",
       "Requirements": []
     },
     "gert": {
@@ -835,12 +835,12 @@
       "Version": "2.0.0.9000",
       "Source": "GitHub",
       "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "googleAuthR",
       "RemoteUsername": "MarkEdmondson1234",
+      "RemoteRepo": "googleAuthR",
       "RemoteRef": "HEAD",
-      "RemoteSha": "b57ebbe872f8069f34bfebefe4ff0249e8765a4b",
-      "Hash": "dba1e584fa658a58eb7231056c2f57a0",
+      "RemoteSha": "297e17847a07a55c80e80d8382342c8f383afdf9",
+      "RemoteHost": "api.github.com",
+      "Hash": "b8aeb940be1f5c66ba3c519e274236a0",
       "Requirements": [
         "assertthat",
         "cli",
@@ -1473,10 +1473,10 @@
     },
     "pillar": {
       "Package": "pillar",
-      "Version": "1.6.5",
+      "Version": "1.7.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "464a3e015331eeb8efd1d239cad5128d",
+      "Hash": "51dfc97e1b7069e9f7e6f83f3589c22e",
       "Requirements": [
         "cli",
         "crayon",
@@ -1735,10 +1735,10 @@
     },
     "readr": {
       "Package": "readr",
-      "Version": "2.1.1",
+      "Version": "2.1.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "e9df4b445fca203653f04ece2f97d51e",
+      "Hash": "9c59de1357dc209868b5feb5c9f0fe2f",
       "Requirements": [
         "R6",
         "cli",
@@ -2049,6 +2049,21 @@
         "xtable"
       ]
     },
+    "shinyauthr": {
+      "Package": "shinyauthr",
+      "Version": "1.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "44eb8cee6d3f7a84ea56008ffecb209b",
+      "Requirements": [
+        "dplyr",
+        "glue",
+        "rlang",
+        "shiny",
+        "shinyjs",
+        "sodium"
+      ]
+    },
     "shinydashboard": {
       "Package": "shinydashboard",
       "Version": "0.7.2",
@@ -2148,10 +2163,10 @@
     },
     "terra": {
       "Package": "terra",
-      "Version": "1.5-12",
+      "Version": "1.5-17",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "665cc7ca8d4b1a1e8c72eb28b2362301",
+      "Hash": "6c9f036bad848c41d12be5071b72fa53",
       "Requirements": [
         "Rcpp"
       ]
@@ -2227,10 +2242,10 @@
     },
     "tidyr": {
       "Package": "tidyr",
-      "Version": "1.1.4",
+      "Version": "1.2.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "c8fbdbd9fcac223d6c6fe8e406f368e1",
+      "Hash": "d8b95b7fee945d7da6888cf7eb71a49c",
       "Requirements": [
         "cpp11",
         "dplyr",
