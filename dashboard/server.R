@@ -12,16 +12,17 @@ library(shinydashboard)
 library(shinyjs)
 library(shinyauthr)
 
-# googleAuthR::gar_set_client(web_json = "client.json", scopes = c("https://www.googleapis.com/auth/cloud-platform"), activate = "web")
-
-# cr_region_set(region = "us-central1")
-# cr_project_set("ojo-database")
+options(gargle_verbosity = "debug")
 
 bigrquery::bq_auth(path = "client.json")
 
-# cr <- cr_run_get("eviction-addresses-api")
-# api_url <- cr$status$url
-# jwt <- cr_jwt_create(api_url)
+
+cr_region_set(region = "us-central1")
+cr_project_set("ojo-database")
+cr <- cr_run_get("eviction-addresses-api")
+message(cr)
+api_url <- cr$status$url
+jwt <- cr_jwt_create(api_url)
 
 user_base <- tibble(
   user = c("user1", "user2"),
@@ -257,13 +258,6 @@ function(input, output, session) {
 
     dbGetQuery(con, str_c('SELECT t.case FROM `ojo_eviction_addresses.document` t WHERE t.internal_link IS NOT NULL ORDER BY RAND() LIMIT 1')) |>
       pull()
-
-    # input$case_refresh
-    #
-    # url <- "127.0.0.1:8201/case"
-    # res <- GET(url)
-    # body <- content(res, "text")
-    # return(body)
   })
   
   total_cases <- reactive({
@@ -423,6 +417,22 @@ function(input, output, session) {
       zip = isolate(input$address_zip)
     )
     
+    token <- cr_jwt_token(jwt, api_url)
+    url <- str_c(api_url, "/address/validate")
+    
+    res <- cr_jwt_with_httr(
+      POST(
+        url,
+        body = address_entered,
+        encode = "json"
+      ),
+      token
+    )
+    validated <- content(res, as = "parsed", encoding = "UTF-8")
+    
+    message(as.character(validated[[1]]$Address2))
+
+    
     address_entered_string <- str_c(address_entered$street_num,
                                     " ",
                                     address_entered$street_direction,
@@ -447,34 +457,10 @@ function(input, output, session) {
         h5(address_entered_string)
       ),
       div(
-        p(glue("Verified address:"))
+        h5("Verified address:"),
+        h5(validated[[1]]$Address2)
       )
     ))
     
-    # input$address_validate
-    # 
-    # token <- cr_jwt_token(jwt, api_url)
-    # url <- str_c(api_url, "/address/validate")
-    # 
-    # res <- cr_jwt_with_httr(
-    #   POST(
-    #     url,
-    #     body = list(
-    #       street_num = isolate(input$address_street_number),
-    #       street_dir = isolate(input$address_street_direction),
-    #       street_name = isolate(input$address_street_name),
-    #       street_type = isolate(input$address_street_type),
-    #       unit = isolate(input$address_street_unit),
-    #       city = isolate(input$address_city),
-    #       state = isolate(input$address_state),
-    #       zip = isolate(input$address_zip)
-    #     ),
-    #     encode = "json"
-    #   ),
-    #   token
-    # )
-    # validated <- content(res, as = "parsed", encoding = "UTF-8")
-    # 
-    # renderText(c("Validated: ", as.character(validated[[1]]$Address2)))
   })
 }
