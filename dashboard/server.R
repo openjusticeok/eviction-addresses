@@ -22,7 +22,7 @@ cr_project_set("ojo-database")
 #cr <- cr_run_get("eviction-addresses-api")
 #message(cr$status$url)
 #api_url <- cr$status$url
-api_url <- "https://eviction-addresses-dashboard-ie5mdr3jgq-uc.a.run.app"
+api_url <- "https://eviction-addresses-api-ie5mdr3jgq-uc.a.run.app"
 jwt <- cr_jwt_create(api_url)
 
 user_base <- tibble(
@@ -421,6 +421,8 @@ function(input, output, session) {
     token <- cr_jwt_token(jwt, api_url)
     url <- str_c(api_url, "/address/validate")
     
+    message("Sending request to plumber")
+    
     res <- cr_jwt_with_httr(
       POST(
         url,
@@ -429,8 +431,11 @@ function(input, output, session) {
       ),
       token
     )
+    
+    message("Finished request to plumber")
     validated <- content(res, as = "parsed", encoding = "UTF-8")
     
+    message(validated[[1]])
     message(as.character(validated[[1]]$Address2))
 
     
@@ -459,7 +464,7 @@ function(input, output, session) {
       ),
       div(
         h5("Verified address:"),
-        h5(validated[[1]]$Address2)
+        h5("test")
       )
     ))
     
