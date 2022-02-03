@@ -63,13 +63,17 @@ cr_buildtrigger(
 
 eviction_addresses_dashboard_yaml <- cr_build_yaml(
   steps = c(
+    # cr_buildstep_secret(
+    #   secret = "eviction-addresses-client-id",
+    #   decrypted = "dashboard/client.json"
+    # ),
+    # cr_buildstep_secret(
+    #   secret = "eviction-addresses-dashboard-service-account",
+    #   decrypted = "dashboard/eviction-addresses-dashboard-service-account.json"
+    # ),
     cr_buildstep_secret(
-      secret = "eviction-addresses-client-id",
-      decrypted = "dashboard/client.json"
-    ),
-    cr_buildstep_secret(
-      secret = "eviction-addresses-dashboard-service-account",
-      decrypted = "dashboard/eviction-addresses-dashboard-service-account.json"
+      secret = "eviction-addresses-service-account",
+      decrypted = "dashboard/eviction-addresses-service-account.json"
     ),
     cr_buildstep_docker(
       image = "eviction-addresses-dashboard",
@@ -107,6 +111,18 @@ cr_buildtrigger(
 )
 
 
+###### Test JWT generation ##########
 
+# cr <- cr_run_get("eviction-addresses-api")
+# url <- cr$status$url
+# jwt <- cr_jwt_create(url)
+# token <- cr_jwt_token(jwt, url)
+# 
+# library(httr)
+# res <- cr_jwt_with_httr(
+#   GET(str_c(url, "/case")),
+#   token
+# )
+# content(res)
 
 
