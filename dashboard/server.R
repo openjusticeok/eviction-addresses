@@ -437,7 +437,17 @@ function(input, output, session) {
     
     message(validated[[1]])
     message(as.character(validated[[1]]$Address2))
+    message(names(validated[[1]]))
 
+    address_validated_string <- str_c(validated[[1]]$Address2,
+                                      "<br>",
+                                      address_entered$unit,
+                                      "<br>",
+                                      validated[[1]]$City,
+                                      ", ",
+                                      validated[[1]]$State,
+                                      " ",
+                                      validated[[1]]$Zip5)
     
     address_entered_string <- str_c(address_entered$street_num,
                                     " ",
@@ -446,9 +456,9 @@ function(input, output, session) {
                                     address_entered$street_name,
                                     " ",
                                     address_entered$street_type,
-                                    " ",
-                                    address_entered$street_unit,
-                                    " ",
+                                    "<br>",
+                                    address_entered$unit,
+                                    "<br>",
                                     address_entered$city,
                                     ", ",
                                     address_entered$state,
@@ -459,12 +469,15 @@ function(input, output, session) {
       title = "Confirm",
       h5("Are you sure you want to submit this address?"),
       div(
-        h5("Address entered:"),
-        h5(address_entered_string)
-      ),
-      div(
-        h5("Verified address:"),
-        h5("test")
+        style = "display: flex; pad: 10px; justify-content: space-around;",
+        div(
+          h5("Address entered:"),
+          h5(HTML(address_entered_string))
+        ),
+        div(
+          h5("Verified address:"),
+          h5(HTML(address_validated_string))
+        )
       )
     ))
     
