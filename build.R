@@ -71,6 +71,10 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
       secret = "eviction-addresses-client-id",
       decrypted = "dashboard/client.json"
     ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-dashboard-service-account",
+      decrypted = "dashboard/eviction-addresses-dashboard-service-account.json"
+    ),
     cr_buildstep_docker(
       image = "eviction-addresses-dashboard",
       dir = "dashboard"
