@@ -17,8 +17,8 @@ options(gargle_verbosity = "debug")
 bigrquery::bq_auth(path = "eviction-addresses-service-account.json")
 
 
-#cr_region_set(region = "us-central1")
-#cr_project_set("ojo-database")
+cr_region_set(region = "us-central1")
+cr_project_set("ojo-database")
 cr <- cr_run_get("eviction-addresses-api")
 message(cr$status$url)
 #api_url <- cr$status$url
