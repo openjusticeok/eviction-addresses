@@ -271,7 +271,7 @@ function(input, output, session) {
     )
     on.exit(dbDisconnect(con))
     
-    dbGetQuery(con, glue('SELECT COUNT(*) FROM `ojo_eviction_addresses.case` t LEFT JOIN `ojo-database.ojo_eviction_addresses.address` a ON t.id = a.case WHERE a.id IS NULL')) |>
+    dbGetQuery(con, glue('SELECT COUNT(*) FROM `ojo_eviction_addresses.case` t LEFT JOIN `ojo-database.ojo_eviction_addresses.address` a ON t.id = a.case WHERE a.case IS NULL')) |>
       pull()
   })
 
@@ -443,19 +443,19 @@ function(input, output, session) {
     modal_content <- div()
 
     if(res$status_code == 200){
-      address_validated <<- content(res, as = "parsed", encoding = "UTF-8")
+      response_content <- content(res, as = "parsed", encoding = "UTF-8")
+      address_validated <<- response_content[[1]]
 
-      if(!is.null(address_validated[[1]]$Address2 |> unlist())){
-        message("Valid address")
-        address_validated_string <- str_c(address_validated[[1]]$Address2,
+      if(!is.null(address_validated$Address2 |> unlist())){
+        address_validated_string <- str_c(address_validated$Address2,
                                           "<br>",
                                           address_entered$unit,
                                           "<br>",
-                                          address_validated[[1]]$City,
+                                          address_validated$City,
                                           ", ",
-                                          address_validated[[1]]$State,
+                                          address_validated$State,
                                           " ",
-                                          address_validated[[1]]$Zip5)
+                                          address_validated$Zip5)
         
         modal_content <- div(
           h5("Address successfully validated"),
@@ -487,10 +487,32 @@ function(input, output, session) {
   })
   
   observeEvent(input$address_submit, {
-    if(!exists(address_entered) | !exists(address_validated)) {
+    if(!exists("address_entered") | !exists("address_validated")) {
       stop("Something is wrong. You submitted an address without first validating.")
     } else {
-      message("You submitted the address")
+      con <- dbConnect(
+        bigrquery::bigquery(),
+        project = "ojo-database",
+        dataset = "ojo_eviction_addresses"
+      )
+      on.exit(dbDisconnect(con))
+      
+      new_row <- tibble(
+        case = current_case(),
+        street_number = NULL,
+        street_direction = NULL,
+        street_name = NULL,
+        street_type = NULL,
+        street_full = as.character(address_validated$Address2),
+        street_unit = address_entered$unit,
+        city = as.character(address_validated$City),
+        state = as.character(address_validated$State),
+        zip = as.character(address_validated$Zip5),
+        created_at = now(),
+        updated_at = now()
+      )
+      
+      dbWriteTable(con, "address", value = new_row, append = T)
     }
   })
 }
