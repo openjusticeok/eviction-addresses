@@ -139,7 +139,7 @@ function(input, output, session) {
             uiOutput("current_case_ui"),
             actionButton(
               inputId = "case_refresh",
-              label = "Refresh",
+              label = "New Case",
               icon = icon("sync")
             )
           )
@@ -395,19 +395,13 @@ function(input, output, session) {
       actionButton(
         inputId = "address_validate",
         label = "Validate"
-      ),
-      disabled(
-        actionButton(
-          inputId = "address_submit",
-          label = "Submit"
-        )
       )
     )
   })
   
   observeEvent(input$address_validate, {
     
-    address_entered <- list(
+    address_entered <<- list(
       street_num = isolate(input$address_street_number),
       street_direction = isolate(input$address_street_direction),
       street_name = isolate(input$address_street_name),
@@ -417,37 +411,6 @@ function(input, output, session) {
       state = isolate(input$address_state),
       zip = isolate(input$address_zip)
     )
-    
-    token <- cr_jwt_token(jwt, api_url)
-    url <- str_c(api_url, "/address/validate")
-    
-    message("Sending request to plumber")
-    
-    res <- cr_jwt_with_httr(
-      POST(
-        url,
-        body = address_entered,
-        encode = "json"
-      ),
-      token
-    )
-    
-    message("Finished request to plumber")
-    validated <- content(res, as = "parsed", encoding = "UTF-8")
-    
-    message(validated[[1]])
-    message(as.character(validated[[1]]$Address2))
-    message(names(validated[[1]]))
-
-    address_validated_string <- str_c(validated[[1]]$Address2,
-                                      "<br>",
-                                      address_entered$unit,
-                                      "<br>",
-                                      validated[[1]]$City,
-                                      ", ",
-                                      validated[[1]]$State,
-                                      " ",
-                                      validated[[1]]$Zip5)
     
     address_entered_string <- str_c(address_entered$street_num,
                                     " ",
@@ -465,21 +428,69 @@ function(input, output, session) {
                                     " ",
                                     address_entered$zip)
     
-    showModal(modalDialog(
-      title = "Confirm",
-      h5("Are you sure you want to submit this address?"),
-      div(
-        style = "display: flex; pad: 10px; justify-content: space-around;",
-        div(
-          h5("Address entered:"),
-          h5(HTML(address_entered_string))
-        ),
-        div(
-          h5("Verified address:"),
-          h5(HTML(address_validated_string))
+    token <- cr_jwt_token(jwt, api_url)
+    url <- str_c(api_url, "/address/validate")
+
+    res <- cr_jwt_with_httr(
+      POST(
+        url,
+        body = address_entered,
+        encode = "json"
+      ),
+      token
+    )
+    
+    modal_content <- div()
+
+    if(res$status_code == 200){
+      address_validated <<- content(res, as = "parsed", encoding = "UTF-8")
+
+      if(!is.null(address_validated[[1]]$Address2 |> unlist())){
+        message("Valid address")
+        address_validated_string <- str_c(address_validated[[1]]$Address2,
+                                          "<br>",
+                                          address_entered$unit,
+                                          "<br>",
+                                          address_validated[[1]]$City,
+                                          ", ",
+                                          address_validated[[1]]$State,
+                                          " ",
+                                          address_validated[[1]]$Zip5)
+        
+        modal_content <- div(
+          h5("Address successfully validated"),
+          div(
+            style = "display: flex; pad: 10px; justify-content: space-around;",
+            div(
+              h5("Address entered:"),
+              h5(HTML(address_entered_string))
+            ),
+            div(
+              h5("Verified address:"),
+              h5(HTML(address_validated_string))
+            )
+          ),
+          actionButton("address_submit", label = "Submit", icon = icon("upload"))
         )
-      )
+      } else {
+        modal_content <- "Could not validate address."
+      }
+    } else {
+      modal_content <- "Bad response from validation server"
+    }
+    
+    showModal(modalDialog(
+      title = "Address Validation",
+      modal_content
     ))
     
+  })
+  
+  observeEvent(input$address_submit, {
+    if(!exists(address_entered) | !exists(address_validated)) {
+      stop("Something is wrong. You submitted an address without first validating.")
+    } else {
+      message("You submitted the address")
+    }
   })
 }
