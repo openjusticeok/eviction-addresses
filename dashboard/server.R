@@ -512,7 +512,15 @@ function(input, output, session) {
         updated_at = now()
       )
       
-      dbWriteTable(con, "address", value = new_row, append = T)
+      write_status <- dbWriteTable(con, "address", value = new_row, append = T, overwrite = T)
+      
+      if(write_status == T) {
+        message("Successfully wrote a new row")
+        removeModal()
+        input$case_refresh
+      } else {
+        message("Did not successfully write the new row")
+      }
     }
   })
 }
