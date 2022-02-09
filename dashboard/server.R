@@ -25,13 +25,19 @@ cr_project_set("ojo-database")
 api_url <- "https://eviction-addresses-api-ie5mdr3jgq-uc.a.run.app"
 jwt <- cr_jwt_create(api_url)
 
-user_base <- tibble(
-  user = c("user1", "user2"),
-  password = c("pass1", "pass2"),
-  password_hash = sapply(c("pass1", "pass2"), sodium::password_store),
-  permissions = c("admin", "standard"),
-  name = c("User One", "User Two")
-)
+# user_base <- tibble(
+#   user = c("user1", "user2"),
+#   password = c("pass1", "pass2"),
+#   password_hash = sapply(c("pass1", "pass2"), sodium::password_store),
+#   permissions = c("admin", "standard"),
+#   name = c("User One", "User Two")
+# )
+
+
+get_users_from_db <- function(conn = db, expiry = cookie_expiry) {
+  dbReadTable(conn, "user") |>
+    as_tibble()
+}
 
 # This function must return a data.frame with columns user and sessionid.  Other columns are also okay
 # and will be made available to the app after log in.
@@ -62,6 +68,8 @@ on.exit(dbDisconnect(db))
 
 
 function(input, output, session) {
+  
+  user_base <- get_users_from_db()
   
   # call login module supplying data frame, user and password cols and reactive trigger
   credentials <- shinyauthr::loginServer(
