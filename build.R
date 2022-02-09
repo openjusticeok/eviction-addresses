@@ -13,10 +13,10 @@ eviction_addresses_api_yaml <- cr_build_yaml(
       secret = "eviction-addresses-service-account",
       decrypted = "api/eviction-addresses-service-account.json"
     ),
-    # cr_buildstep_secret(
-    #   secret = "eviction-addresses-r-config",
-    #   decrypted = "api/config.yml"
-    # ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-api-renviron",
+      decrypted = "api/.Renviron"
+    ),
     cr_buildstep_docker(
       image = "eviction-addresses-api",
       dir = "api"
