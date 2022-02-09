@@ -18,6 +18,8 @@ options(gargle_verbosity = "debug")
 plan(multisession)
 bigrquery::bq_auth(path = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
 
+gar_auth(email = "eviction-addresses-dashboard@ojo-database.iam.gserviceaccount.com")
+
 message(bq_user())
 
 # We will receive a message when the daily auto-transfer from Cloud SQL to BigQuery is done
