@@ -2,7 +2,9 @@
 title: "Eviction Address Entry Guide"
 author: "Brancen Gregory"
 date: "1/12/2022"
-output: html_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -19,6 +21,11 @@ library(figpatch)
 # Overview
 
 The goal of this project is to accurately transcribe addresses from court documents so community partners can use this information to quickly respond to situations of need. This document should help explain the process and make it easy to get started.
+
+# Address Entry Interface
+
+There is currently a bug where after successfully submitting a verified address the dialog box goes away but the case does not refresh.
+Simply press "New Case" and you should see a new case number along with a decrease in the number of cases remaining to be transcribed.
 
 # Court Documents
 
