@@ -18,20 +18,7 @@ options(gargle_verbosity = "debug")
 plan(multisession)
 bigrquery::bq_auth(path = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
 
-message(bq_user())
-
-# We will receive a message when the daily auto-transfer from Cloud SQL to BigQuery is done
-# Then we can trigger document scraping
-
-#* Communicates with infrastructure through pubsub
-#* @post /pubsub
-#* @param message a pubsub message
-function(message = NULL) {
-  cr_plumber_pubsub(message, function(msg){str_c("You said: ", msg)})
-}
-
-# We can also manually trigger hydration of the BigQuery table with new cases
-# !!!???????!!!!!!! Unsure if this will still trigger new document scraping via pubsub
+#message(bq_user())
 
 #* Calls the database(?) for eviction cases in Tulsa with no address. Store them in a BigQuery table
 #* @get /hydrate
@@ -94,8 +81,6 @@ function(case_id = as.character(NA)) {
   
   return()
 }
-
-
 
 
 

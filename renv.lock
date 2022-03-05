@@ -854,23 +854,24 @@
     },
     "googleCloudRunner": {
       "Package": "googleCloudRunner",
-      "Version": "0.4.1",
+      "Version": "0.5.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "7c3df32b64cd9fc0d7c21a84337d7a12",
+      "Hash": "33747d2ece4513bf2c503704e07996c7",
       "Requirements": [
         "assertthat",
         "cli",
         "curl",
         "googleAuthR",
         "googleCloudStorageR",
+        "googlePubsubR",
         "httr",
         "jose",
         "jsonlite",
         "openssl",
         "plumber",
-        "progress",
         "usethis",
+        "withr",
         "yaml"
       ]
     },
@@ -912,6 +913,18 @@
         "magrittr",
         "purrr",
         "tibble"
+      ]
+    },
+    "googlePubsubR": {
+      "Package": "googlePubsubR",
+      "Version": "0.0.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "698d88b89865f359edd7259aea7dad9b",
+      "Requirements": [
+        "cli",
+        "googleAuthR",
+        "magrittr"
       ]
     },
     "googledrive": {
