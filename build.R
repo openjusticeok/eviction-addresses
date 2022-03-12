@@ -14,6 +14,10 @@ eviction_addresses_api_yaml <- cr_build_yaml(
       decrypted = "api/eviction-addresses-service-account.json"
     ),
     cr_buildstep_secret(
+      secret = "eviction-addresses-api-config",
+      decrypted = "api/config.yml"
+    ),
+    cr_buildstep_secret(
       secret = "eviction-addresses-api-renviron",
       decrypted = "api/.Renviron"
     ),
