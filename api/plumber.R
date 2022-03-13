@@ -49,10 +49,10 @@ ojodb <- pool::dbPool(odbc::odbc(),
 minute_table <- in_schema("eviction_addresses", "tulsa_eviction_minutes")
 document_table <- in_schema("eviction-addresses", "document")
 
-ojodb |>
+res <- ojodb |>
 	dbGetQuery("select * from pg_stat_ssl where pid = pg_backend_pid();")
 
-
+cli_alert_info("{res}")
 
 #message(bq_user())
 
