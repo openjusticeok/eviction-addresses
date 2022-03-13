@@ -25,19 +25,17 @@ googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.js
 
 if(Sys.getenv("PORT") == "") Sys.setenv(PORT = 8000)
 
-test <- Sys.getenv("R_CONFIG_ACTIVE")
-cli_alert_info(test)
 
 connection_args <- config::get('database')
 
 ojodb <- pool::dbPool(odbc::odbc(),
-                      Driver = "PostgreSQL Driver",
+                      Driver = connection_args$driver,
                       Server = connection_args$server,
                       Database = connection_args$database,
                       Port = connection_args$port,
                       Username = connection_args$uid,
                       Password = connection_args$pwd,
-                      sslmode = "verify-ca",
+                      SSLmode = "verify-ca",
                       Pqopt = stringr::str_glue(
                         "{sslrootcert={{connection_args$ssl.ca}}",
                         "sslcert={{connection_args$ssl.cert}}",
