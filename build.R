@@ -21,6 +21,7 @@ eviction_addresses_api_yaml <- cr_build_yaml(
       secret = "eviction-addresses-api-renviron",
       decrypted = "api/.Renviron"
     ),
+    cr_buildstep_bash("mkdir -p api/shiny-apps-certs/"),
     cr_buildstep_secret(
       secret = "eviction-addresses-ssl-cert",
       decrypted = "api/shiny-apps-certs/client-cert.pem"
