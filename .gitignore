@@ -33,3 +33,4 @@ client.json
 eviction-addresses-dashboard-service-account.json
 shiny-apps-certs/
 config.yml
+api/eviction-addresses-service-account.json
