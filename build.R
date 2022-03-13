@@ -64,7 +64,7 @@ cr_buildtrigger(
   build = eviction_addresses_api_build,
   name = "eviction-addresses-api-trigger",
   trigger = eviction_addresses_api_trigger,
-  includedFiles = "api/**"
+  includedFiles = "**"
 )
 
 
