@@ -21,6 +21,18 @@ eviction_addresses_api_yaml <- cr_build_yaml(
       secret = "eviction-addresses-api-renviron",
       decrypted = "api/.Renviron"
     ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-ssl-cert",
+      decrypted = "api/shiny-apps-certs/client-cert.pem"
+    ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-ssl-key",
+      decrypted = "api/shiny-apps-certs/client-key.pem"
+    ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-ssl-ca",
+      decrypted = "api/shiny-apps-certs/server-ca.pem"
+    ),
     cr_buildstep_docker(
       image = "eviction-addresses-api",
       dir = "api"
