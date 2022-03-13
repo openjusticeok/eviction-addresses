@@ -12,6 +12,6 @@ RUN ["install2.r", "bigrquery", "cli", "config", "DBI", "dbplyr", "dbx", "dplyr"
 RUN ["installGithub.r", "cloudyr/googleCloudStorageR@75f56fb9395ed14aecb9c39604233e72ad9a703c", "hansthompson/rusps@36090a4bf80b9ace0a669ca3bbd9d737d287f2e8", "openjusticeok/ojodb@c5972c6ad36c6ff66851cb920cc8c3a422719475"]
 WORKDIR ["/workspace/"]
 COPY ["./", "./"]
-RUN ["mkdir", "-p", "./shiny-apps-certs/"]
+RUN ["mkdir", "-p", "./api/shiny-apps-certs/"]
 ENTRYPOINT ["R", "-e", "pr <- plumber::plumb('plumber.R'); pr$run(host='0.0.0.0', port=as.numeric(Sys.getenv('PORT')))"]
 CMD ["plumber.R"]
