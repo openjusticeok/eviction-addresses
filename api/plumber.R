@@ -25,6 +25,8 @@ googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.js
 
 if(Sys.getenv("PORT") == "") Sys.setenv(PORT = 8000)
 
+test <- Sys.getenv("R_CONFIG_ACTIVE")
+cli_alert_info(test)
 
 connection_args <- config::get('database')
 
