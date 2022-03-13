@@ -1439,15 +1439,15 @@
     },
     "ojodb": {
       "Package": "ojodb",
-      "Version": "2.0.0",
+      "Version": "2.0.1",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteUsername": "openjusticeok",
       "RemoteRepo": "ojodb",
       "RemoteRef": "main",
-      "RemoteSha": "0508c93310079de6f15785bf1bbc30bd896b1921",
+      "RemoteSha": "fdfc27cd7af2585c81b64a79602957dc3d426e52",
       "RemoteHost": "api.github.com",
-      "Hash": "12cab58d310c8c9c1d59c7f9f68ef3f6",
+      "Hash": "d37f8030528ac4ed738dfefeacf44911",
       "Requirements": [
         "DBI",
         "RPostgres",
