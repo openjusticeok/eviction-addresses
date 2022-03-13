@@ -49,7 +49,8 @@ ojodb <- pool::dbPool(odbc::odbc(),
 minute_table <- in_schema("eviction_addresses", "tulsa_eviction_minutes")
 document_table <- in_schema("eviction-addresses", "document")
 
-ojo_check_ssl()
+ojodb |>
+	dbGetQuery("select * from pg_stat_ssl where pid = pg_backend_pid();")
 
 
 
