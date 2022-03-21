@@ -31,3 +31,8 @@ client-id.json
 googlecloudrunner-auth-key.json
 client.json
 eviction-addresses-dashboard-service-account.json
+api/config.yml
+api/eviction-addresses-service-account.json
+api/shiny-apps-certs/
+config.yml
+shiny-apps-certs/
