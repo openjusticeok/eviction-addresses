@@ -4,15 +4,8 @@ library(shinyjs)
 library(tidyverse)
 library(shinyauthr)
 
-cookie_expiry <- 7
 
-user_base <- tibble(
-  user = c("user1", "user2"),
-  password = c("pass1", "pass2"),
-  password_hash = sapply(c("pass1", "pass2"), sodium::password_store),
-  permissions = c("admin", "standard"),
-  name = c("User One", "User Two")
-)
+cookie_expiry <- 7
 
 dashboardPage(
   title = "Open Justice Oklahoma Eviction Addresses",

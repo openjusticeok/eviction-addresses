@@ -28,7 +28,7 @@ if(Sys.getenv("PORT") == "") Sys.setenv(PORT = 8000)
 
 connection_args <- config::get('database')
 
-ojodb <- pool::dbPool(odbc::odbc(),
+db <- pool::dbPool(odbc::odbc(),
                       Driver = connection_args$driver,
                       Server = connection_args$server,
                       Database = connection_args$database,
@@ -45,6 +45,7 @@ ojodb <- pool::dbPool(odbc::odbc(),
                         .sep = " "
                       )
 )
+on.exit(dbDisconnect(db))
 
 minute_table <- in_schema("eviction_addresses", "tulsa_eviction_minutes")
 document_table <- in_schema("eviction-addresses", "document")

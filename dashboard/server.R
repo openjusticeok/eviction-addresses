@@ -59,10 +59,24 @@ add_session_to_db <- function(user, sessionid, conn = db) {
 
 cookie_expiry <- 7
 
-db <- dbConnect(
-  bigrquery::bigquery(),
-  project = "ojo-database",
-  dataset = "ojo_eviction_addresses"
+connection_args <- config::get('database')
+
+db <- pool::dbPool(odbc::odbc(),
+             Driver = connection_args$driver,
+             Server = connection_args$server,
+             Database = connection_args$database,
+             Port = connection_args$port,
+             Username = connection_args$uid,
+             Password = connection_args$pwd,
+             SSLmode = "verify-ca",
+             Pqopt = stringr::str_glue(
+               "{sslrootcert={{connection_args$ssl.ca}}",
+               "sslcert={{connection_args$ssl.cert}}",
+               "sslkey={{connection_args$ssl.key}}}",
+               .open = "{{",
+               .close = "}}",
+               .sep = " "
+             )
 )
 on.exit(dbDisconnect(db))
 
@@ -272,30 +286,16 @@ function(input, output, session) {
   total_cases <- reactive({
     input$case_refresh
     
-    con <- dbConnect(
-      bigrquery::bigquery(),
-      project = "ojo-database",
-      dataset = "ojo_eviction_addresses"
-    )
-    on.exit(dbDisconnect(con))
-    
-    dbGetQuery(con, glue('SELECT COUNT(*) FROM `ojo_eviction_addresses.case` t LEFT JOIN `ojo-database.ojo_eviction_addresses.address` a ON t.id = a.case WHERE a.case IS NULL')) |>
+    dbGetQuery(db, glue('SELECT COUNT(*) FROM `ojo_eviction_addresses.case` t LEFT JOIN `ojo-database.ojo_eviction_addresses.address` a ON t.id = a.case WHERE a.case IS NULL')) |>
       pull()
   })
 
   documents <- reactive({
     current_case <- current_case()
 
-    con <- dbConnect(
-      bigrquery::bigquery(),
-      project = "ojo-database",
-      dataset = "ojo_eviction_addresses"
-    )
-    on.exit(dbDisconnect(con))
-
     query <- glue('SELECT * FROM `ojo_eviction_addresses.document` t WHERE t.case = \'{current_case}\'')
 
-    dbGetQuery(con, query)
+    dbGetQuery(db, query)
   })
 
   total_documents <- reactive({
@@ -498,13 +498,6 @@ function(input, output, session) {
     if(!exists("address_entered") | !exists("address_validated")) {
       stop("Something is wrong. You submitted an address without first validating.")
     } else {
-      con <- dbConnect(
-        bigrquery::bigquery(),
-        project = "ojo-database",
-        dataset = "ojo_eviction_addresses"
-      )
-      on.exit(dbDisconnect(con))
-      
       new_row <- tibble(
         case = current_case(),
         street_number = NULL,
@@ -520,7 +513,7 @@ function(input, output, session) {
         updated_at = now()
       )
       
-      write_status <- dbWriteTable(con, "address", value = new_row, append = T, overwrite = T)
+      write_status <- dbWriteTable(db, "address", value = new_row, append = T, overwrite = T)
       
       if(write_status == T) {
         message("Successfully wrote a new row")
