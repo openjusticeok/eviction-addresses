@@ -13,10 +13,46 @@ library(googleCloudRunner)
 library(googleCloudStorageR)
 library(cli)
 library(here)
+library(config)
+library(odbc)
+library(dbplyr)
 
 options(gargle_verbosity = "debug")
 plan(multisession)
-bigrquery::bq_auth(path = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
+googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
+
+
+
+if(Sys.getenv("PORT") == "") Sys.setenv(PORT = 8000)
+
+
+connection_args <- config::get('database')
+
+ojodb <- pool::dbPool(odbc::odbc(),
+                      Driver = connection_args$driver,
+                      Server = connection_args$server,
+                      Database = connection_args$database,
+                      Port = connection_args$port,
+                      Username = connection_args$uid,
+                      Password = connection_args$pwd,
+                      SSLmode = "verify-ca",
+                      Pqopt = stringr::str_glue(
+                        "{sslrootcert={{connection_args$ssl.ca}}",
+                        "sslcert={{connection_args$ssl.cert}}",
+                        "sslkey={{connection_args$ssl.key}}}",
+                        .open = "{{",
+                        .close = "}}",
+                        .sep = " "
+                      )
+)
+
+minute_table <- in_schema("eviction_addresses", "tulsa_eviction_minutes")
+document_table <- in_schema("eviction-addresses", "document")
+
+res <- ojodb |>
+	dbGetQuery("select * from pg_stat_ssl where pid = pg_backend_pid();")
+
+cli_alert_info("{res}")
 
 #message(bq_user())
 

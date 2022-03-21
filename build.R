@@ -14,9 +14,27 @@ eviction_addresses_api_yaml <- cr_build_yaml(
       decrypted = "api/eviction-addresses-service-account.json"
     ),
     cr_buildstep_secret(
+      secret = "eviction-addresses-api-config",
+      decrypted = "api/config.yml"
+    ),
+    cr_buildstep_secret(
       secret = "eviction-addresses-api-renviron",
       decrypted = "api/.Renviron"
     ),
+    cr_buildstep_bash("mkdir -p api/shiny-apps-certs/"),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-ssl-cert",
+      decrypted = "api/shiny-apps-certs/client-cert.pem"
+    ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-ssl-key",
+      decrypted = "api/shiny-apps-certs/client-key.pem"
+    ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-ssl-ca",
+      decrypted = "api/shiny-apps-certs/server-ca.pem"
+    ),
+    cr_buildstep_bash("chmod 0600 api/shiny-apps-certs/client-key.pem"),
     cr_buildstep_docker(
       image = "eviction-addresses-api",
       dir = "api"
@@ -48,7 +66,7 @@ cr_buildtrigger(
   build = eviction_addresses_api_build,
   name = "eviction-addresses-api-trigger",
   trigger = eviction_addresses_api_trigger,
-  includedFiles = "api/**"
+  includedFiles = "**"
 )
 
 
