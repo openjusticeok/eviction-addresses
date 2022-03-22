@@ -16,6 +16,7 @@ library(here)
 library(config)
 library(odbc)
 library(dbplyr)
+library(dbx)
 
 options(gargle_verbosity = "debug")
 plan(multisession)
@@ -52,27 +53,42 @@ ojodb <- pool::dbPool(odbc::odbc(),
 #* @get /refresh
 function(res) {
   ## Refresh both materialized views to ingest new eviction cases and minutes
-  refresh_cases_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_evictions"
-  refresh_minutes_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_eviction_minutes"
-  
-  cases_res <- dbExecute(ojodb, refresh_cases_query)
-  cli_alert_info("Cases refreshed: {cases_res} rows affected")
-  minutes_res <- dbExecute(ojodb, refresh_minutes_query)
-  cli_alert_info("Minutes refreshed: {minutes_res} rows affected")
+  # refresh_cases_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_evictions"
+  # refresh_minutes_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_eviction_minutes"
+  # 
+  # cases_res <- dbExecute(ojodb, refresh_cases_query)
+  # cli_alert_info("Cases refreshed: {cases_res} rows affected")
+  # minutes_res <- dbExecute(ojodb, refresh_minutes_query)
+  # cli_alert_info("Minutes refreshed: {minutes_res} rows affected")
   
   ## Check whether there are new cases
-  new_cases_query <- 'SELECT DISTINCT(rte.id) FROM eviction_addresses.recent_tulsa_evictions rte LEFT JOIN eviction_addresses."case" c ON rte.id = c.id WHERE c.id IS NULL;'
+  new_cases_query <- 'SELECT DISTINCT(rte.id), rte.district, rte.case_type, rte.case_number, rte.date_filed, current_timestamp::timestamp AS created_at, current_timestamp::timestamp AS updated_at FROM eviction_addresses.recent_tulsa_evictions rte LEFT JOIN eviction_addresses."case" c ON rte.id = c.id WHERE c.id IS NULL;'
   new_cases <- dbGetQuery(ojodb, new_cases_query)
-  cli_alert_info("Found {nrow(new_cases)} new cases")
+  num_new_cases <- nrow(new_cases)
+  cli_alert_info("Found {num_new_cases} new cases")
   
   ## Insert new cases into case table; Add to work queue
-  
-  
+  if(num_new_cases >= 1) {
+    dbxInsert(
+      conn = ojodb,
+      table = Id(schema = "eviction_addresses", table = "case"),
+      records = new_cases, batch_size = 1000
+    )
+    cli_alert_info("Inserted {num_new_cases} new cases to table eviction_addresses.case")
+  }
   
   #Check whether there are new minutes
   new_minutes_query <- 'SELECT DISTINCT(rtem.id) FROM eviction_addresses.recent_tulsa_eviction_minutes rtem LEFT JOIN eviction_addresses."document" d ON rtem."minute" = d.id WHERE d.id IS NULL;'
   new_minutes <- dbGetQuery(ojodb, new_minutes_query)
-  cli_alert_info("Found {nrow(new_minutes)} new minutes")
+  num_new_minutes <- nrow(new_minutes)
+  cli_alert_info("Found {num_new_minutes} new minutes")
+  
+  # if(num_new_minutes >= 1) {
+  #   dbxInsert(
+  #     conn = ojodb,
+  #     table = Id(schema = "eviction_addresses", table = "document"),
+  #   )
+  # }
   
   return()
 }
