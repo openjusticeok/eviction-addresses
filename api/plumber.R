@@ -73,6 +73,10 @@ function(res) {
   new_cases <- dbGetQuery(ojodb, new_cases_query)
   cli_alert_info("Found {nrow(new_cases)} new cases")
   
+  ## Insert new cases into case table; Add to work queue
+  
+  
+  
   #Check whether there are new minutes
   new_minutes_query <- 'SELECT DISTINCT(rtem.id) FROM eviction_addresses.recent_tulsa_eviction_minutes rtem LEFT JOIN eviction_addresses."document" d ON rtem."minute" = d.id WHERE d.id IS NULL;'
   new_minutes <- dbGetQuery(ojodb, new_minutes_query)
