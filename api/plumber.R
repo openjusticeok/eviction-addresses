@@ -28,7 +28,7 @@ if(Sys.getenv("PORT") == "") Sys.setenv(PORT = 8000)
 
 connection_args <- config::get('database')
 
-db <- pool::dbPool(odbc::odbc(),
+ojodb <- pool::dbPool(odbc::odbc(),
                       Driver = connection_args$driver,
                       Server = connection_args$server,
                       Database = connection_args$database,
@@ -45,36 +45,54 @@ db <- pool::dbPool(odbc::odbc(),
                         .sep = " "
                       )
 )
-on.exit(dbDisconnect(db))
 
-minute_table <- in_schema("eviction_addresses", "tulsa_eviction_minutes")
-document_table <- in_schema("eviction-addresses", "document")
+#minute_table <- in_schema("eviction_addresses", "tulsa_eviction_minutes")
+#document_table <- in_schema("eviction-addresses", "document")
 
-res <- ojodb |>
-	dbGetQuery("select * from pg_stat_ssl where pid = pg_backend_pid();")
+#res <- ojodb |>
+#	dbGetQuery("select * from pg_stat_ssl where pid = pg_backend_pid();")
 
-cli_alert_info("{res}")
+#cli_alert_info("{res}")
 
 #message(bq_user())
 
-#* Calls the database(?) for eviction cases in Tulsa with no address. Store them in a BigQuery table
-#* @get /hydrate
-function() {
-  con <- dbConnect(
-    bigquery(),
-    project = "ojo-database",
-    dataset = "ojo_eviction_addresses"
-  )
-  on.exit(dbDisconnect(con))
+#* Refreshes materialized views
+#* @get /refresh
+function(res) {
+  refresh_cases_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_evictions"
+  refresh_minutes_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_eviction_minutes"
   
-  query <- "SELECT * FROM `ojo-database.ojo_eviction_addresses.document` WHERE internal_link IS NULL ORDER BY created_at"
-  links <- dbGetQuery(con, query)
+  cases_res <- dbExecute(ojodb, refresh_cases_query)
+  cli_alert_info("Cases refreshed: {cases_res} rows affected")
+  minutes_res <- dbExecute(ojodb, refresh_minutes_query)
+  cli_alert_info("Minutes refreshed: {minutes_res} rows affected")
+  
+  return()
+}
+
+
+#* Calls the database for eviction cases in Tulsa with no address. Store them in a BigQuery table
+#* @get /hydrate
+function(res) {
+  query <- "SELECT * FROM eviction_addresses.document WHERE internal_link IS NULL ORDER BY created_at"
+  links <- dbGetQuery(ojodb, query)
+  
+  if(nrow(links) == 0) {
+    msg <- "No new documents to retrieve"
+    cli_alert_info(msg)
+    res$status <- 200
+    return(list(status = "success", message = msg))
+  }
   
   cli_progress_bar("Downloading and storing documents", total = nrow(links))
   for(i in 1:nrow(links)) {
     cli_alert_info("Starting link {i}")
-    document <- GET(links[i, "link"] |> pull()) |>
+    document <- GET(links[i, "link"]) |>
       pluck(content)
+    if(is.na(document)) {
+      cli_alert_info('No pdf found at {links[i, "link"]}')
+      next()
+    }
     cli_alert_success("Got pdf content {i}")
     upload <- gcs_upload(document,
                          name = links[i, "id"] |> pull(),
@@ -89,8 +107,8 @@ function() {
                                       bucket = "eviction-addresses",
                                       public = T)
     cli_alert_success("Got public link {i}")
-    query <- glue('UPDATE `ojo-database.ojo_eviction_addresses.document` SET internal_link = "{internal_link}" WHERE id = \'{links[i, "id"] |> pull()}\'')
-    dbExecute(con, query)
+    query <- glue('UPDATE eviction_addresses.document SET internal_link = "{internal_link}" WHERE id = \'{links[i, "id"] |> pull()}\'')
+    dbExecute(ojodb, query)
 
     cli_alert_success("Completed link {i}/{nrow(links)}")
     cli_progress_update()
@@ -98,27 +116,6 @@ function() {
   
   return()
 }
-
-
-#* Trigger a function to download a document, store it in Cloud Storage, and create a public link. Store the link with the data in BiqQuery.
-#* @post /document
-#* @param case_id
-function(case_id = as.character(NA)) {
-  if(is.na(case_id)) {
-    
-  }
-  con <- dbConnect(
-    bigquery(),
-    project = "ojo-database",
-    dataset = "ojo_eviction_addresses"
-  )
-  on.exit(dbDisconnect(con))
-  
-  
-  
-  return()
-}
-
 
 
 # Serving the client:
@@ -129,20 +126,15 @@ function(case_id = as.character(NA)) {
 #* @get /case
 #* @serializer text
 function() {
-  con <- dbConnect(
-    bigquery(),
-    project = "ojo-database",
-    dataset = "ojo_eviction_addresses"
-  )
-  on.exit(dbDisconnect(con))
-
   # res <- tbl(con, "case") |>
   #   arrange(desc(created_at)) |>
   #   head(1) |>
   #   collect()
   
-  res <- dbGetQuery(con,
-                    "SELECT id FROM `ojo_eviction_addresses.case` ORDER BY RAND() LIMIT 1;")
+  res <- dbGetQuery(
+    ojodb,
+    "SELECT id FROM eviction_addresses.case ORDER BY RANDOM() LIMIT 1;"
+  )
 
   return(res)
 }
@@ -166,27 +158,3 @@ function(street_num = "", street_dir = "", street_name = "", street_type = "",
   #ggmap::geocode(str_c(street, city, state, zip, sep = " "), source = "google", output = "all")
 }
 
-#* Take an HTML form as input and return an indicator of success
-#* @post /address/submit
-#* @param street_num
-#* @param street_dir
-#* @param street_name
-#* @param street_type
-#* @param unit
-#* @param city
-#* @param state
-#* @param zip
-function(street_num = "", street_dir = "", street_name = "", street_type = "",
-         unit = "", city = "", state = "", zip = "") {
-  
-  
-  
-  return(
-    str_c(
-      street_num, street_dir, street_name, street_type, ",",
-      unit, ",",
-      city, state, zip,
-      sep = " "
-    )
-  )
-}

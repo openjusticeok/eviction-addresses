@@ -11,6 +11,7 @@ library(googleAuthR)
 library(shinydashboard)
 library(shinyjs)
 library(shinyauthr)
+library(DBI)
 
 options(gargle_verbosity = "debug")
 
@@ -35,7 +36,7 @@ jwt <- cr_jwt_create(api_url)
 
 
 get_users_from_db <- function(conn = db, expiry = cookie_expiry) {
-  dbReadTable(conn, "user") |>
+  dbGetQuery(conn, 'SELECT * FROM "eviction_addresses"."user"') |>
     as_tibble()
 }
 
@@ -43,7 +44,7 @@ get_users_from_db <- function(conn = db, expiry = cookie_expiry) {
 # and will be made available to the app after log in.
 
 get_sessions_from_db <- function(conn = db, expiry = cookie_expiry) {
-  dbReadTable(conn, "session") |>
+  dbGetQuery(conn, 'SELECT * FROM "eviction_addresses"."session"') |>
     mutate(login_time = ymd_hms(login_time)) |>
     as_tibble() |>
     filter(login_time > now() - days(expiry))
@@ -54,7 +55,7 @@ get_sessions_from_db <- function(conn = db, expiry = cookie_expiry) {
 
 add_session_to_db <- function(user, sessionid, conn = db) {
   values <- tibble(user = user, sessionid = sessionid, login_time = as.character(now()))
-  dbWriteTable(conn, "session", values, append = TRUE, row.names = F)
+  dbWriteTable(conn, "eviction_addresses.session", values, append = TRUE, row.names = F)
 }
 
 cookie_expiry <- 7
@@ -78,8 +79,6 @@ db <- pool::dbPool(odbc::odbc(),
                .sep = " "
              )
 )
-on.exit(dbDisconnect(db))
-
 
 function(input, output, session) {
   
@@ -272,28 +271,21 @@ function(input, output, session) {
   current_case <- reactive({
     input$case_refresh
 
-    con <- dbConnect(
-      bigrquery::bigquery(),
-      project = "ojo-database",
-      dataset = "ojo_eviction_addresses"
-    )
-    on.exit(dbDisconnect(con))
-
-    dbGetQuery(con, str_c('SELECT t.case FROM `ojo_eviction_addresses.document` t WHERE t.internal_link IS NOT NULL ORDER BY RAND() LIMIT 1')) |>
+    dbGetQuery(db, str_c('SELECT t.case FROM eviction_addresses.document t WHERE t.internal_link IS NOT NULL ORDER BY RANDOM() LIMIT 1')) |>
       pull()
   })
   
   total_cases <- reactive({
     input$case_refresh
     
-    dbGetQuery(db, glue('SELECT COUNT(*) FROM `ojo_eviction_addresses.case` t LEFT JOIN `ojo-database.ojo_eviction_addresses.address` a ON t.id = a.case WHERE a.case IS NULL')) |>
+    dbGetQuery(db, glue('SELECT COUNT(*) FROM eviction_addresses.case t LEFT JOIN eviction_addresses.address a ON t.id = a.case WHERE a.case IS NULL')) |>
       pull()
   })
 
   documents <- reactive({
     current_case <- current_case()
 
-    query <- glue('SELECT * FROM `ojo_eviction_addresses.document` t WHERE t.case = \'{current_case}\'')
+    query <- glue('SELECT * FROM eviction_addresses.document t WHERE t.case = \'{current_case}\'')
 
     dbGetQuery(db, query)
   })
@@ -513,7 +505,7 @@ function(input, output, session) {
         updated_at = now()
       )
       
-      write_status <- dbWriteTable(db, "address", value = new_row, append = T, overwrite = T)
+      write_status <- dbWriteTable(db, "eviction-addresses.address", value = new_row, append = T, overwrite = T)
       
       if(write_status == T) {
         message("Successfully wrote a new row")
