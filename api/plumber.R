@@ -59,6 +59,7 @@ ojodb <- pool::dbPool(odbc::odbc(),
 #* Refreshes materialized views
 #* @get /refresh
 function(res) {
+  ## Refresh both materialized views to ingest new eviction cases and minutes
   refresh_cases_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_evictions"
   refresh_minutes_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_eviction_minutes"
   
@@ -66,6 +67,16 @@ function(res) {
   cli_alert_info("Cases refreshed: {cases_res} rows affected")
   minutes_res <- dbExecute(ojodb, refresh_minutes_query)
   cli_alert_info("Minutes refreshed: {minutes_res} rows affected")
+  
+  ## Check whether there are new cases
+  new_cases_query <- 'SELECT DISTINCT(rte.id) FROM eviction_addresses.recent_tulsa_evictions rte LEFT JOIN eviction_addresses."case" c ON rte.id = c.id WHERE c.id IS NULL;'
+  new_cases <- dbGetQuery(ojodb, new_cases_query)
+  cli_alert_info("Found {nrow(new_cases)} new cases")
+  
+  #Check whether there are new minutes
+  new_minutes_query <- 'SELECT DISTINCT(rtem.id) FROM eviction_addresses.recent_tulsa_eviction_minutes rtem LEFT JOIN eviction_addresses."document" d ON rtem."minute" = d.id WHERE d.id IS NULL;'
+  new_minutes <- dbGetQuery(ojodb, new_minutes_query)
+  cli_alert_info("Found {nrow(new_minutes)} new minutes")
   
   return()
 }
