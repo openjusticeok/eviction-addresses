@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.1.2",
+    "Version": "4.1.3",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -1442,11 +1442,11 @@
       "Version": "2.0.1",
       "Source": "GitHub",
       "RemoteType": "github",
+      "RemoteHost": "api.github.com",
       "RemoteUsername": "openjusticeok",
       "RemoteRepo": "ojodb",
       "RemoteRef": "main",
       "RemoteSha": "fdfc27cd7af2585c81b64a79602957dc3d426e52",
-      "RemoteHost": "api.github.com",
       "Hash": "d37f8030528ac4ed738dfefeacf44911",
       "Requirements": [
         "DBI",
