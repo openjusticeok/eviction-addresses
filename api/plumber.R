@@ -20,7 +20,6 @@ library(dbx)
 
 options(gargle_verbosity = "debug")
 plan("multisession")
-googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
 
 if(Sys.getenv("PORT") == "") Sys.setenv(PORT = 8000)
 
@@ -133,6 +132,8 @@ function(res) {
 #* @get /hydrate
 function(res) {
   promises::future_promise({
+    googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
+    
     ojodb <- pool::dbPool(odbc::odbc(),
                           Driver = connection_args$driver,
                           Server = connection_args$server,
