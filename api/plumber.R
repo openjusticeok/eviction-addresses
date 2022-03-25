@@ -53,7 +53,7 @@ ojodb <- pool::dbPool(odbc::odbc(),
 #* Ping to show server is there
 #* @get /ping
 function() {
-  log_success("Pong")
+  log_success("pong")
   return()
 }
 
