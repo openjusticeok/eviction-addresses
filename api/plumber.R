@@ -19,7 +19,8 @@ library(dbx)
 library(logger)
 
 options(gargle_verbosity = "debug")
-options(future.globals.onReference = "error")
+#options(future.globals.onReference = "error")
+options(future.globals.seed = TRUE)
 plan("multisession")
 
 if(Sys.getenv("PORT") == "") {
@@ -45,10 +46,10 @@ ojodb <- pool::dbPool(odbc::odbc(),
              )
 )
 
-#res <- ojodb|>
-#	dbGetQuery("select * from pg_stat_ssl where pid = pg_backend_pid();")
+res <- ojodb|>
+dbGetQuery("select * from pg_stat_ssl where pid = pg_backend_pid();")
 
-#log_info("{res}")
+log_info("{res}")
 
 #* Ping to show server is there
 #* @get /ping
@@ -57,6 +58,69 @@ function() {
   return()
 }
 
+#* Ping to show db is there
+#* @get /dbping
+function() {
+  connection_args <- config::get('database')
+  ojodb <- pool::dbPool(odbc::odbc(),
+                        Driver = connection_args$driver,
+                        Server = connection_args$server,
+                        Database = connection_args$database,
+                        Port = connection_args$port,
+                        Username = connection_args$uid,
+                        Password = connection_args$pwd,
+                        SSLmode = "verify-ca",
+                        Pqopt = stringr::str_glue(
+                          "{sslrootcert={{connection_args$ssl.ca}}",
+                          "sslcert={{connection_args$ssl.cert}}",
+                          "sslkey={{connection_args$ssl.key}}}",
+                          .open = "{{",
+                          .close = "}}",
+                          .sep = " "
+                        )
+  )
+  on.exit(pool::poolClose(ojodb))
+  
+  log_success("db pong")
+  return()
+}
+
+#* Ping to show db is there
+#* @get /dbpingfuture
+function() {
+  p <- future_promise({
+  connection_args <- config::get('database')
+  ojodb <- pool::dbPool(odbc::odbc(),
+                        Driver = connection_args$driver,
+                        Server = connection_args$server,
+                        Database = connection_args$database,
+                        Port = connection_args$port,
+                        Username = connection_args$uid,
+                        Password = connection_args$pwd,
+                        SSLmode = "verify-ca",
+                        Pqopt = stringr::str_glue(
+                          "{sslrootcert={{connection_args$ssl.ca}}",
+                          "sslcert={{connection_args$ssl.cert}}",
+                          "sslkey={{connection_args$ssl.key}}}",
+                          .open = "{{",
+                          .close = "}}",
+                          .sep = " "
+                        )
+  )
+  on.exit(pool::poolClose(ojodb))
+  
+  Sys.sleep(10)
+  },
+  seed = TRUE) |>
+    then(
+      function() {
+        log_success("long db pong")
+        return()
+      }
+    )
+  
+  return()
+}
 
 #* Refreshes materialized views
 #* @get /refresh
@@ -113,8 +177,9 @@ function(res) {
 #* Calls the database for eviction cases in Tulsa with no address. Store them in a BigQuery table
 #* @get /hydrate
 function(res) {
+  promises::future_promise({
   query <- sql("SELECT id, link FROM eviction_addresses.document WHERE internal_link IS NULL ORDER BY created_at;")
-  links <- dbGetQuery(ojodb, query)
+  links <- DBI::dbGetQuery(ojodb, query)
   
   if(nrow(links) == 0) {
     msg <- "No new documents to retrieve"
@@ -147,12 +212,13 @@ function(res) {
     log_success("Got public link {i}")
     query <- glue_sql('UPDATE eviction_addresses."document" SET internal_link = {internal_link}, updated_at = current_timestamp WHERE id = {links[i, "id"]};',
                       .con = ojodb)
-    dbExecute(ojodb, query)
+    DBI::dbExecute(ojodb, query)
 
     log_success("Completed link {i}/{nrow(links)}")
   }
   
   return()
+  })
 }
 
 
@@ -169,7 +235,7 @@ function() {
   #   head(1) |>
   #   collect()
   
-  res <- dbGetQuery(
+  res <- pool::dbGetQuery(
     ojodb,
     sql("SELECT id FROM eviction_addresses.case ORDER BY RANDOM() LIMIT 1;")
   )
