@@ -11,46 +11,49 @@ library(ojodb)
 library(bigrquery)
 library(googleCloudRunner)
 library(googleCloudStorageR)
-library(cli)
 library(here)
 library(config)
 library(odbc)
 library(dbplyr)
 library(dbx)
+library(logger)
 
 options(gargle_verbosity = "debug")
+options(future.globals.onReference = "error")
 plan("multisession")
 
-if(Sys.getenv("PORT") == "") Sys.setenv(PORT = 8000)
+if(Sys.getenv("PORT") == "") {
+  Sys.setenv(PORT = 8000)
+}
 
 connection_args <- config::get('database')
 ojodb <- pool::dbPool(odbc::odbc(),
-                      Driver = connection_args$driver,
-                      Server = connection_args$server,
-                      Database = connection_args$database,
-                      Port = connection_args$port,
-                      Username = connection_args$uid,
-                      Password = connection_args$pwd,
-                      SSLmode = "verify-ca",
-                      Pqopt = stringr::str_glue(
-                        "{sslrootcert={{connection_args$ssl.ca}}",
-                        "sslcert={{connection_args$ssl.cert}}",
-                        "sslkey={{connection_args$ssl.key}}}",
-                        .open = "{{",
-                        .close = "}}",
-                        .sep = " "
-                      )
+             Driver = connection_args$driver,
+             Server = connection_args$server,
+             Database = connection_args$database,
+             Port = connection_args$port,
+             Username = connection_args$uid,
+             Password = connection_args$pwd,
+             SSLmode = "verify-ca",
+             Pqopt = stringr::str_glue(
+               "{sslrootcert={{connection_args$ssl.ca}}",
+               "sslcert={{connection_args$ssl.cert}}",
+               "sslkey={{connection_args$ssl.key}}}",
+               .open = "{{",
+               .close = "}}",
+               .sep = " "
+             )
 )
-on.exit(poolClose(ojodb))
 
-#res <- ojodb |>
+#res <- ojodb|>
 #	dbGetQuery("select * from pg_stat_ssl where pid = pg_backend_pid();")
 
-#cli_alert_info("{res}")
+#log_info("{res}")
 
 #* Ping to show server is there
 #* @get /ping
 function() {
+  log_success("Pong")
   return()
 }
 
@@ -58,144 +61,98 @@ function() {
 #* Refreshes materialized views
 #* @get /refresh
 function(res) {
-  promises::future_promise({
-    
-    ojodb <- pool::dbPool(odbc::odbc(),
-                          Driver = connection_args$driver,
-                          Server = connection_args$server,
-                          Database = connection_args$database,
-                          Port = connection_args$port,
-                          Username = connection_args$uid,
-                          Password = connection_args$pwd,
-                          SSLmode = "verify-ca",
-                          Pqopt = stringr::str_glue(
-                            "{sslrootcert={{connection_args$ssl.ca}}",
-                            "sslcert={{connection_args$ssl.cert}}",
-                            "sslkey={{connection_args$ssl.key}}}",
-                            .open = "{{",
-                            .close = "}}",
-                            .sep = " "
-                          )
-    )
-    on.exit(poolClose(ojodb))
-    ## Refresh both materialized views to ingest new eviction cases and minutes
-    refresh_cases_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_evictions;"
-    refresh_minutes_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_eviction_minutes;"
+  ## Refresh both materialized views to ingest new eviction cases and minutes
+  refresh_cases_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_evictions;"
+  refresh_minutes_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_eviction_minutes;"
+
+  log_info("Starting case refresh")
+  cases_res <- dbExecute(ojodb, refresh_cases_query)
+  log_success("Cases refreshed: {cases_res} rows affected")
   
-    cli_alert_info("Starting case refresh")
-    cases_res <- dbExecute(ojodb, refresh_cases_query)
-    cli_alert_success("Cases refreshed: {cases_res} rows affected")
-    
-    cli_alert_info("Starting minute refresh")
-    minutes_res <- dbExecute(ojodb, refresh_minutes_query)
-    cli_alert_success("Minutes refreshed: {minutes_res} rows affected")
-    
-    ## Check whether there are new cases
-    new_cases_query <- sql('SELECT DISTINCT(rte.id), rte.district, rte.case_type, rte.case_number, rte.date_filed, current_timestamp AS created_at, current_timestamp AS updated_at FROM eviction_addresses.recent_tulsa_evictions rte LEFT JOIN eviction_addresses."case" c ON rte.id = c.id WHERE c.id IS NULL;')
-    cli_alert_info("Finding new cases")
-    new_cases <- dbGetQuery(ojodb, new_cases_query)
-    num_new_cases <- nrow(new_cases)
-    cli_alert_info("Found {num_new_cases} new cases")
-    
-    ## Insert new cases into case table
-    if(num_new_cases >= 1) {
-      dbAppendTable(
-        conn = ojodb,
-        name = Id(schema = "eviction_addresses", table = "case"),
-        value = new_cases
-      )
-      cli_alert_success("Inserted {num_new_cases} new cases to table eviction_addresses.case")
-    }
-    
-    #Check whether there are new minutes
-    new_minutes_query <- sql('SELECT DISTINCT(rtem.id), rtem."case", rtem.description, rtem.link, NULL AS internal_link, current_timestamp AS created_at, current_timestamp AS updated_at FROM eviction_addresses.recent_tulsa_eviction_minutes rtem LEFT JOIN eviction_addresses."document" d ON rtem.id = d.id WHERE d.id IS NULL;')
-    cli_alert_info("Finding new minutes")
-    new_minutes <- dbGetQuery(ojodb, new_minutes_query)
-    num_new_minutes <- nrow(new_minutes)
-    cli_alert_info("Found {num_new_minutes} new minutes")
-    
-    if(num_new_minutes >= 1) {
-      dbAppendTable(
-        conn = ojodb,
-        name = Id(schema = "eviction_addresses", table = "document"),
-        value = new_minutes
-      )
-      cli_alert_success("Inserted {num_new_minutes} new document minutes to table eviction_addresses.document")
-    }
-    
-    return()
-  })
+  log_info("Starting minute refresh")
+  minutes_res <- dbExecute(ojodb, refresh_minutes_query)
+  log_success("Minutes refreshed: {minutes_res} rows affected")
+  
+  ## Check whether there are new cases
+  new_cases_query <- sql('SELECT DISTINCT(rte.id), rte.district, rte.case_type, rte.case_number, rte.date_filed, current_timestamp AS created_at, current_timestamp AS updated_at FROM eviction_addresses.recent_tulsa_evictions rte LEFT JOIN eviction_addresses."case" c ON rte.id = c.id WHERE c.id IS NULL;')
+  log_info("Finding new cases")
+  new_cases <- dbGetQuery(ojodb, new_cases_query)
+  num_new_cases <- nrow(new_cases)
+  log_info("Found {num_new_cases} new cases")
+  
+  ## Insert new cases into case table
+  if(num_new_cases >= 1) {
+    dbAppendTable(
+      conn = ojodb,
+      name = Id(schema = "eviction_addresses", table = "case"),
+      value = new_cases
+    )
+    log_success("Inserted {num_new_cases} new cases to table eviction_addresses.case")
+  }
+  
+  #Check whether there are new minutes
+  new_minutes_query <- sql('SELECT DISTINCT(rtem.id), rtem."case", rtem.description, rtem.link, NULL AS internal_link, current_timestamp AS created_at, current_timestamp AS updated_at FROM eviction_addresses.recent_tulsa_eviction_minutes rtem LEFT JOIN eviction_addresses."document" d ON rtem.id = d.id WHERE d.id IS NULL;')
+  log_info("Finding new minutes")
+  new_minutes <- dbGetQuery(ojodb, new_minutes_query)
+  num_new_minutes <- nrow(new_minutes)
+  log_info("Found {num_new_minutes} new minutes")
+  
+  if(num_new_minutes >= 1) {
+    dbAppendTable(
+      conn = ojodb,
+      name = Id(schema = "eviction_addresses", table = "document"),
+      value = new_minutes
+    )
+    log_success("Inserted {num_new_minutes} new document minutes to table eviction_addresses.document")
+  }
+  
+  return()
 }
 
 
 #* Calls the database for eviction cases in Tulsa with no address. Store them in a BigQuery table
 #* @get /hydrate
 function(res) {
-  promises::future_promise({
-    googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
-    
-    ojodb <- pool::dbPool(odbc::odbc(),
-                          Driver = connection_args$driver,
-                          Server = connection_args$server,
-                          Database = connection_args$database,
-                          Port = connection_args$port,
-                          Username = connection_args$uid,
-                          Password = connection_args$pwd,
-                          SSLmode = "verify-ca",
-                          Pqopt = stringr::str_glue(
-                            "{sslrootcert={{connection_args$ssl.ca}}",
-                            "sslcert={{connection_args$ssl.cert}}",
-                            "sslkey={{connection_args$ssl.key}}}",
-                            .open = "{{",
-                            .close = "}}",
-                            .sep = " "
-                          )
-    )
-    on.exit(poolClose(ojodb))
-    
-    query <- sql("SELECT id, link FROM eviction_addresses.document WHERE internal_link IS NULL ORDER BY created_at;")
-    links <- dbGetQuery(ojodb, query)
-    
-    if(nrow(links) == 0) {
-      msg <- "No new documents to retrieve"
-      cli_alert_info(msg)
-      res$status <- 200
-      return(list(status = "success", message = msg))
-    }
-    
-    cli_progress_bar("Downloading and storing documents", total = nrow(links))
-    for(i in 1:nrow(links)) {
-      cli_alert_info("Starting link {i}")
-      document <- GET(links[i, "link"]) |>
-        pluck(content)
-      if(anyNA(document)) {
-        cli_alert_info('No pdf found at {links[i, "link"]}')
-        next()
-      }
-      cli_alert_success("Got pdf content {i}")
-      upload <- gcs_upload(document,
-                           name = links[i, "id"],
-                           bucket = "eviction-addresses",
-                           type = "application/pdf",
-                           object_function = function(input, output) {
-                             write_file(input, output)
-                           },
-                           predefinedAcl = "bucketLevel")
-      cli_alert_success("Uploaded pdf {i}")
-      internal_link <- gcs_download_url(links[i, "id"],
-                                        bucket = "eviction-addresses",
-                                        public = T)
-      cli_alert_success("Got public link {i}")
-      query <- glue_sql('UPDATE eviction_addresses."document" SET internal_link = {internal_link}, updated_at = current_timestamp WHERE id = {links[i, "id"]};',
-                        .con = ojodb)
-      dbExecute(ojodb, query)
+  query <- sql("SELECT id, link FROM eviction_addresses.document WHERE internal_link IS NULL ORDER BY created_at;")
+  links <- dbGetQuery(ojodb, query)
   
-      cli_alert_success("Completed link {i}/{nrow(links)}")
-      cli_progress_update()
+  if(nrow(links) == 0) {
+    msg <- "No new documents to retrieve"
+    log_info(msg)
+    res$status <- 200
+    return(list(status = "success", message = msg))
+  }
+  
+  for(i in 1:nrow(links)) {
+    log_info("Starting link {i}")
+    document <- GET(links[i, "link"]) |>
+      pluck(content)
+    if(anyNA(document)) {
+      log_info('No pdf found at {links[i, "link"]}')
+      next()
     }
-    
-    return()
-  })
+    log_success("Got pdf content {i}")
+    upload <- gcs_upload(document,
+                         name = links[i, "id"],
+                         bucket = "eviction-addresses",
+                         type = "application/pdf",
+                         object_function = function(input, output) {
+                           write_file(input, output)
+                         },
+                         predefinedAcl = "bucketLevel")
+    log_success("Uploaded pdf {i}")
+    internal_link <- gcs_download_url(links[i, "id"],
+                                      bucket = "eviction-addresses",
+                                      public = T)
+    log_success("Got public link {i}")
+    query <- glue_sql('UPDATE eviction_addresses."document" SET internal_link = {internal_link}, updated_at = current_timestamp WHERE id = {links[i, "id"]};',
+                      .con = ojodb)
+    dbExecute(ojodb, query)
+
+    log_success("Completed link {i}/{nrow(links)}")
+  }
+  
+  return()
 }
 
 
@@ -214,9 +171,10 @@ function() {
   
   res <- dbGetQuery(
     ojodb,
-    "SELECT id FROM eviction_addresses.case ORDER BY RANDOM() LIMIT 1;"
+    sql("SELECT id FROM eviction_addresses.case ORDER BY RANDOM() LIMIT 1;")
   )
-
+  
+  log_success("Got new case number")
   return(res)
 }
 
