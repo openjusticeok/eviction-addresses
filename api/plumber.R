@@ -70,36 +70,36 @@ function() {
 #* Ping to show db is there
 #* @get /dbpingfuture
 function() {
-  p <- future_promise({
-  connection_args <- config::get('database')
-  ojodb <- pool::dbPool(odbc::odbc(),
-                        Driver = connection_args$driver,
-                        Server = connection_args$server,
-                        Database = connection_args$database,
-                        Port = connection_args$port,
-                        Username = connection_args$uid,
-                        Password = connection_args$pwd,
-                        SSLmode = "verify-ca",
-                        Pqopt = stringr::str_glue(
-                          "{sslrootcert={{connection_args$ssl.ca}}",
-                          "sslcert={{connection_args$ssl.cert}}",
-                          "sslkey={{connection_args$ssl.key}}}",
-                          .open = "{{",
-                          .close = "}}",
-                          .sep = " "
-                        )
-  )
-  on.exit(pool::poolClose(ojodb))
-  
-  Sys.sleep(10)
-  },
-  seed = TRUE) |>
-    then(
-      function() {
-        log_success("long db pong")
-        return()
-      }
+  future_promise({
+    connection_args <- config::get('database')
+    ojodb <- pool::dbPool(odbc::odbc(),
+                          Driver = connection_args$driver,
+                          Server = connection_args$server,
+                          Database = connection_args$database,
+                          Port = connection_args$port,
+                          Username = connection_args$uid,
+                          Password = connection_args$pwd,
+                          SSLmode = "verify-ca",
+                          Pqopt = stringr::str_glue(
+                            "{sslrootcert={{connection_args$ssl.ca}}",
+                            "sslcert={{connection_args$ssl.cert}}",
+                            "sslkey={{connection_args$ssl.key}}}",
+                            .open = "{{",
+                            .close = "}}",
+                            .sep = " "
+                          )
     )
+    on.exit(pool::poolClose(ojodb))
+    
+    Sys.sleep(10)
+    },
+    seed = TRUE) |>
+      then(
+        function() {
+          log_success("long db pong")
+          return()
+        }
+      )
   
   return()
 }
