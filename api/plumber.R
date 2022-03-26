@@ -27,29 +27,36 @@ if(Sys.getenv("PORT") == "") {
   Sys.setenv(PORT = 8000)
 }
 
-connection_args <- config::get('database')
-ojodb <- pool::dbPool(odbc::odbc(),
-             Driver = connection_args$driver,
-             Server = connection_args$server,
-             Database = connection_args$database,
-             Port = connection_args$port,
-             Username = connection_args$uid,
-             Password = connection_args$pwd,
-             SSLmode = "verify-ca",
-             Pqopt = stringr::str_glue(
-               "{sslrootcert={{connection_args$ssl.ca}}",
-               "sslcert={{connection_args$ssl.cert}}",
-               "sslkey={{connection_args$ssl.key}}}",
-               .open = "{{",
-               .close = "}}",
-               .sep = " "
-             )
-)
+create_pool <- function(connection_args) {
+  new_pool <- pool::dbPool(odbc::odbc(),
+                        Driver = connection_args$driver,
+                        Server = connection_args$server,
+                        Database = connection_args$database,
+                        Port = connection_args$port,
+                        Username = connection_args$uid,
+                        Password = connection_args$pwd,
+                        SSLmode = "verify-ca",
+                        Pqopt = stringr::str_glue(
+                          "{sslrootcert={{connection_args$ssl.ca}}",
+                          "sslcert={{connection_args$ssl.cert}}",
+                          "sslkey={{connection_args$ssl.key}}}",
+                          .open = "{{",
+                          .close = "}}",
+                          .sep = " "
+                        )
+  )
+  return(new_pool)
+}
 
-res <- ojodb|>
+connection_args <- config::get('database')
+ojodb <- create_pool(connection_args)
+#on.exit(pool::poolClose(ojodb))
+
+res <- ojodb |>
 dbGetQuery("select * from pg_stat_ssl where pid = pg_backend_pid();")
 
 log_info("{res}")
+
 
 #* Ping to show server is there
 #* @get /ping
@@ -71,27 +78,13 @@ function() {
 #* @get /dbpingfuture
 function() {
   future_promise({
-    connection_args <- config::get('database')
-    ojodb <- pool::dbPool(odbc::odbc(),
-                          Driver = connection_args$driver,
-                          Server = connection_args$server,
-                          Database = connection_args$database,
-                          Port = connection_args$port,
-                          Username = connection_args$uid,
-                          Password = connection_args$pwd,
-                          SSLmode = "verify-ca",
-                          Pqopt = stringr::str_glue(
-                            "{sslrootcert={{connection_args$ssl.ca}}",
-                            "sslcert={{connection_args$ssl.cert}}",
-                            "sslkey={{connection_args$ssl.key}}}",
-                            .open = "{{",
-                            .close = "}}",
-                            .sep = " "
-                          )
-    )
+    ojodb <- create_pool(connection_args)
     on.exit(pool::poolClose(ojodb))
     
+    test <- dbGetQuery(ojodb, "SELECT NULL as n")
+    log_info("Going to sleep now")
     Sys.sleep(10)
+    return()
     },
     seed = TRUE) |>
       then(
@@ -160,46 +153,49 @@ function(res) {
 #* @get /hydrate
 function(res) {
   promises::future_promise({
-  query <- sql("SELECT id, link FROM eviction_addresses.document WHERE internal_link IS NULL ORDER BY created_at;")
-  links <- DBI::dbGetQuery(ojodb, query)
-  
-  if(nrow(links) == 0) {
-    msg <- "No new documents to retrieve"
-    log_info(msg)
-    res$status <- 200
-    return(list(status = "success", message = msg))
-  }
-  
-  for(i in 1:nrow(links)) {
-    log_info("Starting link {i}")
-    document <- GET(links[i, "link"]) |>
-      pluck(content)
-    if(anyNA(document)) {
-      log_info('No pdf found at {links[i, "link"]}')
-      next()
+    ojodb <- create_pool(connection_args)
+    on.exit(pool::poolClose(ojodb))
+    
+    query <- sql("SELECT id, link FROM eviction_addresses.document WHERE internal_link IS NULL ORDER BY created_at;")
+    links <- DBI::dbGetQuery(ojodb, query)
+    
+    if(nrow(links) == 0) {
+      msg <- "No new documents to retrieve"
+      log_info(msg)
+      res$status <- 200
+      return(list(status = "success", message = msg))
     }
-    log_success("Got pdf content {i}")
-    upload <- gcs_upload(document,
-                         name = links[i, "id"],
-                         bucket = "eviction-addresses",
-                         type = "application/pdf",
-                         object_function = function(input, output) {
-                           write_file(input, output)
-                         },
-                         predefinedAcl = "bucketLevel")
-    log_success("Uploaded pdf {i}")
-    internal_link <- gcs_download_url(links[i, "id"],
-                                      bucket = "eviction-addresses",
-                                      public = T)
-    log_success("Got public link {i}")
-    query <- glue_sql('UPDATE eviction_addresses."document" SET internal_link = {internal_link}, updated_at = current_timestamp WHERE id = {links[i, "id"]};',
-                      .con = ojodb)
-    DBI::dbExecute(ojodb, query)
-
-    log_success("Completed link {i}/{nrow(links)}")
-  }
+    
+    for(i in 1:nrow(links)) {
+      log_info("Starting link {i}")
+      document <- GET(links[i, "link"]) |>
+        pluck(content)
+      if(anyNA(document)) {
+        log_info('No pdf found at {links[i, "link"]}')
+        next()
+      }
+      log_success("Got pdf content {i}")
+      upload <- gcs_upload(document,
+                           name = links[i, "id"],
+                           bucket = "eviction-addresses",
+                           type = "application/pdf",
+                           object_function = function(input, output) {
+                             write_file(input, output)
+                           },
+                           predefinedAcl = "bucketLevel")
+      log_success("Uploaded pdf {i}")
+      internal_link <- gcs_download_url(links[i, "id"],
+                                        bucket = "eviction-addresses",
+                                        public = T)
+      log_success("Got public link {i}")
+      query <- glue_sql('UPDATE eviction_addresses."document" SET internal_link = {internal_link}, updated_at = current_timestamp WHERE id = {links[i, "id"]};',
+                        .con = ojodb)
+      DBI::dbExecute(ojodb, query)
   
-  return()
+      log_success("Completed link {i}/{nrow(links)}")
+    }
+    
+    return()
   })
 }
 
