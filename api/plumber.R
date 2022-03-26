@@ -28,6 +28,7 @@ if(Sys.getenv("PORT") == "") {
   Sys.setenv(PORT = 8000)
 }
 
+log_threshold("DEBUG")
 log_appender(appender_tee("test.log"))
 
 create_pool <- function(connection_args) {
@@ -61,7 +62,16 @@ postgrid_key_type <- function(key) {
   }
 }
 
-log_debug("[CONFIG]: Active config is {Sys.getenv('R_CONFIG_ACTIVE')}")
+active_config <- function() {
+  ac <- Sys.getenv("R_CONFIG_ACTIVE")
+  if(ac == "") {
+    return("default")
+  } else {
+    return(ac)
+  }
+}
+
+log_debug("[CONFIG]: Active config is {active_config()}")
 
 postgrid_args <- config::get('postgrid')
 
@@ -251,10 +261,6 @@ function(res) {
 }
 
 
-# Serving the client:
-# The only data going back and forth is a GET call to plumber which provides the client with case info, a link to the case-specific OSCN page, and an image of the Forcible Entry and Detainer (FED) document.
-# Then a POST call which delivers an address to the api for storage.
-
 #* Get a new case that has no address, return its id
 #* @get /case
 #* @serializer text
@@ -266,10 +272,11 @@ function() {
   
   res <- pool::dbGetQuery(
     ojodb,
-    sql("SELECT id FROM eviction_addresses.case ORDER BY RANDOM() LIMIT 1;")
+    #sql("SELECT id FROM eviction_addresses.case ORDER BY RANDOM() LIMIT 1;")
+    sql('SELECT "case" FROM eviction_addresses.document WHERE internal_link IS NOT NULL ORDER BY RANDOM() LIMIT 1;')
   )
   
-  log_success("Served new case number to client")
+  log_trace("Served new case number to client")
   return(res)
 }
 
@@ -300,6 +307,7 @@ function(street_num = "", street_dir = "", street_name = "", street_type = "",
     body <- content(res, as = "parsed", type = "application/json")
     if(body$status != "success") {
       log_error("[PostGrid]: {body$status}")
+      stop()
     }
     
     log_info("[PostGrid]: {body$message}")
@@ -307,7 +315,6 @@ function(street_num = "", street_dir = "", street_name = "", street_type = "",
     
     num_parsing_errors <- length(body$data$errors)
     if(num_parsing_errors != 0) {
-      
       log_error("[PostGrid]: {num_parsing_errors} error(s)")
       log_error("[Postgrid]: {body$data$errors |> unlist()}")
     }
@@ -337,6 +344,7 @@ function(street_num = "", street_dir = "", street_name = "", street_type = "",
       vacant = body$data$details$vacant,
       firm_name = body$data$firmName
     )
+    
   }
   
   #address <- fromJSON(address)
@@ -359,6 +367,5 @@ function(street_num = "", street_dir = "", street_name = "", street_type = "",
     parse_postgrid_response()
   
   return(parsed_res)
-  
 }
 
