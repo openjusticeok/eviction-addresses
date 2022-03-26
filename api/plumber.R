@@ -17,6 +17,7 @@ library(odbc)
 library(dbplyr)
 library(dbx)
 library(logger)
+library(jsonlite)
 
 options(gargle_verbosity = "debug")
 #options(future.globals.onReference = "error")
@@ -49,6 +50,22 @@ create_pool <- function(connection_args) {
   )
   return(new_pool)
 }
+
+postgrid_key_type <- function(key) {
+  if(str_detect(key, "^test")) {
+    return("test")
+  } else if(str_detect(key, "^live")) {
+    return("live")
+  } else {
+    return(NULL)
+  }
+}
+
+log_debug("[CONFIG]: Active config is {Sys.getenv('R_CONFIG_ACTIVE')}")
+
+postgrid_args <- config::get('postgrid')
+
+log_debug("[CONFIG]: Postgrid API key is set to '{postgrid_key_type(postgrid_args$key)}'")
 
 connection_args <- config::get('database')
 ojodb <- create_pool(connection_args)
@@ -269,9 +286,79 @@ function() {
 function(street_num = "", street_dir = "", street_name = "", street_type = "",
          unit = "", city = "", state = "", zip = "") {
   
-  street <- str_c(street_num, street_dir, street_name, street_type, sep = " ")
-  rusps::validate_address_usps(street = street, city = city, state = state, username = "952OKPOL2725")
-
-  #ggmap::geocode(str_c(street, city, state, zip, sep = " "), source = "google", output = "all")
+  address <- list()
+  address$line1 <- str_c(street_num, street_dir, street_name, street_type, sep = " ")
+  address$line2 <- unit
+  address$city <- city
+  address$provinceOrState <- state
+  address$postalOrZip <- zip
+  address$country <- "us"
+  
+  #### Postgrid ####
+  
+  parse_postgrid_response <- function(res) {
+    body <- content(res, as = "parsed", type = "application/json")
+    if(body$status != "success") {
+      log_error("[PostGrid]: {body$status}")
+    }
+    
+    log_info("[PostGrid]: {body$message}")
+    log_info("[PostGrid]: {body$data$status}")
+    
+    num_parsing_errors <- length(body$data$errors)
+    if(num_parsing_errors != 0) {
+      
+      log_error("[PostGrid]: {num_parsing_errors} error(s)")
+      log_error("[Postgrid]: {body$data$errors |> unlist()}")
+    }
+    
+    parsed_address <- list(
+      line1 = body$data$line1,
+      line2 = body$data$line2,
+      streetName = body$data$details$streetName,
+      streetType = body$data$details$streetType,
+      streetDirection = body$data$details$streetDirection,
+      preDirection = body$data$details$preDirection,
+      streetNumber = body$data$details$streetNumber,
+      suiteID = body$data$details$suiteID,
+      suiteKey = body$data$details$suiteKey,
+      city = body$data$city,
+      county = body$data$details$county,
+      state = body$data$provinceOrState,
+      country_code = body$data$country,
+      country_name = body$data$countryName,
+      zip = body$data$postalOrZip,
+      zip4 = body$data$zipPlus4,
+      lat = body$data$geocodeResult$location$lat,
+      lon = body$data$geocodeResult$location$lng,
+      geo_accuracy = body$data$geocodeResult$accuracy,
+      geo_accuracy_type = body$data$geocodeResult$accuracyType,
+      residential = body$data$details$residential,
+      vacant = body$data$details$vacant,
+      firm_name = body$data$firmName
+    )
+  }
+  
+  #address <- fromJSON(address)
+  
+  req_body <- list(
+    address = address
+  ) |>
+    toJSON(auto_unbox = T)
+  
+  url <- "https://api.postgrid.com/v1/addver/verifications?includeDetails=true&geocode=true"
+  res <- POST(
+    url,
+    add_headers(`x-api-key` = postgrid_args$key),
+    content_type_json(),
+    accept_json(),
+    body = req_body,
+    encode = "form"
+  )
+  parsed_res <- res |>
+    parse_postgrid_response()
+  
+  return(parsed_res)
+  
 }
 
