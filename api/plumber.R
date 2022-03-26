@@ -80,6 +80,8 @@ function() {
 #* @get /dbpingfuture
 function() {
   future_promise({
+    log_appender(appender_tee("test.log"))
+    
     ojodb <- create_pool(connection_args)
     on.exit(pool::poolClose(ojodb))
     
@@ -103,6 +105,8 @@ function() {
 #* @get /refresh
 function(res) {
   future_promise({
+    log_appender(appender_tee("test.log"))
+    
     ojodb <- create_pool(connection_args)
     on.exit(pool::poolClose(ojodb))
     
@@ -169,6 +173,8 @@ function(res) {
 #* @get /hydrate
 function(res) {
   promises::future_promise({
+    
+    log_appender(appender_tee("test.log"))
     
     googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
     
