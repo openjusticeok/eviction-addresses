@@ -27,6 +27,8 @@ if(Sys.getenv("PORT") == "") {
   Sys.setenv(PORT = 8000)
 }
 
+log_appender(appender_tee("test.log"))
+
 create_pool <- function(connection_args) {
   new_pool <- pool::dbPool(odbc::odbc(),
                         Driver = connection_args$driver,
@@ -52,10 +54,10 @@ connection_args <- config::get('database')
 ojodb <- create_pool(connection_args)
 #on.exit(pool::poolClose(ojodb))
 
-res <- ojodb |>
-dbGetQuery("select * from pg_stat_ssl where pid = pg_backend_pid();")
-
-log_info("{res}")
+# res <- ojodb |>
+# dbGetQuery("select * from pg_stat_ssl where pid = pg_backend_pid();")
+# 
+# log_info("{res}")
 
 
 #* Ping to show server is there
@@ -100,50 +102,64 @@ function() {
 #* Refreshes materialized views
 #* @get /refresh
 function(res) {
-  ## Refresh both materialized views to ingest new eviction cases and minutes
-  refresh_cases_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_evictions;"
-  refresh_minutes_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_eviction_minutes;"
-
-  log_info("Starting case refresh")
-  cases_res <- dbExecute(ojodb, refresh_cases_query)
-  log_success("Cases refreshed: {cases_res} rows affected")
+  future_promise({
+    ojodb <- create_pool(connection_args)
+    on.exit(pool::poolClose(ojodb))
+    
+    ## Refresh both materialized views to ingest new eviction cases and minutes
+    refresh_cases_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_evictions;"
+    refresh_minutes_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_eviction_minutes;"
   
-  log_info("Starting minute refresh")
-  minutes_res <- dbExecute(ojodb, refresh_minutes_query)
-  log_success("Minutes refreshed: {minutes_res} rows affected")
-  
-  ## Check whether there are new cases
-  new_cases_query <- sql('SELECT DISTINCT(rte.id), rte.district, rte.case_type, rte.case_number, rte.date_filed, current_timestamp AS created_at, current_timestamp AS updated_at FROM eviction_addresses.recent_tulsa_evictions rte LEFT JOIN eviction_addresses."case" c ON rte.id = c.id WHERE c.id IS NULL;')
-  log_info("Finding new cases")
-  new_cases <- dbGetQuery(ojodb, new_cases_query)
-  num_new_cases <- nrow(new_cases)
-  log_info("Found {num_new_cases} new cases")
-  
-  ## Insert new cases into case table
-  if(num_new_cases >= 1) {
-    dbAppendTable(
-      conn = ojodb,
-      name = Id(schema = "eviction_addresses", table = "case"),
-      value = new_cases
+    log_info("Starting case refresh")
+    cases_res <- dbExecute(ojodb, refresh_cases_query)
+    log_success("Cases refreshed: {cases_res} rows affected")
+    
+    log_info("Starting minute refresh")
+    minutes_res <- dbExecute(ojodb, refresh_minutes_query)
+    log_success("Minutes refreshed: {minutes_res} rows affected")
+    
+    ## Check whether there are new cases
+    new_cases_query <- sql('SELECT DISTINCT(rte.id), rte.district, rte.case_type, rte.case_number, rte.date_filed, current_timestamp AS created_at, current_timestamp AS updated_at FROM eviction_addresses.recent_tulsa_evictions rte LEFT JOIN eviction_addresses."case" c ON rte.id = c.id WHERE c.id IS NULL;')
+    log_info("Finding new cases")
+    new_cases <- dbGetQuery(ojodb, new_cases_query)
+    num_new_cases <- nrow(new_cases)
+    log_info("Found {num_new_cases} new cases")
+    
+    ## Insert new cases into case table
+    if(num_new_cases >= 1) {
+      dbAppendTable(
+        conn = ojodb,
+        name = Id(schema = "eviction_addresses", table = "case"),
+        value = new_cases
+      )
+      log_success("Inserted {num_new_cases} new cases to table eviction_addresses.case")
+    }
+    
+    #Check whether there are new minutes
+    new_minutes_query <- sql('SELECT DISTINCT(rtem.id), rtem."case", rtem.description, rtem.link, NULL AS internal_link, current_timestamp AS created_at, current_timestamp AS updated_at FROM eviction_addresses.recent_tulsa_eviction_minutes rtem LEFT JOIN eviction_addresses."document" d ON rtem.id = d.id WHERE d.id IS NULL;')
+    log_info("Finding new minutes")
+    new_minutes <- dbGetQuery(ojodb, new_minutes_query)
+    num_new_minutes <- nrow(new_minutes)
+    log_info("Found {num_new_minutes} new minutes")
+    
+    if(num_new_minutes >= 1) {
+      dbAppendTable(
+        conn = ojodb,
+        name = Id(schema = "eviction_addresses", table = "document"),
+        value = new_minutes
+      )
+      log_success("Inserted {num_new_minutes} new document minutes to table eviction_addresses.document")
+    }
+    
+    return()
+  },
+  seed = TRUE) |>
+    then(
+      function() {
+        log_success("Data is up to date")
+        return()
+      }
     )
-    log_success("Inserted {num_new_cases} new cases to table eviction_addresses.case")
-  }
-  
-  #Check whether there are new minutes
-  new_minutes_query <- sql('SELECT DISTINCT(rtem.id), rtem."case", rtem.description, rtem.link, NULL AS internal_link, current_timestamp AS created_at, current_timestamp AS updated_at FROM eviction_addresses.recent_tulsa_eviction_minutes rtem LEFT JOIN eviction_addresses."document" d ON rtem.id = d.id WHERE d.id IS NULL;')
-  log_info("Finding new minutes")
-  new_minutes <- dbGetQuery(ojodb, new_minutes_query)
-  num_new_minutes <- nrow(new_minutes)
-  log_info("Found {num_new_minutes} new minutes")
-  
-  if(num_new_minutes >= 1) {
-    dbAppendTable(
-      conn = ojodb,
-      name = Id(schema = "eviction_addresses", table = "document"),
-      value = new_minutes
-    )
-    log_success("Inserted {num_new_minutes} new document minutes to table eviction_addresses.document")
-  }
   
   return()
 }
@@ -153,6 +169,9 @@ function(res) {
 #* @get /hydrate
 function(res) {
   promises::future_promise({
+    
+    googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
+    
     ojodb <- create_pool(connection_args)
     on.exit(pool::poolClose(ojodb))
     
@@ -196,7 +215,16 @@ function(res) {
     }
     
     return()
-  })
+  },
+  seed = TRUE) |>
+  then(
+    function() {
+      log_success("Fully hydrated")
+      return()
+    }
+  )
+  
+  return()
 }
 
 
@@ -218,7 +246,7 @@ function() {
     sql("SELECT id FROM eviction_addresses.case ORDER BY RANDOM() LIMIT 1;")
   )
   
-  log_success("Got new case number")
+  log_success("Served new case number to client")
   return(res)
 }
 
