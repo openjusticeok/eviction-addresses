@@ -12,10 +12,11 @@ library(shinydashboard)
 library(shinyjs)
 library(shinyauthr)
 library(DBI)
+library(logger)
 
 options(gargle_verbosity = "debug")
-
-bigrquery::bq_auth(path = "eviction-addresses-service-account.json")
+log_threshold("DEBUG")
+#bigrquery::bq_auth(path = "eviction-addresses-service-account.json")
 
 
 cr_region_set(region = "us-central1")
@@ -26,17 +27,12 @@ cr_project_set("ojo-database")
 api_url <- "https://eviction-addresses-api-ie5mdr3jgq-uc.a.run.app"
 jwt <- cr_jwt_create(api_url)
 
-# user_base <- tibble(
-#   user = c("user1", "user2"),
-#   password = c("pass1", "pass2"),
-#   password_hash = sapply(c("pass1", "pass2"), sodium::password_store),
-#   permissions = c("admin", "standard"),
-#   name = c("User One", "User Two")
-# )
-
 
 get_users_from_db <- function(conn = db, expiry = cookie_expiry) {
-  dbGetQuery(conn, 'SELECT * FROM "eviction_addresses"."user"') |>
+  dbGetQuery(
+  	conn,
+  	sql('SELECT * FROM eviction_addresses.user')
+  ) |>
     as_tibble()
 }
 
@@ -44,18 +40,27 @@ get_users_from_db <- function(conn = db, expiry = cookie_expiry) {
 # and will be made available to the app after log in.
 
 get_sessions_from_db <- function(conn = db, expiry = cookie_expiry) {
-  dbGetQuery(conn, 'SELECT * FROM "eviction_addresses"."session"') |>
+  dbGetQuery(
+  	conn,
+  	sql('SELECT * FROM eviction_addresses.session')
+  ) |>
     mutate(login_time = ymd_hms(login_time)) |>
     as_tibble() |>
     filter(login_time > now() - days(expiry))
 }
 
 
-# successfully logs in with a password.
-
 add_session_to_db <- function(user, sessionid, conn = db) {
   values <- tibble(user = user, sessionid = sessionid, login_time = as.character(now()))
-  dbWriteTable(conn, "eviction_addresses.session", values, append = TRUE, row.names = F)
+  log_trace("{values}")
+  res <- dbWriteTable(
+  	conn = conn,
+  	name = Id(schema = "eviction_addresses", table = "session"),
+  	value = values,
+  	append = TRUE,
+  	row.names = F
+  )
+  log_debug("Wrote session to database table 'session'")
 }
 
 cookie_expiry <- 7
@@ -120,9 +125,9 @@ function(input, output, session) {
     req(credentials()$user_auth)
     
     if (user_info()$permissions == "admin") {
-      dplyr::starwars[, 1:10]
+      log_debug("User has admin priveleges")
     } else if (user_info()$permissions == "standard") {
-      dplyr::storms[, 1:11]
+      log_debug("User has standard permissions")
     }
   })
   
@@ -271,21 +276,25 @@ function(input, output, session) {
   current_case <- reactive({
     input$case_refresh
 
-    dbGetQuery(db, str_c('SELECT t.case FROM eviction_addresses.document t WHERE t.internal_link IS NOT NULL ORDER BY RANDOM() LIMIT 1')) |>
-      pull()
+    dbGetQuery(
+      db,
+      sql('SELECT "case" FROM eviction_addresses.document WHERE internal_link IS NOT NULL ORDER BY RANDOM() LIMIT 1')
+    )
   })
   
   total_cases <- reactive({
     input$case_refresh
     
-    dbGetQuery(db, glue('SELECT COUNT(*) FROM eviction_addresses.case t LEFT JOIN eviction_addresses.address a ON t.id = a.case WHERE a.case IS NULL')) |>
-      pull()
+    dbGetQuery(
+      db,
+      sql('SELECT COUNT(*) FROM eviction_addresses.case t LEFT JOIN eviction_addresses.address a ON t.id = a.case WHERE a.case IS NULL')
+    )
   })
 
   documents <- reactive({
     current_case <- current_case()
 
-    query <- glue('SELECT * FROM eviction_addresses.document t WHERE t.case = \'{current_case}\'')
+    query <- sql('SELECT * FROM eviction_addresses.document t WHERE t.case = \'{current_case}\'')
 
     dbGetQuery(db, query)
   })
@@ -505,14 +514,23 @@ function(input, output, session) {
         updated_at = now()
       )
       
-      write_status <- dbWriteTable(db, "eviction-addresses.address", value = new_row, append = T, overwrite = T)
+      write_status <- dbWriteTable(
+        conn = db,
+        name = Id(
+          schema = "eviction-addresses",
+          table = "address"
+        ),
+        value = new_row,
+        append = T,
+        overwrite = T
+      )
       
       if(write_status == T) {
-        message("Successfully wrote a new row")
+        log_debug("Wrote new record in 'address' table")
         removeModal()
         input$case_refresh
       } else {
-        message("Did not successfully write the new row")
+        log_error("Failed to write the new record to table 'address'")
       }
     }
   })
