@@ -284,13 +284,14 @@ function(input, output, session) {
       conn,
       sql('SELECT q."case" FROM eviction_addresses.queue q LEFT JOIN eviction_addresses."case" c ON q."case" = c."id" WHERE "success" IS NOT TRUE AND "working" IS NOT TRUE ORDER BY attempts ASC, date_filed DESC LIMIT 1;')
     )
-    dbExecute(conn, glue_sql('UPDATE eviction_addresses.queue SET working = TRUE WHERE "case" = {current_case}', .con = conn))
+    query <- glue_sql('UPDATE eviction_addresses.queue SET working = TRUE WHERE "case" = {case}', .con = conn)
+    log_debug("{query}")
+    dbExecute(conn, query)
     
     dbCommit(conn)
     poolReturn(conn)
     
-    case |>
-      pull()
+    case
   })
   
   total_cases <- reactive({
@@ -307,7 +308,8 @@ function(input, output, session) {
   documents <- reactive({
     current_case <- current_case()
 
-    query <- sql('SELECT * FROM eviction_addresses."document" t WHERE t."case" = \'{current_case}\';')
+    query <- glue_sql('SELECT * FROM eviction_addresses."document" t WHERE t."case" = {current_case};', .con = db)
+    log_debug("{query}")
     
     res <- dbGetQuery(db, query)
     log_debug("Class of res: {class(res)}")
@@ -354,7 +356,7 @@ function(input, output, session) {
   output$current_case_ui <- renderUI({
     log_debug("Current case: {current_case()}")
     log_debug("Class of current_case: {class(current_case())}")
-    current_case <- fromJSON(current_case())
+    current_case <- fromJSON(current_case() |> pull())
     queue <- total_cases()
     div(
       h4(glue("Current case: {current_case$case_number}")),
