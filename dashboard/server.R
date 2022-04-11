@@ -285,7 +285,6 @@ function(input, output, session) {
       sql('SELECT q."case" FROM eviction_addresses.queue q LEFT JOIN eviction_addresses."case" c ON q."case" = c."id" WHERE "success" IS NOT TRUE AND "working" IS NOT TRUE ORDER BY attempts ASC, date_filed DESC LIMIT 1;')
     )
     query <- glue_sql('UPDATE eviction_addresses.queue SET working = TRUE WHERE "case" = {case}', .con = conn)
-    log_debug("{query}")
     dbExecute(conn, query)
     
     dbCommit(conn)
@@ -299,7 +298,7 @@ function(input, output, session) {
     
     dbGetQuery(
       db,
-      sql('SELECT COUNT(*) FROM eviction_addresses.queue;')
+      sql('SELECT COUNT(*) FROM eviction_addresses.queue WHERE success = FALSE OR success IS NULL;')
     ) |>
       pull()
     
@@ -309,11 +308,8 @@ function(input, output, session) {
     current_case <- current_case()
 
     query <- glue_sql('SELECT * FROM eviction_addresses."document" t WHERE t."case" = {current_case};', .con = db)
-    log_debug("{query}")
-    
+
     res <- dbGetQuery(db, query)
-    log_debug("Class of res: {class(res)}")
-    log_debug("Head of res: {res[1,]}")
     
     res
   })
@@ -354,8 +350,6 @@ function(input, output, session) {
   })
 
   output$current_case_ui <- renderUI({
-    log_debug("Current case: {current_case()}")
-    log_debug("Class of current_case: {class(current_case())}")
     current_case <- fromJSON(current_case() |> pull())
     queue <- total_cases()
     div(
@@ -509,8 +503,6 @@ function(input, output, session) {
           db,
           sql('UPDATE eviction_addresses.queue SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
         )
-        
-        log_debug("Incremented attempts by one")
       }
     } else {
       modal_content <- "Bad response from validation server"
@@ -519,8 +511,6 @@ function(input, output, session) {
         db,
         sql('UPDATE eviction_addresses.queue SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
       )
-      
-      log_debug("Incremented attempts by one")
     }
     
     showModal(modalDialog(
@@ -531,6 +521,9 @@ function(input, output, session) {
   })
   
   observeEvent(input$address_submit, {
+    
+    current_case <- current_case()
+    
     if(!exists("address_entered") | !exists("address_validated")) {
       stop("Something is wrong. You submitted an address without first validating.")
     } else {
@@ -552,20 +545,21 @@ function(input, output, session) {
       write_status <- dbWriteTable(
         conn = db,
         name = Id(
-          schema = "eviction-addresses",
+          schema = "eviction_addresses",
           table = "address"
         ),
         value = new_row,
-        append = T,
-        overwrite = T
+        append = T
       )
       
       if(write_status == T) {
         log_debug("Wrote new record in 'address' table")
         
+        query <- glue_sql('UPDATE eviction_addresses.queue SET success = TRUE WHERE "case" = {current_case};', .con = db)
+        
         dbExecute(
           conn = db,
-          statement = sql('UPDATE eviction_addresses.queue SET success = TRUE WHERE "case" = \'{current_case}\';')
+          statement = query
         )
         
         log_debug("Set status to success")
@@ -575,12 +569,18 @@ function(input, output, session) {
       } else {
         log_error("Failed to write the new record to table 'address'")
         
-        dbExecute(
+        query <- glue_sql('UPDATE eviction_addresses.queue SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
+        
+        update_res <- dbExecute(
           db,
-          sql('UPDATE eviction_addresses.queue SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
+          query
         )
         
-        log_debug("Incremented attempts by one")
+        if(update_res == 1) {
+          log_debug("Incremented attempts by one")
+        } else {
+          log_debug("{update_res} rows affected by incrementing attempts")
+        }
       }
     }
   })
