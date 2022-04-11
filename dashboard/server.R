@@ -13,6 +13,7 @@ library(shinyjs)
 library(shinyauthr)
 library(DBI)
 library(logger)
+library(glue)
 
 options(gargle_verbosity = "debug")
 log_threshold("DEBUG")
@@ -276,10 +277,20 @@ function(input, output, session) {
   current_case <- reactive({
     input$case_refresh
 
-    dbGetQuery(
-      db,
-      sql('SELECT "case" FROM eviction_addresses.document WHERE internal_link IS NOT NULL ORDER BY RANDOM() LIMIT 1')
+    conn <- poolCheckout(db)
+    dbBegin(conn)
+    
+    case <- dbGetQuery(
+      conn,
+      sql('SELECT q."case" FROM eviction_addresses.queue q LEFT JOIN eviction_addresses."case" c ON q."case" = c."id" WHERE "success" IS NOT TRUE AND "working" IS NOT TRUE ORDER BY attempts ASC, date_filed DESC LIMIT 1;')
     )
+    dbExecute(conn, glue_sql('UPDATE eviction_addresses.queue SET working = TRUE WHERE "case" = {current_case}', .con = conn))
+    
+    dbCommit(conn)
+    poolReturn(conn)
+    
+    case |>
+      pull()
   })
   
   total_cases <- reactive({
@@ -287,16 +298,22 @@ function(input, output, session) {
     
     dbGetQuery(
       db,
-      sql('SELECT COUNT(*) FROM eviction_addresses.case t LEFT JOIN eviction_addresses.address a ON t.id = a.case WHERE a.case IS NULL')
-    )
+      sql('SELECT COUNT(*) FROM eviction_addresses.queue;')
+    ) |>
+      pull()
+    
   })
 
   documents <- reactive({
     current_case <- current_case()
 
-    query <- sql('SELECT * FROM eviction_addresses.document t WHERE t.case = \'{current_case}\'')
-
-    dbGetQuery(db, query)
+    query <- sql('SELECT * FROM eviction_addresses."document" t WHERE t."case" = \'{current_case}\';')
+    
+    res <- dbGetQuery(db, query)
+    log_debug("Class of res: {class(res)}")
+    log_debug("Head of res: {res[1,]}")
+    
+    res
   })
 
   total_documents <- reactive({
@@ -335,6 +352,8 @@ function(input, output, session) {
   })
 
   output$current_case_ui <- renderUI({
+    log_debug("Current case: {current_case()}")
+    log_debug("Class of current_case: {class(current_case())}")
     current_case <- fromJSON(current_case())
     queue <- total_cases()
     div(
@@ -483,9 +502,23 @@ function(input, output, session) {
         )
       } else {
         modal_content <- "Could not validate address."
+        
+        dbExecute(
+          db,
+          sql('UPDATE eviction_addresses.queue SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
+        )
+        
+        log_debug("Incremented attempts by one")
       }
     } else {
       modal_content <- "Bad response from validation server"
+      
+      dbExecute(
+        db,
+        sql('UPDATE eviction_addresses.queue SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
+      )
+      
+      log_debug("Incremented attempts by one")
     }
     
     showModal(modalDialog(
@@ -527,10 +560,25 @@ function(input, output, session) {
       
       if(write_status == T) {
         log_debug("Wrote new record in 'address' table")
+        
+        dbExecute(
+          conn = db,
+          statement = sql('UPDATE eviction_addresses.queue SET success = TRUE WHERE "case" = \'{current_case}\';')
+        )
+        
+        log_debug("Set status to success")
+        
         removeModal()
         input$case_refresh
       } else {
         log_error("Failed to write the new record to table 'address'")
+        
+        dbExecute(
+          db,
+          sql('UPDATE eviction_addresses.queue SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
+        )
+        
+        log_debug("Incremented attempts by one")
       }
     }
   })
