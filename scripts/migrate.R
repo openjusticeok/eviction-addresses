@@ -16,7 +16,6 @@ test <- old_casenums |>
          new_casenum = str_c(test[,2], test[,3])) |>
   inner_join(case_table, by = c("new_casenum" = "case_number", "court" = "district"), copy = T)
 
-
 str_match("SC-2019-00001", "\\w*-\\d*-0*(.*)") |>
   pluck(2) |>
   as.integer()
