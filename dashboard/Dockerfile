@@ -14,8 +14,9 @@ RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
 ENV R_CONFIG_ACTIVE=docker
 RUN ["install2.r", "bigrquery", "config", "DBI", "dbx", "dplyr", "forcats", "ggplot2", "glue", "googleCloudRunner", "here", "httr", "jsonlite", "leaflet", "lubridate", "odbc", "pool", "purrr", "readr", "remotes", "RPostgres", "rvest", "shiny", "shinydashboard", "shinyjs", "shinyauthr", "sp", "stringr", "tibble", "tidyr", "tidyverse"]
 RUN ["installGithub.r", "openjusticeok/ojodb@c5972c6ad36c6ff66851cb920cc8c3a422719475"]
-WORKDIR /payload/
+WORKDIR ["/payload/"]
 COPY ["./", "/srv/shiny-server/"]
 USER shiny
+RUN ["/bin/bash", "-c", "chmod 0600 /payload/dashboard/shiny-apps-certs/client-key.pem"]
 EXPOSE 3838
 CMD ["/usr/bin/shiny-server"]
