@@ -12,6 +12,8 @@ library(shinydashboard)
 library(shinyjs)
 library(shinyauthr)
 library(DBI)
+library(pool)
+library(odbc)
 
 options(gargle_verbosity = "debug")
 
