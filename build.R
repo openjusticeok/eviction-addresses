@@ -97,6 +97,10 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
       secret = "eviction-addresses-service-account",
       decrypted = "dashboard/eviction-addresses-service-account.json"
     ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-api-config",
+      decrypted = "dashboard/config.yml"
+    ),
     cr_buildstep_docker(
       image = "eviction-addresses-dashboard",
       dir = "dashboard"
