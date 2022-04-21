@@ -17,6 +17,6 @@ RUN ["installGithub.r", "openjusticeok/ojodb@c5972c6ad36c6ff66851cb920cc8c3a4227
 WORKDIR ["/payload/"]
 COPY ["./", "/srv/shiny-server/"]
 USER shiny
-RUN ["/bin/bash", "-c", "chmod 0600 /payload/dashboard/shiny-apps-certs/client-key.pem"]
+RUN ["/bin/bash", "-c", "chmod 0600 /payload/shiny-apps-certs/client-key.pem"]
 EXPOSE 3838
 CMD ["/usr/bin/shiny-server"]
