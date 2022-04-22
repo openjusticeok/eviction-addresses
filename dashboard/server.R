@@ -47,11 +47,11 @@ get_sessions_from_db <- function(conn = db, expiry = cookie_expiry) {
   ) |>
     mutate(login_time = ymd_hms(login_time)) |>
     as_tibble() |>
-    filter(login_time > now() - days(expiry))
+    filter(login_time > now(tzone = "America/Chicago") - days(expiry))
 }
 
 add_session_to_db <- function(user, sessionid, conn = db) {
-  values <- tibble(user = user, sessionid = sessionid, login_time = as.character(now()))
+  values <- tibble(user = user, sessionid = sessionid, login_time = as.character(now(tzone = "America/Chicago")))
   log_trace("{values}")
   res <- dbWriteTable(
   	conn = conn,
@@ -65,7 +65,7 @@ add_session_to_db <- function(user, sessionid, conn = db) {
 
 cookie_expiry <- 7
 
-Sys.setenv(R_CONFIG_ACTIVE="docker")
+Sys.setenv(R_CONFIG_ACTIVE="default")
 connection_args <- config::get('database')
 
 db <- pool::dbPool(odbc::odbc(),
@@ -466,18 +466,18 @@ function(input, output, session) {
 
     if(res$status_code == 200){
       response_content <- content(res, as = "parsed", encoding = "UTF-8")
-      address_validated <<- response_content[[1]]
+      address_validated <<- response_content
 
-      if(!is.null(address_validated$Address2 |> unlist())){
-        address_validated_string <- str_c(address_validated$Address2,
+      if(!is.null(address_validated$line1 |> unlist())){
+        address_validated_string <- str_c(address_validated$line1,
                                           "<br>",
-                                          address_entered$unit,
+                                          address_entered$line2,
                                           "<br>",
-                                          address_validated$City,
+                                          address_validated$city,
                                           ", ",
-                                          address_validated$State,
+                                          address_validated$state,
                                           " ",
-                                          address_validated$Zip5)
+                                          address_validated$zip)
         
         modal_content <- div(
           h5("Address successfully validated"),
@@ -527,17 +527,17 @@ function(input, output, session) {
     } else {
       new_row <- tibble(
         case = current_case(),
-        street_number = NULL,
-        street_direction = NULL,
-        street_name = NULL,
-        street_type = NULL,
-        street_full = as.character(address_validated$Address2),
-        street_unit = address_entered$unit,
-        city = as.character(address_validated$City),
-        state = as.character(address_validated$State),
-        zip = as.character(address_validated$Zip5),
-        created_at = now(),
-        updated_at = now()
+        street_number = as.character(address_validated$streetNumber),
+        street_direction = as.character(address_validated$streetDirection),
+        street_name = as.character(address_validated$streetName),
+        street_type = as.character(address_validated$streetType),
+        street_full = as.character(address_validated$line1),
+        street_unit = as.character(address_validated$line2),
+        city = as.character(address_validated$city),
+        state = as.character(address_validated$state),
+        zip = as.character(address_validated$zip),
+        created_at = now(tzone = "America/Chicago"),
+        updated_at = now(tzone = "America/Chicago")
       )
       
       write_status <- dbWriteTable(
