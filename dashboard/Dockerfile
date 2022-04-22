@@ -16,5 +16,7 @@ RUN ["install2.r", "bigrquery", "config", "DBI", "dbx", "dplyr", "forcats", "ggp
 RUN ["installGithub.r", "openjusticeok/ojodb@c5972c6ad36c6ff66851cb920cc8c3a422719475"]
 WORKDIR /payload/
 COPY ["./", "/srv/shiny-server/"]
+RUN chown -R shiny:shiny /srv/shiny-server/
+USER shiny
 EXPOSE 3838
 CMD ["/usr/bin/shiny-server"]
