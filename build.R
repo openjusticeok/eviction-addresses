@@ -131,7 +131,7 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
       concurrency = 80
     )
   ),
-  timeout = 1800
+  timeout = 3600
 )
 
 eviction_addresses_dashboard_build <- cr_build_make(
