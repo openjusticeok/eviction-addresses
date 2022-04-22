@@ -54,10 +54,11 @@ get_sessions_from_db <- function(conn = db, expiry = cookie_expiry) {
 
 
 # successfully logs in with a password.
+session_table <- Id(schema = "eviction_addresses", table = "session")
 
 add_session_to_db <- function(user, sessionid, conn = db) {
   values <- tibble(user = user, sessionid = sessionid, login_time = as.character(now()))
-  dbWriteTable(conn, "eviction_addresses.session", values, append = TRUE, row.names = F)
+  dbWriteTable(conn, session_table, values, append = TRUE, row.names = F)
 }
 
 cookie_expiry <- 7
@@ -508,7 +509,8 @@ function(input, output, session) {
         updated_at = now()
       )
       
-      write_status <- dbWriteTable(db, "eviction-addresses.address", value = new_row, append = T)
+      address_table <- Id(schema = "eviction_addresses", table = "address")
+      write_status <- dbWriteTable(db, address_table, value = new_row, append = T)
       
       if(write_status == T) {
         message("Successfully wrote a new row")
