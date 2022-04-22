@@ -114,7 +114,7 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
       secret = "eviction-addresses-ssl-ca",
       decrypted = "dashboard/shiny-apps-certs/server-ca.pem"
     ),
-    #cr_buildstep_bash("chmod 0600 dashboard/shiny-apps-certs/client-key.pem"),
+    cr_buildstep_bash("chmod 0600 dashboard/shiny-apps-certs/client-key.pem"),
     cr_buildstep_docker(
       image = "eviction-addresses-dashboard",
       dir = "dashboard"
