@@ -1,6 +1,6 @@
 library(googleCloudRunner)
+library(containerit)
 
-# library(containerit)
 # 
 # api_dockerfile <- containerit::dockerfile(from = "api/plumber.R",
 #                                           filter_baseimage_pkgs = T)
@@ -39,7 +39,8 @@ eviction_addresses_api_yaml <- cr_build_yaml(
     cr_buildstep_bash("chmod 0600 api/shiny-apps-certs/client-key.pem"),
     cr_buildstep_docker(
       image = "eviction-addresses-api",
-      dir = "api"
+      dir = "api",
+      kaniko_cache = T
     ),
     cr_buildstep_run(
       name = "eviction-addresses-api",
@@ -73,12 +74,14 @@ cr_buildtrigger(
 
 
 
-# library(containerit)
-# 
-# dashboard_dockerfile <- containerit::dockerfile(from = "dashboard/server.R",
-#                                           filter_baseimage_pkgs = T)
-# 
-# write(dashboard_dockerfile, file = "dashboard/Dockerfile")
+
+dashboard_dockerfile <- containerit::dockerfile(
+  image = "rocker/shiny",
+  from = "dashboard/server.R",
+  filter_baseimage_pkgs = T
+)
+
+write(dashboard_dockerfile, file = "dashboard/sample-Dockerfile")
 
 
 eviction_addresses_dashboard_yaml <- cr_build_yaml(
@@ -119,7 +122,8 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
     cr_buildstep_bash("chmod 0600 dashboard/shiny-apps-certs/client-key.pem"),
     cr_buildstep_docker(
       image = "eviction-addresses-dashboard",
-      dir = "dashboard"
+      dir = "dashboard",
+      kaniko_cache = T
     ),
     cr_buildstep_run(
       name = "eviction-addresses-dashboard",
@@ -131,7 +135,7 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
       concurrency = 80
     )
   ),
-  timeout = 3600
+  timeout = 7200
 )
 
 eviction_addresses_dashboard_build <- cr_build_make(

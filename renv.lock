@@ -8,7 +8,18 @@
       }
     ]
   },
+  "Bioconductor": {
+    "Version": "3.14"
+  },
   "Packages": {
+    "BiocManager": {
+      "Package": "BiocManager",
+      "Version": "1.30.17",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0ab5f6e14502755ca875f938781909af",
+      "Requirements": []
+    },
     "DBI": {
       "Package": "DBI",
       "Version": "1.1.2",
@@ -120,6 +131,22 @@
       "Repository": "CRAN",
       "Hash": "50c838a310445e954bc13f26f26a6ecf",
       "Requirements": []
+    },
+    "automagic": {
+      "Package": "automagic",
+      "Version": "0.5.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5a01af5b04a0328abea878af383f4ef6",
+      "Requirements": [
+        "dplyr",
+        "formatR",
+        "knitr",
+        "magrittr",
+        "purrr",
+        "remotes",
+        "yaml"
+      ]
     },
     "backports": {
       "Package": "backports",
@@ -355,6 +382,39 @@
         "yaml"
       ]
     },
+    "containerit": {
+      "Package": "containerit",
+      "Version": "0.6.0.9004",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "o2r-project",
+      "RemoteRepo": "containerit",
+      "RemoteRef": "master",
+      "RemoteSha": "09711d2a3bb0222a59f816fce5d8434f3a540c94",
+      "Remotes": "github::r-hub/sysreqs",
+      "Hash": "9607327346d6108e2e74d0198877668e",
+      "Requirements": [
+        "BiocManager",
+        "automagic",
+        "callr",
+        "desc",
+        "devtools",
+        "fs",
+        "futile.logger",
+        "jsonlite",
+        "miniUI",
+        "rjson",
+        "rstudioapi",
+        "semver",
+        "shiny",
+        "shinyFiles",
+        "stevedore",
+        "stringr",
+        "sysreqs",
+        "versions"
+      ]
+    },
     "cpp11": {
       "Package": "cpp11",
       "Version": "0.4.2",
@@ -467,6 +527,16 @@
       "Hash": "2e6d3b30a35f2a86c377a63cb0544fad",
       "Requirements": [
         "DBI"
+      ]
+    },
+    "debugme": {
+      "Package": "debugme",
+      "Version": "1.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2d8a9e4f08f3dd669cb8ddd1eb575959",
+      "Requirements": [
+        "crayon"
       ]
     },
     "desc": {
@@ -663,6 +733,14 @@
       "Hash": "32b25c97ce306a760c4d9f787991b5d9",
       "Requirements": []
     },
+    "formatR": {
+      "Package": "formatR",
+      "Version": "1.12",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e45696cc90f4d5b993fa1a289e01c5df",
+      "Requirements": []
+    },
     "fs": {
       "Package": "fs",
       "Version": "1.5.2",
@@ -686,6 +764,25 @@
         "rlang",
         "vctrs"
       ]
+    },
+    "futile.logger": {
+      "Package": "futile.logger",
+      "Version": "1.4.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "99f0ace8c05ec7d3683d27083c4f1e7e",
+      "Requirements": [
+        "futile.options",
+        "lambda.r"
+      ]
+    },
+    "futile.options": {
+      "Package": "futile.options",
+      "Version": "1.0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0d9bf02413ddc2bbe8da9ce369dcdd2b",
+      "Requirements": []
     },
     "future": {
       "Package": "future",
@@ -1203,6 +1300,16 @@
       "Hash": "3d5108641f47470611a32d0bdf357a72",
       "Requirements": []
     },
+    "lambda.r": {
+      "Package": "lambda.r",
+      "Version": "1.2.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b1e925c4b9ffeb901bacf812cbe9a6ad",
+      "Requirements": [
+        "formatR"
+      ]
+    },
     "later": {
       "Package": "later",
       "Version": "1.3.0",
@@ -1370,6 +1477,17 @@
       "Repository": "CRAN",
       "Hash": "18e9c28c1d3ca1560ce30658b22ce104",
       "Requirements": []
+    },
+    "miniUI": {
+      "Package": "miniUI",
+      "Version": "0.1.1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "fec5f52652d60615fdb3957b3d74324a",
+      "Requirements": [
+        "htmltools",
+        "shiny"
+      ]
     },
     "modelr": {
       "Package": "modelr",
@@ -2038,6 +2156,17 @@
         "stringr"
       ]
     },
+    "semver": {
+      "Package": "semver",
+      "Version": "0.2.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "767de4760297e70995edb7b30fbda816",
+      "Requirements": [
+        "Rcpp",
+        "assertthat"
+      ]
+    },
     "sessioninfo": {
       "Package": "sessioninfo",
       "Version": "1.2.2",
@@ -2090,6 +2219,20 @@
         "sourcetools",
         "withr",
         "xtable"
+      ]
+    },
+    "shinyFiles": {
+      "Package": "shinyFiles",
+      "Version": "0.9.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "26be8149367b7b104e898640e4d67b82",
+      "Requirements": [
+        "fs",
+        "htmltools",
+        "jsonlite",
+        "shiny",
+        "tibble"
       ]
     },
     "shinyauthr": {
@@ -2168,6 +2311,19 @@
         "lattice"
       ]
     },
+    "stevedore": {
+      "Package": "stevedore",
+      "Version": "0.9.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0d42386a9ee7f97f21efdf1f8515202b",
+      "Requirements": [
+        "crayon",
+        "curl",
+        "jsonlite",
+        "yaml"
+      ]
+    },
     "stringi": {
       "Package": "stringi",
       "Version": "1.7.6",
@@ -2203,6 +2359,22 @@
       "Repository": "CRAN",
       "Hash": "b227d13e29222b4574486cfcbde077fa",
       "Requirements": []
+    },
+    "sysreqs": {
+      "Package": "sysreqs",
+      "Version": "1.0.0.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "r-hub",
+      "RemoteRepo": "sysreqs",
+      "RemoteRef": "master",
+      "RemoteSha": "f068afa96c2f454a54de0b350800dee7564239df",
+      "Hash": "b4366a614d7659ad33124ed75b8f982e",
+      "Requirements": [
+        "debugme",
+        "desc"
+      ]
     },
     "terra": {
       "Package": "terra",
@@ -2459,6 +2631,14 @@
         "glue",
         "rlang"
       ]
+    },
+    "versions": {
+      "Package": "versions",
+      "Version": "0.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "899888c2f3dc0892c2a5727de2ef3756",
+      "Requirements": []
     },
     "viridis": {
       "Package": "viridis",
