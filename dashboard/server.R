@@ -508,7 +508,7 @@ function(input, output, session) {
         updated_at = now()
       )
       
-      write_status <- dbWriteTable(db, "eviction-addresses.address", value = new_row, append = T, overwrite = T)
+      write_status <- dbWriteTable(db, "eviction-addresses.address", value = new_row, append = T)
       
       if(write_status == T) {
         message("Successfully wrote a new row")
