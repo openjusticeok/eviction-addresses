@@ -99,6 +99,24 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
       secret = "eviction-addresses-service-account",
       decrypted = "dashboard/eviction-addresses-service-account.json"
     ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-api-config",
+      decrypted = "dashboard/config.yml"
+    ),
+    cr_buildstep_bash("mkdir -p dashboard/shiny-apps-certs/"),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-ssl-cert",
+      decrypted = "dashboard/shiny-apps-certs/client-cert.pem"
+    ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-ssl-key",
+      decrypted = "dashboard/shiny-apps-certs/client-key.pem"
+    ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-ssl-ca",
+      decrypted = "dashboard/shiny-apps-certs/server-ca.pem"
+    ),
+    cr_buildstep_bash("chmod 0600 dashboard/shiny-apps-certs/client-key.pem"),
     cr_buildstep_docker(
       image = "eviction-addresses-dashboard",
       dir = "dashboard"

@@ -14,11 +14,12 @@ library(shinyauthr)
 library(DBI)
 library(logger)
 library(glue)
+library(pool)
+library(odbc)
 
 options(gargle_verbosity = "debug")
 log_threshold("DEBUG")
 #bigrquery::bq_auth(path = "eviction-addresses-service-account.json")
-
 
 cr_region_set(region = "us-central1")
 cr_project_set("ojo-database")
@@ -28,11 +29,10 @@ cr_project_set("ojo-database")
 api_url <- "https://eviction-addresses-api-ie5mdr3jgq-uc.a.run.app"
 jwt <- cr_jwt_create(api_url)
 
-
 get_users_from_db <- function(conn = db, expiry = cookie_expiry) {
   dbGetQuery(
   	conn,
-  	sql('SELECT * FROM eviction_addresses.user')
+  	sql('SELECT * FROM "eviction_addresses"."user"')
   ) |>
     as_tibble()
 }
@@ -43,13 +43,12 @@ get_users_from_db <- function(conn = db, expiry = cookie_expiry) {
 get_sessions_from_db <- function(conn = db, expiry = cookie_expiry) {
   dbGetQuery(
   	conn,
-  	sql('SELECT * FROM eviction_addresses.session')
+  	sql('SELECT * FROM "eviction_addresses"."session"')
   ) |>
     mutate(login_time = ymd_hms(login_time)) |>
     as_tibble() |>
     filter(login_time > now() - days(expiry))
 }
-
 
 add_session_to_db <- function(user, sessionid, conn = db) {
   values <- tibble(user = user, sessionid = sessionid, login_time = as.character(now()))
@@ -66,6 +65,7 @@ add_session_to_db <- function(user, sessionid, conn = db) {
 
 cookie_expiry <- 7
 
+Sys.setenv(R_CONFIG_ACTIVE="docker")
 connection_args <- config::get('database')
 
 db <- pool::dbPool(odbc::odbc(),
@@ -200,8 +200,6 @@ function(input, output, session) {
   
   output$metrics_ui <- renderUI({
     req(credentials()$user_auth)
-    
-    
   })
   
   output$testUI <- renderUI({
@@ -282,9 +280,9 @@ function(input, output, session) {
     
     case <- dbGetQuery(
       conn,
-      sql('SELECT q."case" FROM eviction_addresses.queue q LEFT JOIN eviction_addresses."case" c ON q."case" = c."id" WHERE "success" IS NOT TRUE AND "working" IS NOT TRUE ORDER BY attempts ASC, date_filed DESC LIMIT 1;')
+      sql('SELECT q."case" FROM "eviction_addresses"."queue" q LEFT JOIN "eviction_addresses"."case" c ON q."case" = c."id" WHERE "success" IS NOT TRUE AND "working" IS NOT TRUE ORDER BY attempts ASC, date_filed DESC LIMIT 1;')
     )
-    query <- glue_sql('UPDATE eviction_addresses.queue SET working = TRUE WHERE "case" = {case}', .con = conn)
+    query <- glue_sql('UPDATE "eviction_addresses"."queue" SET working = TRUE WHERE "case" = {case}', .con = conn)
     dbExecute(conn, query)
     
     dbCommit(conn)
@@ -298,7 +296,7 @@ function(input, output, session) {
     
     dbGetQuery(
       db,
-      sql('SELECT COUNT(*) FROM eviction_addresses.queue WHERE success = FALSE OR success IS NULL;')
+      sql('SELECT COUNT(*) FROM "eviction_addresses"."queue" WHERE success = FALSE OR success IS NULL;')
     ) |>
       pull()
     
@@ -307,7 +305,7 @@ function(input, output, session) {
   documents <- reactive({
     current_case <- current_case()
 
-    query <- glue_sql('SELECT * FROM eviction_addresses."document" t WHERE t."case" = {current_case};', .con = db)
+    query <- glue_sql('SELECT * FROM "eviction_addresses"."document" t WHERE t."case" = {current_case};', .con = db)
 
     res <- dbGetQuery(db, query)
     
@@ -501,7 +499,7 @@ function(input, output, session) {
         
         dbExecute(
           db,
-          sql('UPDATE eviction_addresses.queue SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
+          sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
         )
       }
     } else {
@@ -509,7 +507,7 @@ function(input, output, session) {
       
       dbExecute(
         db,
-        sql('UPDATE eviction_addresses.queue SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
+        sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
       )
     }
     
@@ -555,7 +553,7 @@ function(input, output, session) {
       if(write_status == T) {
         log_debug("Wrote new record in 'address' table")
         
-        query <- glue_sql('UPDATE eviction_addresses.queue SET success = TRUE WHERE "case" = {current_case};', .con = db)
+        query <- glue_sql('UPDATE "eviction_addresses"."queue" SET success = TRUE WHERE "case" = {current_case};', .con = db)
         
         dbExecute(
           conn = db,
@@ -569,7 +567,7 @@ function(input, output, session) {
       } else {
         log_error("Failed to write the new record to table 'address'")
         
-        query <- glue_sql('UPDATE eviction_addresses.queue SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
+        query <- glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
         
         update_res <- dbExecute(
           db,
