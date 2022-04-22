@@ -12,13 +12,14 @@ library(shinydashboard)
 library(shinyjs)
 library(shinyauthr)
 library(DBI)
+library(logger)
+library(glue)
 library(pool)
 library(odbc)
 
 options(gargle_verbosity = "debug")
-
-bigrquery::bq_auth(path = "eviction-addresses-service-account.json")
-
+log_threshold("DEBUG")
+#bigrquery::bq_auth(path = "eviction-addresses-service-account.json")
 
 cr_region_set(region = "us-central1")
 cr_project_set("ojo-database")
@@ -28,17 +29,11 @@ cr_project_set("ojo-database")
 api_url <- "https://eviction-addresses-api-ie5mdr3jgq-uc.a.run.app"
 jwt <- cr_jwt_create(api_url)
 
-# user_base <- tibble(
-#   user = c("user1", "user2"),
-#   password = c("pass1", "pass2"),
-#   password_hash = sapply(c("pass1", "pass2"), sodium::password_store),
-#   permissions = c("admin", "standard"),
-#   name = c("User One", "User Two")
-# )
-
-
 get_users_from_db <- function(conn = db, expiry = cookie_expiry) {
-  dbGetQuery(conn, 'SELECT * FROM "eviction_addresses"."user"') |>
+  dbGetQuery(
+  	conn,
+  	sql('SELECT * FROM "eviction_addresses"."user"')
+  ) |>
     as_tibble()
 }
 
@@ -46,19 +41,26 @@ get_users_from_db <- function(conn = db, expiry = cookie_expiry) {
 # and will be made available to the app after log in.
 
 get_sessions_from_db <- function(conn = db, expiry = cookie_expiry) {
-  dbGetQuery(conn, 'SELECT * FROM "eviction_addresses"."session"') |>
+  dbGetQuery(
+  	conn,
+  	sql('SELECT * FROM "eviction_addresses"."session"')
+  ) |>
     mutate(login_time = ymd_hms(login_time)) |>
     as_tibble() |>
     filter(login_time > now() - days(expiry))
 }
 
-
-# successfully logs in with a password.
-session_table <- Id(schema = "eviction_addresses", table = "session")
-
 add_session_to_db <- function(user, sessionid, conn = db) {
   values <- tibble(user = user, sessionid = sessionid, login_time = as.character(now()))
-  dbWriteTable(conn, session_table, values, append = TRUE, row.names = F)
+  log_trace("{values}")
+  res <- dbWriteTable(
+  	conn = conn,
+  	name = Id(schema = "eviction_addresses", table = "session"),
+  	value = values,
+  	append = TRUE,
+  	row.names = F
+  )
+  log_debug("Wrote session to database table 'session'")
 }
 
 cookie_expiry <- 7
@@ -124,9 +126,9 @@ function(input, output, session) {
     req(credentials()$user_auth)
     
     if (user_info()$permissions == "admin") {
-      dplyr::starwars[, 1:10]
+      log_debug("User has admin priveleges")
     } else if (user_info()$permissions == "standard") {
-      dplyr::storms[, 1:11]
+      log_debug("User has standard permissions")
     }
   })
   
@@ -198,8 +200,6 @@ function(input, output, session) {
   
   output$metrics_ui <- renderUI({
     req(credentials()$user_auth)
-    
-    
   })
   
   output$testUI <- renderUI({
@@ -275,23 +275,41 @@ function(input, output, session) {
   current_case <- reactive({
     input$case_refresh
 
-    dbGetQuery(db, str_c('SELECT t.case FROM eviction_addresses.document t WHERE t.internal_link IS NOT NULL ORDER BY RANDOM() LIMIT 1')) |>
-      pull()
+    conn <- poolCheckout(db)
+    dbBegin(conn)
+    
+    case <- dbGetQuery(
+      conn,
+      sql('SELECT q."case" FROM "eviction_addresses"."queue" q LEFT JOIN "eviction_addresses"."case" c ON q."case" = c."id" WHERE "success" IS NOT TRUE AND "working" IS NOT TRUE ORDER BY attempts ASC, date_filed DESC LIMIT 1;')
+    )
+    query <- glue_sql('UPDATE "eviction_addresses"."queue" SET working = TRUE WHERE "case" = {case}', .con = conn)
+    dbExecute(conn, query)
+    
+    dbCommit(conn)
+    poolReturn(conn)
+    
+    case
   })
   
   total_cases <- reactive({
     input$case_refresh
     
-    dbGetQuery(db, glue('SELECT COUNT(*) FROM eviction_addresses.case t LEFT JOIN eviction_addresses.address a ON t.id = a.case WHERE a.case IS NULL')) |>
+    dbGetQuery(
+      db,
+      sql('SELECT COUNT(*) FROM "eviction_addresses"."queue" WHERE success = FALSE OR success IS NULL;')
+    ) |>
       pull()
+    
   })
 
   documents <- reactive({
     current_case <- current_case()
 
-    query <- glue('SELECT * FROM eviction_addresses.document t WHERE t.case = \'{current_case}\'')
+    query <- glue_sql('SELECT * FROM "eviction_addresses"."document" t WHERE t."case" = {current_case};', .con = db)
 
-    dbGetQuery(db, query)
+    res <- dbGetQuery(db, query)
+    
+    res
   })
 
   total_documents <- reactive({
@@ -330,7 +348,7 @@ function(input, output, session) {
   })
 
   output$current_case_ui <- renderUI({
-    current_case <- fromJSON(current_case())
+    current_case <- fromJSON(current_case() |> pull())
     queue <- total_cases()
     div(
       h4(glue("Current case: {current_case$case_number}")),
@@ -478,9 +496,19 @@ function(input, output, session) {
         )
       } else {
         modal_content <- "Could not validate address."
+        
+        dbExecute(
+          db,
+          sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
+        )
       }
     } else {
       modal_content <- "Bad response from validation server"
+      
+      dbExecute(
+        db,
+        sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
+      )
     }
     
     showModal(modalDialog(
@@ -491,6 +519,9 @@ function(input, output, session) {
   })
   
   observeEvent(input$address_submit, {
+    
+    current_case <- current_case()
+    
     if(!exists("address_entered") | !exists("address_validated")) {
       stop("Something is wrong. You submitted an address without first validating.")
     } else {
@@ -509,15 +540,45 @@ function(input, output, session) {
         updated_at = now()
       )
       
-      address_table <- Id(schema = "eviction_addresses", table = "address")
-      write_status <- dbWriteTable(db, address_table, value = new_row, append = T)
+      write_status <- dbWriteTable(
+        conn = db,
+        name = Id(
+          schema = "eviction_addresses",
+          table = "address"
+        ),
+        value = new_row,
+        append = T
+      )
       
       if(write_status == T) {
-        message("Successfully wrote a new row")
+        log_debug("Wrote new record in 'address' table")
+        
+        query <- glue_sql('UPDATE "eviction_addresses"."queue" SET success = TRUE WHERE "case" = {current_case};', .con = db)
+        
+        dbExecute(
+          conn = db,
+          statement = query
+        )
+        
+        log_debug("Set status to success")
+        
         removeModal()
         input$case_refresh
       } else {
-        message("Did not successfully write the new row")
+        log_error("Failed to write the new record to table 'address'")
+        
+        query <- glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
+        
+        update_res <- dbExecute(
+          db,
+          query
+        )
+        
+        if(update_res == 1) {
+          log_debug("Incremented attempts by one")
+        } else {
+          log_debug("{update_res} rows affected by incrementing attempts")
+        }
       }
     }
   })
