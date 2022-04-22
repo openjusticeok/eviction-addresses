@@ -65,7 +65,7 @@ add_session_to_db <- function(user, sessionid, conn = db) {
 
 cookie_expiry <- 7
 
-Sys.setenv(R_CONFIG_ACTIVE="default")
+Sys.setenv(R_CONFIG_ACTIVE="docker")
 connection_args <- config::get('database')
 
 db <- pool::dbPool(odbc::odbc(),
