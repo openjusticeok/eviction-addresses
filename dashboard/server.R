@@ -18,7 +18,7 @@ library(pool)
 library(odbc)
 
 options(gargle_verbosity = "debug")
-log_threshold("DEBUG")
+log_threshold("INFO")
 #bigrquery::bq_auth(path = "eviction-addresses-service-account.json")
 
 cr_region_set(region = "us-central1")
@@ -466,18 +466,27 @@ function(input, output, session) {
 
     if(res$status_code == 200){
       response_content <- content(res, as = "parsed", encoding = "UTF-8")
-      address_validated <<- response_content
-
-      if(!is.null(address_validated$line1 |> unlist())){
-        address_validated_string <- str_c(address_validated$line1,
-                                          "<br>",
-                                          address_entered$line2,
-                                          "<br>",
-                                          address_validated$city,
-                                          ", ",
-                                          address_validated$state,
-                                          " ",
-                                          address_validated$zip)
+      log_debug("Response content: {response_content}")
+      
+      address_validated <<- response_content |>
+        map(as_vector) |>
+        map(~ifelse(is_empty(.x), NA_character_, .x))
+      log_debug("Address validated: {address_validated}")
+      
+      log_debug("Is null test: {!is.null(address_validated$line1)}")
+      if(!is.null(address_validated$line1)){
+        address_validated_string <- str_c(
+          str_replace_na(address_validated$line1, ""),
+          "<br>",
+          str_replace_na(address_validated$line2, ""),
+          "<br>",
+          str_replace_na(address_validated$city, ""),
+          ", ",
+          str_replace_na(address_validated$state, ""),
+          " ",
+          str_replace_na(address_validated$zip, "")
+        )
+        log_debug("Address string: {address_validated_string}")
         
         modal_content <- div(
           h5("Address successfully validated"),
@@ -525,6 +534,7 @@ function(input, output, session) {
     if(!exists("address_entered") | !exists("address_validated")) {
       stop("Something is wrong. You submitted an address without first validating.")
     } else {
+      
       new_row <- tibble(
         case = current_case(),
         street_number = as.character(address_validated$streetNumber),
@@ -537,8 +547,25 @@ function(input, output, session) {
         state = as.character(address_validated$state),
         zip = as.character(address_validated$zip),
         created_at = now(tzone = "America/Chicago"),
-        updated_at = now(tzone = "America/Chicago")
+        updated_at = now(tzone = "America/Chicago"),
+        line1 = as.character(address_validated$line1),
+        line2 = as.character(address_validated$line2),
+        pre_direction = as.character(address_validated$preDirection),
+        suite_id = as.character(address_validated$suiteID),
+        suite_key = as.character(address_validated$suiteKey),
+        county = as.character(address_validated$county),
+        country_code = as.character(address_validated$country_code),
+        country_name = as.character(address_validated$country_name),
+        zip4 = as.character(address_validated$zip4),
+        lat = as.character(address_validated$lat),
+        lon = as.character(address_validated$lon),
+        geo_accuracy = as.character(address_validated$geo_accuracy),
+        geo_accuracy_type = as.character(address_validated$geo_accuracy_type),
+        residential = as.character(address_validated$residential),
+        vacant = as.character(address_validated$vacant),
+        firm_name = as.character(address_validated$firm_name)
       )
+      log_debug("New row: {new_row}")
       
       write_status <- dbWriteTable(
         conn = db,
