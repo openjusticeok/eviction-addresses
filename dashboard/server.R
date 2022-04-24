@@ -506,17 +506,21 @@ function(input, output, session) {
       } else {
         modal_content <- "Could not validate address."
         
+        query <- glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
+
         dbExecute(
-          db,
-          sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
+          conn = db,
+          statement = query
         )
       }
     } else {
       modal_content <- "Bad response from validation server"
       
+      query <- glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
+      
       dbExecute(
-        db,
-        sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = \'{current_case}\';')
+        conn = db,
+        statement = query
       )
     }
     
@@ -580,7 +584,7 @@ function(input, output, session) {
       if(write_status == T) {
         log_debug("Wrote new record in 'address' table")
         
-        query <- glue_sql('UPDATE "eviction_addresses"."queue" SET success = TRUE WHERE "case" = {current_case};', .con = db)
+        query <- glue_sql('UPDATE "eviction_addresses"."queue" SET success = TRUE, working = FALSE WHERE "case" = {current_case};', .con = db)
         
         dbExecute(
           conn = db,
@@ -597,8 +601,8 @@ function(input, output, session) {
         query <- glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
         
         update_res <- dbExecute(
-          db,
-          query
+          conn = db,
+          statement = query
         )
         
         if(update_res == 1) {
