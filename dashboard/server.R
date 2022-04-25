@@ -280,7 +280,7 @@ function(input, output, session) {
     
     case <- dbGetQuery(
       conn,
-      sql('SELECT q."case" FROM "eviction_addresses"."queue" q LEFT JOIN "eviction_addresses"."case" c ON q."case" = c."id" WHERE "success" IS NOT TRUE AND "working" IS NOT TRUE ORDER BY attempts ASC, date_filed DESC LIMIT 1;')
+      sql('SELECT q."case" FROM eviction_addresses.queue q LEFT JOIN eviction_addresses."case" c ON q."case" = c."id" LEFT JOIN public."case" pc ON q."case" = pc.id WHERE "success" IS NOT TRUE AND "working" IS NOT TRUE ORDER BY attempts ASC, pc.status DESC, c.date_filed DESC LIMIT 1;')
     )
     query <- glue_sql('UPDATE "eviction_addresses"."queue" SET working = TRUE WHERE "case" = {case}', .con = conn)
     dbExecute(conn, query)
