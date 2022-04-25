@@ -48,6 +48,7 @@ eviction_addresses_api_yaml <- cr_build_yaml(
       port = 3838,
       memory = "2G",
       cpu = 1,
+      max_instances = 1,
       concurrency = 80,
       allowUnauthenticated = F
     )
@@ -75,13 +76,13 @@ cr_buildtrigger(
 
 
 
-dashboard_dockerfile <- containerit::dockerfile(
-  image = "rocker/shiny",
-  from = "dashboard/server.R",
-  filter_baseimage_pkgs = T
-)
-
-write(dashboard_dockerfile, file = "dashboard/sample-Dockerfile")
+# dashboard_dockerfile <- containerit::dockerfile(
+#   image = "rocker/shiny",
+#   from = "dashboard/server.R",
+#   filter_baseimage_pkgs = T
+# )
+# 
+# write(dashboard_dockerfile, file = "dashboard/sample-Dockerfile")
 
 
 eviction_addresses_dashboard_yaml <- cr_build_yaml(
