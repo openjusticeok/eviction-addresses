@@ -454,7 +454,7 @@ function(input, output, session) {
                                     " ",
                                     address_entered$zip)
     
-    token <- cr_jwt_token(jwt, api_url)
+    token <- cr_jwt_token(jwt(), api_url)
     url <- str_c(api_url, "/address/validate")
 
     res <- cr_jwt_with_httr(
