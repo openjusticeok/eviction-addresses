@@ -8,7 +8,6 @@ library(googleCloudRunner)
 # write(api_dockerfile, file = "api/Dockerfile")
 
 
-
 eviction_addresses_api_yaml <- cr_build_yaml(
   steps = c(
     cr_buildstep_secret(
@@ -38,13 +37,13 @@ eviction_addresses_api_yaml <- cr_build_yaml(
     ),
     cr_buildstep_bash("chmod 0600 api/shiny-apps-certs/client-key.pem"),
     cr_buildstep_docker(
-      image = "eviction-addresses-api",
+      image = "eviction-addresses-api-test",
       dir = "api",
       kaniko_cache = T
     ),
     cr_buildstep_run(
-      name = "eviction-addresses-api",
-      image = "gcr.io/ojo-database/eviction-addresses-api:$BUILD_ID",
+      name = "eviction-addresses-api-test",
+      image = "gcr.io/ojo-database/eviction-addresses-api-test:$BUILD_ID",
       port = 3838,
       memory = "2G",
       cpu = 1,
@@ -61,14 +60,14 @@ eviction_addresses_api_build <- cr_build_make(
 
 eviction_addresses_api_trigger <- cr_buildtrigger_repo(
   repo_name = "openjusticeok/eviction-addresses",
-  branch = "main"
+  branch = "dev"
 )
 
-cr_buildtrigger_delete("eviction-addresses-api-trigger")
+cr_buildtrigger_delete("eviction-addresses-api-test-trigger")
 
 cr_buildtrigger(
   build = eviction_addresses_api_build,
-  name = "eviction-addresses-api-trigger",
+  name = "eviction-addresses-api-test-trigger",
   trigger = eviction_addresses_api_trigger,
   includedFiles = "**"
 )
@@ -122,13 +121,13 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
     ),
     cr_buildstep_bash("chmod 0600 dashboard/shiny-apps-certs/client-key.pem"),
     cr_buildstep_docker(
-      image = "eviction-addresses-dashboard",
+      image = "eviction-addresses-dashboard-test",
       dir = "dashboard",
       kaniko_cache = T
     ),
     cr_buildstep_run(
-      name = "eviction-addresses-dashboard",
-      image = "gcr.io/ojo-database/eviction-addresses-dashboard:$BUILD_ID",
+      name = "eviction-addresses-dashboard-test",
+      image = "gcr.io/ojo-database/eviction-addresses-dashboard-test:$BUILD_ID",
       port = 3838,
       memory = "1G",
       cpu = 1,
@@ -145,14 +144,14 @@ eviction_addresses_dashboard_build <- cr_build_make(
 
 eviction_addresses_dashboard_trigger <- cr_buildtrigger_repo(
   repo_name = "openjusticeok/eviction-addresses",
-  branch = "main"
+  branch = "dev"
 )
 
-cr_buildtrigger_delete("eviction-addresses-dashboard-trigger")
+cr_buildtrigger_delete("eviction-addresses-dashboard-test-trigger")
 
 cr_buildtrigger(
   build = eviction_addresses_dashboard_build,
-  name = "eviction-addresses-dashboard-trigger",
+  name = "eviction-addresses-dashboard-test-trigger",
   trigger = eviction_addresses_dashboard_trigger,
   includedFiles = "**"
 )
