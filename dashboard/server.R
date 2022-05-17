@@ -26,7 +26,7 @@ cr_project_set("ojo-database")
 #cr <- cr_run_get("eviction-addresses-api")
 #message(cr$status$url)
 #api_url <- cr$status$url
-api_url <- "https://eviction-addresses-api-ie5mdr3jgq-uc.a.run.app"
+api_url <- "https://eviction-addresses-api-test-ie5mdr3jgq-uc.a.run.app"
 
 get_users_from_db <- function(conn = db, expiry = cookie_expiry) {
   dbGetQuery(
