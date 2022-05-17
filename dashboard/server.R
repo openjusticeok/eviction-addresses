@@ -27,7 +27,6 @@ cr_project_set("ojo-database")
 #message(cr$status$url)
 #api_url <- cr$status$url
 api_url <- "https://eviction-addresses-api-ie5mdr3jgq-uc.a.run.app"
-jwt <- cr_jwt_create(api_url)
 
 get_users_from_db <- function(conn = db, expiry = cookie_expiry) {
   dbGetQuery(
@@ -116,6 +115,11 @@ function(input, output, session) {
     } else {
       shinyjs::addClass(selector = "body", class = "sidebar-collapse")
     }
+  })
+  
+  jwt <- reactive({
+    invalidateLater(2700000)
+    cr_jwt_create(api_url)
   })
   
   user_info <- reactive({
