@@ -51,7 +51,8 @@ eviction_addresses_api_yaml <- cr_build_yaml(
       concurrency = 80,
       allowUnauthenticated = F
     )
-  )
+  ),
+  timeout = 7200
 )
 
 eviction_addresses_api_build <- cr_build_make(
