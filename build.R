@@ -49,7 +49,8 @@ eviction_addresses_api_yaml <- cr_build_yaml(
       cpu = 1,
       max_instances = 1,
       concurrency = 80,
-      allowUnauthenticated = F
+      allowUnauthenticated = F,
+      gcloud_args = c("--timeout=3600")
     )
   )
 )
