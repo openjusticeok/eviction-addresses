@@ -3,7 +3,6 @@ library(tidyverse)
 library(future)
 library(promises)
 library(DBI)
-library(rusps)
 library(XML)
 library(ggmap)
 library(httr)
@@ -273,6 +272,7 @@ function(res) {
       DBI::dbExecute(ojodb, query)
   
       log_success("Completed link {i}/{nrow(links)}")
+      Sys.sleep(2)
     }
     
     return()

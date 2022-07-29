@@ -49,7 +49,8 @@ eviction_addresses_api_yaml <- cr_build_yaml(
       cpu = 1,
       max_instances = 1,
       concurrency = 80,
-      allowUnauthenticated = F
+      allowUnauthenticated = F,
+      gcloud_args = c("--timeout=3600")
     )
   ),
   timeout = 7200
@@ -160,16 +161,17 @@ cr_buildtrigger(
 
 ###### Test JWT generation ##########
 
-# cr <- cr_run_get("eviction-addresses-api")
-# url <- cr$status$url
-# jwt <- cr_jwt_create(url)
-# token <- cr_jwt_token(jwt, url)
-# 
-# library(httr)
-# res <- cr_jwt_with_httr(
-#   GET(str_c(url, "/case")),
-#   token
-# )
-# content(res)
+cr <- cr_run_get("eviction-addresses-api-test")
+url <- cr$status$url
+jwt <- cr_jwt_create(url)
+token <- cr_jwt_token(jwt, url)
+
+library(httr)
+library(stringr)
+res <- cr_jwt_with_httr(
+  GET(str_c(url, "/hydrate")),
+  token
+)
+content(res)
 
 

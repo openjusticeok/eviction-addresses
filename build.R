@@ -8,7 +8,6 @@ library(googleCloudRunner)
 # write(api_dockerfile, file = "api/Dockerfile")
 
 
-
 eviction_addresses_api_yaml <- cr_build_yaml(
   steps = c(
     cr_buildstep_secret(
@@ -50,7 +49,8 @@ eviction_addresses_api_yaml <- cr_build_yaml(
       cpu = 1,
       max_instances = 1,
       concurrency = 80,
-      allowUnauthenticated = F
+      allowUnauthenticated = F,
+      gcloud_args = c("--timeout=3600")
     )
   ),
   timeout = 7200
