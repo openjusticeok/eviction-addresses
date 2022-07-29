@@ -1,34 +1,33 @@
-
 library(ojodb)
-eviction_cases <- ojo_civ_cases(
-  districts = "TULSA",
-  case_types = "SC",
-  file_years = 2020:year(today())
-) |>
-  filter(str_detect(description, "FORCIBLE ENTRY"))
 
-feds_minutes <- ojo_tbl("minute") |>
-  filter(code == "FEDS")
-
-eviction_cases |>
-  left_join(feds_minutes, by = c("id" = "case_id"))
-
+# eviction_cases <- ojo_civ_cases(
+#   districts = "TULSA",
+#   case_types = "SC",
+#   file_years = 2020:year(today())
+# ) |>
+#   filter(str_detect(description, "FORCIBLE ENTRY"))
+#
+# feds_minutes <- ojo_tbl("minute") |>
+#   filter(code == "FEDS")
+#
+# eviction_cases |>
+#   left_join(feds_minutes, by = c("id" = "case_id"))
 
 
 get_document_num <- function(casenum) {
   url <- str_c("https://www.oscn.net/dockets/GetCaseInformation.aspx?db=tulsa&number=", casenum)
-  
+
   table <- url %>%
     session() %>%
     html_element(".docketlist") %>%
     html_table() %>%
     filter(Code == "FEDS") %>%
     select(Description)
-  
+
   if (nrow(table) == 0) {
     return(NA)
   }
-  
+
   table %>%
     slice(1) %>%
     str_match("#([0-9]+)") %>%
@@ -51,7 +50,7 @@ process_pdf <- function(file) {
 
 query_data <- function(sample_size = 250) {
   ojo_connect()
-  data <- ojo_table("oscn_eviction_address") %>% 
+  data <- ojo_table("oscn_eviction_address") %>%
     filter(court == "TULSA", !is.na(addr_method)) %>%
     collect() %>%
     slice_sample(n = sample_size)
@@ -121,5 +120,5 @@ process_usps <- function(data) {
 }
 
 # validate_data <- function(data) {
-#   
+#
 # }

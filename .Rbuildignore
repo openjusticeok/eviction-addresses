@@ -1,0 +1,4 @@
+^renv$
+^renv\.lock$
+^eviction-addresses\.Rproj$
+^\.Rproj\.user$
