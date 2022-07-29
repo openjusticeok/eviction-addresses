@@ -1,6 +1,6 @@
 library(googleCloudRunner)
-#library(containerit)
 
+#library(containerit)
 # 
 # api_dockerfile <- containerit::dockerfile(from = "api/plumber.R",
 #                                           filter_baseimage_pkgs = T)
