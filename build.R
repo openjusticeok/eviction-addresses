@@ -8,7 +8,6 @@ library(googleCloudRunner)
 # write(api_dockerfile, file = "api/Dockerfile")
 
 
-
 eviction_addresses_api_yaml <- cr_build_yaml(
   steps = c(
     cr_buildstep_secret(
