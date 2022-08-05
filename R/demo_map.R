@@ -2,6 +2,7 @@ library(ojodb)
 library(sf)
 library(tmap)
 library(tigris)
+library(tidycensus)
 
 tmap_mode("plot")
 
@@ -11,6 +12,13 @@ tulsa_county <- ok_counties |>
 
 ok <- states() |>
   filter(NAME == "Oklahoma")
+
+tps <- school_districts(state = "OK") |>
+  filter(
+    str_detect(NAME, "Tulsa")
+  )
+
+blockgroups <- block_groups(state = "OK", county = "Tulsa")
 
 proj4 <- st_crs(ok)$proj4string
 
@@ -30,10 +38,14 @@ tm_shape(ok) +
              filter(geo_accuracy >= 0.9)) +
   tm_dots(alpha = 0.2)
 
+tmap_mode("view")
 tm_shape(tulsa_county) +
-  tm_polygons('#f0f0f0f0', border.alpha = 0.2) +
+  tm_basemap("Stamen.Watercolor") +
+  tm_polygons('#f0f0f0f0', border.alpha = 0.2, alpha = 0) +
+  tm_shape(blockgroups) +
+  tm_polygons('#f0f0f0f0', border.alpha = 1, alpha = 0.2) +
   tm_shape(data_points |>
              filter(geo_accuracy >= 0.9)) +
-  tm_dots(alpha = 0.2)
+  tm_dots(alpha = 0.4, col = "lightblue")
 
 
