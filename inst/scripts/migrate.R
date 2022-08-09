@@ -3,8 +3,6 @@ library(dm)
 library(jsonlite)
 library(logger)
 
-postgrid_args$key <- ""
-
 old_addresses <- ojo_tbl("old_db_temp", schema = "eviction_addresses")
 case_table <- ojo_tbl("case")
 migrate_table <- ojo_tbl("address_migrate", schema = "eviction_addresses")

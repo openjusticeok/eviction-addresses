@@ -1,8 +1,4 @@
 services:
-    api:
-        build: inst/plumber/api/
-        ports:
-            - "3838:3838"
     dashboard:
         build: inst/shiny/dashboard/
         ports:

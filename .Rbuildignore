@@ -2,3 +2,4 @@
 ^renv\.lock$
 ^eviction-addresses\.Rproj$
 ^\.Rproj\.user$
+^LICENSE\.md$
