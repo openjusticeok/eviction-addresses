@@ -253,11 +253,12 @@ function(res) {
       res <- GET(link)
       
       if(status_code(res) != 200) {
-        if(status_code(res) == 401) {
+        if(status_code(res) == 201) {
           log_error("You got recaptcha'd at {link}")
         }
         log_error("Couldn't find a document at {link}")
         
+        Sys.sleep(2)
         next()
       }
       
