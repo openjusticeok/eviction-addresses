@@ -8,11 +8,11 @@
 #' @export
 #'
 get_sessions_from_db <- function(conn = db, expiry = cookie_expiry) {
-  dbGetQuery(
+  DBI::dbGetQuery(
     conn,
-    sql('SELECT * FROM "eviction_addresses"."session"')
+    dbplyr::sql('SELECT * FROM "eviction_addresses"."session"')
   ) |>
-    mutate(login_time = ymd_hms(login_time)) |>
-    as_tibble() |>
-    filter(login_time > now(tzone = "America/Chicago") - days(expiry))
+    dplyr::mutate(login_time = lubridate::ymd_hms(login_time)) |>
+    tibble::as_tibble() |>
+    dplyr::filter(login_time > lubridate::now(tzone = "America/Chicago") - lubridate::days(expiry))
 }

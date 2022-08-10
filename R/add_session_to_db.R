@@ -9,14 +9,14 @@
 #' @export
 #'
 add_session_to_db <- function(user, sessionid, conn = db) {
-  values <- tibble(user = user, sessionid = sessionid, login_time = as.character(now(tzone = "America/Chicago")))
-  log_trace("{values}")
-  res <- dbWriteTable(
+  values <- tibble::tibble(user = user, sessionid = sessionid, login_time = as.character(now(tzone = "America/Chicago")))
+  logger::log_trace("{values}")
+  res <- DBI::dbWriteTable(
     conn = conn,
-    name = Id(schema = "eviction_addresses", table = "session"),
+    name = DBI::Id(schema = "eviction_addresses", table = "session"),
     value = values,
     append = TRUE,
     row.names = F
   )
-  log_debug("Wrote session to database table 'session'")
+  logger::log_debug("Wrote session to database table 'session'")
 }

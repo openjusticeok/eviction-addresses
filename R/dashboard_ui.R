@@ -6,47 +6,46 @@
 #' @return A shiny ui function
 #' @export
 #'
-#' @examples
 dashboard_ui <- function(cookie_expiry) {
-  dashboardPage(
+  shinydashboard::dashboardPage(
     title = "Open Justice Oklahoma Eviction Addresses",
     skin = "blue",
-    dashboardHeader(
+    shinydashboard::dashboardHeader(
       title = "Eviction Addresses",
-      tags$li(
+      htmltools::tags$li(
         class = "dropdown",
         style = "padding: 8px;",
         shinyauthr::logoutUI("logout")
       ),
-      tags$li(
+      htmltools::tags$li(
         class = "dropdown",
-        tags$a(
-          icon("github"),
+        htmltools::tags$a(
+          shiny::icon("github"),
           href = "https://github.com/paulc91/shinyauthr",
           title = "See the code on github"
         )
       ),
-      tags$li(
+      htmltools::tags$li(
         class = "dropdown",
-        actionLink(
+        shiny::actionLink(
           inputId = "header-help",
           label = "Help",
-          icon = icon("question-circle")
+          icon = shiny::icon("question-circle")
         )
       )
     ),
-    dashboardSidebar(
+    shinydashboard::dashboardSidebar(
       collapsed = TRUE,
-      sidebarMenuOutput(outputId = "sidebar_menu")
+      shinydashboard::sidebarMenuOutput(outputId = "sidebar_menu")
     ),
-    dashboardBody(
+    shinydashboard::dashboardBody(
       shinyauthr::loginUI(
         "login",
         cookie_expiry = cookie_expiry
       ),
-      tabItems(
-        tabItem("entry", uiOutput("entry_ui")),
-        tabItem("metrics", uiOutput("metrics_ui"))
+      shinydashboard::tabItems(
+        shinydashboard::tabItem("entry", shiny::uiOutput("entry_ui")),
+        shinydashboard::tabItem("metrics", shiny::uiOutput("metrics_ui"))
       )
     )
   )

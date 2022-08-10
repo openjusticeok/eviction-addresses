@@ -10,8 +10,8 @@
 #'
 dashboard_server <- function(connection_args) {
 
-  server_func <- function(input, output, session) {
-    db <- new_db_connection(connection_args)
+  function(input, output, session) {
+    db <- new_db_connection(connection_args = connection_args)
 
     user_base <- get_users_from_db(
       conn = db
@@ -58,9 +58,9 @@ dashboard_server <- function(connection_args) {
       req(credentials()$user_auth)
 
       if (user_info()$permissions == "admin") {
-        log_debug("User has admin priveleges")
+        logger::log_debug("User has admin priveleges")
       } else if (user_info()$permissions == "standard") {
-        log_debug("User has standard permissions")
+        logger::log_debug("User has standard permissions")
       }
     })
 
@@ -70,7 +70,7 @@ dashboard_server <- function(connection_args) {
       glue("Welcome {user_info()$name}")
     })
 
-    output$sidebar_menu <- renderMenu({
+    output$sidebar_menu <- shinydashboard::renderMenu({
       req(credentials()$user_auth)
       sidebarMenu(
         id = "sidebar-menu",
@@ -137,21 +137,6 @@ dashboard_server <- function(connection_args) {
     output$testUI <- renderUI({
       req(credentials()$user_auth)
 
-      # fluidRow(
-      #   column(
-      #     width = 12,
-      #     tags$h2(glue("Your permission level is: {user_info()$permissions}.
-      #                  You logged in at: {user_info()$login_time}.
-      #                  Your data is: {ifelse(user_info()$permissions == 'admin', 'Starwars', 'Storms')}.")),
-      #     box(
-      #       width = NULL,
-      #       status = "primary",
-      #       title = ifelse(user_info()$permissions == "admin", "Starwars Data", "Storms Data"),
-      #       DT::renderDT(user_data(), options = list(scrollX = TRUE))
-      #     )
-      #   )
-      # )
-
       tabItems(
         tabItem(
           tabName = "entry",
@@ -207,18 +192,18 @@ dashboard_server <- function(connection_args) {
     current_case <- reactive({
       input$case_refresh
 
-      conn <- poolCheckout(db)
-      dbBegin(conn)
+      conn <- pool::poolCheckout(db)
+      DBI::dbBegin(conn)
 
-      case <- dbGetQuery(
+      case <- DBI::dbGetQuery(
         conn,
-        sql('SELECT q."case" FROM eviction_addresses.queue q LEFT JOIN eviction_addresses."case" c ON q."case" = c."id" LEFT JOIN public."case" pc ON q."case" = pc.id WHERE "success" IS NOT TRUE AND "working" IS NOT TRUE ORDER BY attempts ASC, pc.status DESC, c.date_filed DESC LIMIT 1;')
+        dbplyr::sql('SELECT q."case" FROM eviction_addresses.queue q LEFT JOIN eviction_addresses."case" c ON q."case" = c."id" LEFT JOIN public."case" pc ON q."case" = pc.id WHERE "success" IS NOT TRUE AND "working" IS NOT TRUE ORDER BY attempts ASC, pc.status DESC, c.date_filed DESC LIMIT 1;')
       )
-      query <- glue_sql('UPDATE "eviction_addresses"."queue" SET working = TRUE WHERE "case" = {case}', .con = conn)
-      dbExecute(conn, query)
+      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET working = TRUE WHERE "case" = {case}', .con = conn)
+      DBI::dbExecute(conn, query)
 
-      dbCommit(conn)
-      poolReturn(conn)
+      DBI::dbCommit(conn)
+      pool::poolReturn(conn)
 
       case
     })
@@ -226,9 +211,9 @@ dashboard_server <- function(connection_args) {
     total_cases <- reactive({
       input$case_refresh
 
-      dbGetQuery(
+      DBI::dbGetQuery(
         db,
-        sql('SELECT COUNT(*) FROM "eviction_addresses"."queue" WHERE success = FALSE OR success IS NULL;')
+        dbplyr::sql('SELECT COUNT(*) FROM "eviction_addresses"."queue" WHERE success = FALSE OR success IS NULL;')
       ) |>
         pull()
 
@@ -237,9 +222,9 @@ dashboard_server <- function(connection_args) {
     documents <- reactive({
       current_case <- current_case()
 
-      query <- glue_sql('SELECT * FROM "eviction_addresses"."document" t WHERE t."case" = {current_case};', .con = db)
+      query <- glue::glue_sql('SELECT * FROM "eviction_addresses"."document" t WHERE t."case" = {current_case};', .con = db)
 
-      res <- dbGetQuery(db, query)
+      res <- DBI::dbGetQuery(db, query)
 
       res
     })
@@ -398,14 +383,14 @@ dashboard_server <- function(connection_args) {
 
       if(res$status_code == 200){
         response_content <- content(res, as = "parsed", encoding = "UTF-8")
-        log_debug("Response content: {response_content}")
+        logger::log_debug("Response content: {response_content}")
 
         address_validated <<- response_content |>
           map(as_vector) |>
           map(~ifelse(is_empty(.x), NA_character_, .x))
-        log_debug("Address validated: {address_validated}")
+        logger::log_debug("Address validated: {address_validated}")
 
-        log_debug("Is null test: {!is.null(address_validated$line1)}")
+        logger::log_debug("Is null test: {!is.null(address_validated$line1)}")
         if(!is.null(address_validated$line1)){
           address_validated_string <- str_c(
             str_replace_na(address_validated$line1, ""),
@@ -418,7 +403,7 @@ dashboard_server <- function(connection_args) {
             " ",
             str_replace_na(address_validated$zip, "")
           )
-          log_debug("Address string: {address_validated_string}")
+          logger::log_debug("Address string: {address_validated_string}")
 
           modal_content <- div(
             h5("Address successfully validated"),
@@ -438,9 +423,9 @@ dashboard_server <- function(connection_args) {
         } else {
           modal_content <- "Could not validate address."
 
-          query <- glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
+          query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
 
-          dbExecute(
+          DBI::dbExecute(
             conn = db,
             statement = query
           )
@@ -448,9 +433,9 @@ dashboard_server <- function(connection_args) {
       } else {
         modal_content <- "Bad response from validation server"
 
-        query <- glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
+        query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
 
-        dbExecute(
+        DBI::dbExecute(
           conn = db,
           statement = query
         )
@@ -501,9 +486,9 @@ dashboard_server <- function(connection_args) {
           vacant = as.character(address_validated$vacant),
           firm_name = as.character(address_validated$firm_name)
         )
-        log_debug("New row: {new_row}")
+        logger::log_debug("New row: {new_row}")
 
-        write_status <- dbWriteTable(
+        write_status <- DBI::dbWriteTable(
           conn = db,
           name = Id(
             schema = "eviction_addresses",
@@ -514,33 +499,33 @@ dashboard_server <- function(connection_args) {
         )
 
         if(write_status == T) {
-          log_debug("Wrote new record in 'address' table")
+          logger::log_debug("Wrote new record in 'address' table")
 
-          query <- glue_sql('UPDATE "eviction_addresses"."queue" SET success = TRUE, working = FALSE WHERE "case" = {current_case};', .con = db)
+          query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET success = TRUE, working = FALSE WHERE "case" = {current_case};', .con = db)
 
-          dbExecute(
+          DBI::dbExecute(
             conn = db,
             statement = query
           )
 
-          log_debug("Set status to success")
+          logger::log_debug("Set status to success")
 
           removeModal()
           input$case_refresh
         } else {
-          log_error("Failed to write the new record to table 'address'")
+          logger::log_error("Failed to write the new record to table 'address'")
 
-          query <- glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
+          query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
 
-          update_res <- dbExecute(
+          update_res <- DBI::dbExecute(
             conn = db,
             statement = query
           )
 
           if(update_res == 1) {
-            log_debug("Incremented attempts by one")
+            logger::log_debug("Incremented attempts by one")
           } else {
-            log_debug("{update_res} rows affected by incrementing attempts")
+            logger::log_debug("{update_res} rows affected by incrementing attempts")
           }
         }
       }

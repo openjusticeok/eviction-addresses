@@ -4,7 +4,7 @@
 \alias{serve_dashboard}
 \title{Serve Dashboard}
 \usage{
-serve_dashboard(port = 3838)
+serve_dashboard(config, certs, port = 3838)
 }
 \arguments{
 \item{port}{The port to serve the dashboard}

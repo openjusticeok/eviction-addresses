@@ -10,10 +10,19 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Imports: 
+    config,
     DBI,
     dbplyr,
+    dplyr,
+    glue,
+    googleCloudRunner,
+    htmltools,
+    logger,
+    lubridate,
     odbc,
     pool,
     shiny,
+    shinyauthr,
+    shinydashboard,
     stringr,
     tibble
