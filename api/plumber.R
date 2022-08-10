@@ -247,12 +247,23 @@ function(res) {
     
     for(i in 1:nrow(links)) {
       log_info("Starting link {i}")
-      document <- GET(links[i, "link"]) |>
-        pluck(content)
-      if(anyNA(document)) {
-        log_info('No pdf found at {links[i, "link"]}')
+      
+      link <- links[i, "link"]
+      
+      res <- GET(link)
+      
+      if(status_code(res) != 200) {
+        if(status_code(res) == 401) {
+          log_error("You got recaptcha'd at {link}")
+        }
+        log_error("Couldn't find a document at {link}")
+        
         next()
       }
+      
+      document <- res |>
+        pluck(content)
+      
       log_success("Got pdf content {i}")
       upload <- gcs_upload(document,
                            name = links[i, "id"],

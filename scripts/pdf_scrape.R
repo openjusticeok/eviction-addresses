@@ -1,15 +1,13 @@
 library(ojodb)
 library(furrr)
 
-source("./utilities.R")
+# source("./utilities.R")
 
 set.seed(1234)
 
 plan(multisession, workers = availableCores() - 2)
 
-ojo_connect()
-
-data <- ojo_table("ojo_civ_cases") |>
+data <- ojo_tbl("ojo_civ_cases") |>
   filter(court == "TULSA",
          issue == "EVICTION",
          !disp_case == "OPEN") |>
