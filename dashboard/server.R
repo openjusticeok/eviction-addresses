@@ -549,8 +549,6 @@ function(input, output, session) {
         street_direction = as.character(address_validated$streetDirection),
         street_name = as.character(address_validated$streetName),
         street_type = as.character(address_validated$streetType),
-        street_full = as.character(address_validated$line1),
-        street_unit = as.character(address_validated$line2),
         city = as.character(address_validated$city),
         state = as.character(address_validated$state),
         zip = as.character(address_validated$zip),
@@ -571,7 +569,10 @@ function(input, output, session) {
         geo_accuracy_type = as.character(address_validated$geo_accuracy_type),
         residential = as.character(address_validated$residential),
         vacant = as.character(address_validated$vacant),
-        firm_name = as.character(address_validated$firm_name)
+        firm_name = as.character(address_validated$firm_name),
+        method = "manual",
+        accuracy = "mailing",
+        geo_service = "postgrid"
       )
       log_debug("New row: {new_row}")
       
