@@ -192,7 +192,7 @@ function(res) {
     
     ## Get any cases in case table without an address
     ## and having at least one document, are not in queue
-    query <- sql(r"(SELECT DISTINCT(d."case"), NULL::bool AS success, NULL::bool AS working, 0::int4 AS attempts, NULL::timestamp AS started_at, NULL::timestamp AS stopped_at, current_timestamp AS created_at FROM eviction_addresses."document" d LEFT JOIN eviction_addresses.queue q ON d."case" = q."case" WHERE internal_link IS NOT NULL AND q."case" IS NULL;)")
+    query <- sql(r"(SELECT DISTINCT(d."case"), NULL::bool AS success, NULL::bool AS working, 0::int4 AS attempts, NULL::timestamp AS started_at, NULL::timestamp AS stopped_at, current_timestamp AS created_at FROM eviction_addresses."document" d LEFT JOIN eviction_addresses.address a on d."case" = a."case" LEFT JOIN eviction_addresses.queue q on d."case" = q."case" WHERE internal_link IS NOT NULL AND a."case" IS NULL and q."case" IS NULL;)")
     new_jobs <- dbGetQuery(ojodb, query)
     
     num_new_jobs <- nrow(new_jobs)
