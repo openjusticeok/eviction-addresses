@@ -4,7 +4,7 @@
 \alias{dashboard_server}
 \title{Eviction Addresses Dashboard Server}
 \usage{
-dashboard_server(connection_args)
+dashboard_server(config)
 }
 \arguments{
 \item{input}{The server input}

@@ -1,12 +1,10 @@
 #' @title Eviction Addresses Dashboard UI
 #' @description The ui function passed to `shinyApp`
 #'
-#' @param cookie_expiry The expiration length for the session cookie
-#'
 #' @return A shiny ui function
 #' @export
 #'
-dashboard_ui <- function(cookie_expiry) {
+dashboard_ui <- function() {
   shinydashboard::dashboardPage(
     title = "Open Justice Oklahoma Eviction Addresses",
     skin = "blue",
@@ -41,7 +39,7 @@ dashboard_ui <- function(cookie_expiry) {
     shinydashboard::dashboardBody(
       shinyauthr::loginUI(
         "login",
-        cookie_expiry = cookie_expiry
+        cookie_expiry = 7
       ),
       shinydashboard::tabItems(
         shinydashboard::tabItem("entry", shiny::uiOutput("entry_ui")),

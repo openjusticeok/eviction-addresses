@@ -8,9 +8,15 @@
 #' @return A Shiny server function
 #' @export
 #'
-dashboard_server <- function(connection_args) {
+dashboard_server <- function(config) {
 
   function(input, output, session) {
+
+    connection_args <- config::get(
+      value = "database",
+      file = config
+    )
+
     db <- new_db_connection(connection_args = connection_args)
 
     user_base <- get_users_from_db(

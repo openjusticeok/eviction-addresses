@@ -1,41 +1,18 @@
-#' @title Serve Dashboard
-#' @description Serves the eviction address entry dashboard
+#' @title Run Dashboard
+#' @description Runs the eviction address entry dashboard
 #'
-#' @param port The port to serve the dashboard
+#' @param config The path to a config.yml file
+#' @param ... Additional arguments passed to `shiny::shinyApp`
 #'
 #' @export
 #'
-serve_dashboard <- function(config, certs, port = 3838) {
-  dashboard_dir <- system.file("shiny/dashboard/", package = "evictionAddresses")
-  if (dashboard_dir == "") {
-    stop(
-      "Could not find the dashboard. Try re-installing `evictionAddresses`.",
-      call. = FALSE
-    )
-  }
-
-  if(!file.exists(config)) {
-    stop(
-      paste0("Could not find the config file at ", file.path(config))
-    )
-  }
-
-  file.copy(
-    from = file.path(config),
-    to = dashboard_dir
+run_dashboard <- function(config, ...) {
+  shiny::shinyApp(
+    ui = dashboard_ui,
+    server = dashboard_server(config),
+    onStart = shiny::onStop(function() {
+      pool::poolClose(db)
+    }),
+    ...
   )
-
-  if(!dir.exists(certs)) {
-    stop(
-      paste0("Could not find the certs directory ", file.path(certs))
-    )
-  }
-
-  file.copy(
-    from = file.path(certs),
-    to = dashboard_dir,
-    recursive = T
-  )
-
-  shiny::runApp(appDir = dashboard_dir, display.mode = "normal", port = port)
 }

@@ -4,10 +4,7 @@
 \alias{dashboard_ui}
 \title{Eviction Addresses Dashboard UI}
 \usage{
-dashboard_ui(cookie_expiry)
-}
-\arguments{
-\item{cookie_expiry}{The expiration length for the session cookie}
+dashboard_ui()
 }
 \value{
 A shiny ui function
