@@ -7,6 +7,7 @@
 #' @export
 #'
 get_users_from_db <- function(conn = db) {
+  logger::log_debug("Getting users from db")
   DBI::dbGetQuery(
     conn,
     dbplyr::sql('SELECT * FROM "eviction_addresses"."user"')

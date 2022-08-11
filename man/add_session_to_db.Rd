@@ -4,7 +4,7 @@
 \alias{add_session_to_db}
 \title{Add Session to DB}
 \usage{
-add_session_to_db(user, sessionid, conn = db)
+add_session_to_db(db)
 }
 \arguments{
 \item{user}{The username associated with this session}

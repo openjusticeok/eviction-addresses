@@ -12,12 +12,22 @@ dashboard_server <- function(config) {
 
   function(input, output, session) {
 
+    gcp_config <- config::get(
+      value = "gcp",
+      file = config
+    )
+
+    api_url <- gcp_config$service_url
+
     connection_args <- config::get(
       value = "database",
       file = config
     )
 
     db <- new_db_connection(connection_args = connection_args)
+    shiny::onStop(function() {
+      pool::poolClose(db)
+    })
 
     user_base <- get_users_from_db(
       conn = db
@@ -32,8 +42,8 @@ dashboard_server <- function(config) {
       sodium_hashed = TRUE,
       cookie_logins = TRUE,
       sessionid_col = sessionid,
-      cookie_getter = get_sessions_from_db,
-      cookie_setter = add_session_to_db,
+      cookie_getter = get_sessions_from_db(db),
+      cookie_setter = add_session_to_db(db),
       log_out = reactive(logout_init())
     )
 
@@ -53,7 +63,7 @@ dashboard_server <- function(config) {
 
     jwt <- reactive({
       invalidateLater(2700000)
-      cr_jwt_create(api_url)
+      googleCloudRunner::cr_jwt_create(api_url)
     })
 
     user_info <- reactive({
@@ -73,19 +83,19 @@ dashboard_server <- function(config) {
     output$welcome <- renderText({
       req(credentials()$user_auth)
 
-      glue("Welcome {user_info()$name}")
+      glue::glue("Welcome {user_info()$name}")
     })
 
     output$sidebar_menu <- shinydashboard::renderMenu({
       req(credentials()$user_auth)
-      sidebarMenu(
+      shinydashboard::sidebarMenu(
         id = "sidebar-menu",
-        menuItem(
+        shinydashboard::menuItem(
           "Entry",
           tabName = "entry",
           icon = icon("edit")
         ),
-        menuItem(
+        shinydashboard::menuItem(
           "Metrics",
           tabName = "metrics",
           icon = icon("chart-bar")
@@ -99,7 +109,7 @@ dashboard_server <- function(config) {
         fluidRow(
           column(
             width = 4,
-            box(
+            shinydashboard::box(
               width = 12,
               uiOutput("current_case_ui"),
               actionButton(
@@ -112,7 +122,7 @@ dashboard_server <- function(config) {
           column(
             width = 8,
             offset = 0,
-            box(
+            shinydashboard::box(
               width = 12,
               uiOutput("address_entry_ui")
             )
@@ -121,12 +131,12 @@ dashboard_server <- function(config) {
         fluidRow(
           column(
             width = 12,
-            box(
+            shinydashboard::box(
               width = 12,
               div(
                 style = "display: flex; justify-content: center; gap: 10px;",
                 actionButton(inputId = "previous_document", label = "Previous"),
-                textOutput("document_selector_ui"),
+                # textOutput("document_selector_ui"),
                 actionButton(inputId = "next_document", label = "Next")
               ),
               htmlOutput("current_document_ui")
@@ -149,7 +159,7 @@ dashboard_server <- function(config) {
           fluidRow(
             column(
               width = 4,
-              box(
+              shinydashboard::box(
                 width = 12,
                 uiOutput("current_case_ui"),
                 actionButton(
@@ -163,7 +173,7 @@ dashboard_server <- function(config) {
           fluidRow(
             column(
               width = 8,
-              box(
+              shinydashboard::box(
                 width = 12,
                 div(
                   style = "display: flex; justify-content: center; gap: 10px;",
@@ -177,7 +187,7 @@ dashboard_server <- function(config) {
             column(
               width = 4,
               offset = 0,
-              box(
+              shinydashboard::box(
                 width = 12,
                 uiOutput("address_entry_ui")
               )
@@ -221,7 +231,7 @@ dashboard_server <- function(config) {
         db,
         dbplyr::sql('SELECT COUNT(*) FROM "eviction_addresses"."queue" WHERE success = FALSE OR success IS NULL;')
       ) |>
-        pull()
+        dplyr::pull()
 
     })
 
@@ -271,25 +281,25 @@ dashboard_server <- function(config) {
     })
 
     output$current_case_ui <- renderUI({
-      current_case <- fromJSON(current_case() |> pull())
+      current_case <- jsonlite::fromJSON(current_case() |> dplyr::pull())
       queue <- total_cases()
       div(
-        h4(glue("Current case: {current_case$case_number}")),
-        h4(glue("{queue} cases in queue"))
+        h4(glue::glue("Current case: {current_case$case_number}")),
+        h4(glue::glue("{queue} cases in queue"))
       )
     })
 
     output$current_document_ui <- renderText({
-      return(glue('<iframe style="height:600px; width:100%" src="', '{current_document()}', '"></iframe>'))
+      return(glue::glue('<iframe style="height:600px; width:100%" src="', '{current_document()}', '"></iframe>'))
     })
 
 
 
-    output$total_documents_ui <- renderText(str_c("Total Documents: ", total_documents()))
+    output$total_documents_ui <- renderText(stringr::str_c("Total Documents: ", total_documents()))
 
-    output$current_document_num_ui <- renderText(str_c("Current Document: ", current_document_num()))
+    output$current_document_num_ui <- renderText(stringr::str_c("Current Document: ", current_document_num()))
 
-    output$document_selector_ui <- renderText(str_c(current_document_num(), " / ", total_documents()))
+    output$document_selector_ui <- renderText(stringr::str_c(current_document_num(), " / ", total_documents()))
 
     output$address_entry_ui <- renderUI({
       div(
@@ -357,7 +367,7 @@ dashboard_server <- function(config) {
         zip = isolate(input$address_zip)
       )
 
-      address_entered_string <- str_c(address_entered$street_num,
+      address_entered_string <- stringr::str_c(address_entered$street_num,
                                       " ",
                                       address_entered$street_direction,
                                       " ",
@@ -373,11 +383,11 @@ dashboard_server <- function(config) {
                                       " ",
                                       address_entered$zip)
 
-      token <- cr_jwt_token(jwt(), api_url)
-      url <- str_c(api_url, "/address/validate")
+      token <- googleCloudRunner::cr_jwt_token(jwt(), api_url)
+      url <- stringr::str_c(api_url, "/address/validate")
 
-      res <- cr_jwt_with_httr(
-        POST(
+      res <- googleCloudRunner::cr_jwt_with_httr(
+        httr::POST(
           url,
           body = address_entered,
           encode = "json"
@@ -388,26 +398,26 @@ dashboard_server <- function(config) {
       modal_content <- div()
 
       if(res$status_code == 200){
-        response_content <- content(res, as = "parsed", encoding = "UTF-8")
+        response_content <- httr::content(res, as = "parsed", encoding = "UTF-8")
         logger::log_debug("Response content: {response_content}")
 
         address_validated <<- response_content |>
-          map(as_vector) |>
-          map(~ifelse(is_empty(.x), NA_character_, .x))
+          purrr::map(purrr::as_vector) |>
+          purrr::map(~ifelse(purrr::is_empty(.x), NA_character_, .x))
         logger::log_debug("Address validated: {address_validated}")
 
         logger::log_debug("Is null test: {!is.null(address_validated$line1)}")
         if(!is.null(address_validated$line1)){
-          address_validated_string <- str_c(
-            str_replace_na(address_validated$line1, ""),
+          address_validated_string <- stringr::str_c(
+            stringr::str_replace_na(address_validated$line1, ""),
             "<br>",
-            str_replace_na(address_validated$line2, ""),
+            stringr::str_replace_na(address_validated$line2, ""),
             "<br>",
-            str_replace_na(address_validated$city, ""),
+            stringr::str_replace_na(address_validated$city, ""),
             ", ",
-            str_replace_na(address_validated$state, ""),
+            stringr::str_replace_na(address_validated$state, ""),
             " ",
-            str_replace_na(address_validated$zip, "")
+            stringr::str_replace_na(address_validated$zip, "")
           )
           logger::log_debug("Address string: {address_validated_string}")
 
@@ -462,19 +472,17 @@ dashboard_server <- function(config) {
         stop("Something is wrong. You submitted an address without first validating.")
       } else {
 
-        new_row <- tibble(
+        new_row <- tibble::tibble(
           case = current_case(),
           street_number = as.character(address_validated$streetNumber),
           street_direction = as.character(address_validated$streetDirection),
           street_name = as.character(address_validated$streetName),
           street_type = as.character(address_validated$streetType),
-          street_full = as.character(address_validated$line1),
-          street_unit = as.character(address_validated$line2),
           city = as.character(address_validated$city),
           state = as.character(address_validated$state),
           zip = as.character(address_validated$zip),
-          created_at = now(tzone = "America/Chicago"),
-          updated_at = now(tzone = "America/Chicago"),
+          created_at = lubridate::now(tzone = "America/Chicago"),
+          updated_at = lubridate::now(tzone = "America/Chicago"),
           line1 = as.character(address_validated$line1),
           line2 = as.character(address_validated$line2),
           pre_direction = as.character(address_validated$preDirection),
@@ -490,13 +498,16 @@ dashboard_server <- function(config) {
           geo_accuracy_type = as.character(address_validated$geo_accuracy_type),
           residential = as.character(address_validated$residential),
           vacant = as.character(address_validated$vacant),
-          firm_name = as.character(address_validated$firm_name)
+          firm_name = as.character(address_validated$firm_name),
+          method = "manual",
+          accuracy = "mailing",
+          geo_service = "postgrid"
         )
         logger::log_debug("New row: {new_row}")
 
         write_status <- DBI::dbWriteTable(
           conn = db,
-          name = Id(
+          name = DBI::Id(
             schema = "eviction_addresses",
             table = "address"
           ),
@@ -537,5 +548,4 @@ dashboard_server <- function(config) {
       }
     })
   }
-
 }

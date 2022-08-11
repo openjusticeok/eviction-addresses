@@ -24,4 +24,6 @@ new_db_connection <- function(connection_args) {
                        .sep = " "
                      )
   )
+
+  return(db)
 }
