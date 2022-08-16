@@ -9,64 +9,71 @@
 #' @return A 200, if successful
 #' @export
 #'
-handle_hydrate <- function() {
-  promises::future_promise({
+handle_hydrate <- function(connection_args) {
 
-    log_appender(appender_tee("test.log"))
+  f <- function(res) {
+    ua <- httr::user_agent(agent = "1ecbd577-793f-4a38-b82f-e361ed335168")
 
-    googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
+    promises::future_promise({
 
-    ojodb <- create_pool(connection_args)
-    on.exit(pool::poolClose(ojodb))
+      logger::log_appender(appender_tee("test.log"))
 
-    query <- sql("SELECT id, link FROM eviction_addresses.document WHERE internal_link IS NULL ORDER BY created_at;")
-    links <- DBI::dbGetQuery(ojodb, query)
+      googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
 
-    if(nrow(links) == 0) {
-      msg <- "No new documents to retrieve"
-      log_info(msg)
-      return(list(status = "success", message = msg))
-    }
+      ojodb <- new_db_connection(connection_args)
+      on.exit(pool::poolClose(ojodb))
 
-    for(i in 1:nrow(links)) {
-      log_info("Starting link {i}")
-      document <- GET(links[i, "link"]) |>
-        pluck(content)
-      if(anyNA(document)) {
-        log_info('No pdf found at {links[i, "link"]}')
-        next()
+      query <- dplyr::sql("SELECT id, link FROM eviction_addresses.document WHERE internal_link IS NULL ORDER BY created_at;")
+      links <- DBI::dbGetQuery(ojodb, query)
+
+      if(nrow(links) == 0) {
+        msg <- "No new documents to retrieve"
+        logger::log_info(msg)
+        return(list(status = "success", message = msg))
       }
-      log_success("Got pdf content {i}")
-      upload <- gcs_upload(document,
-                           name = links[i, "id"],
-                           bucket = "eviction-addresses",
-                           type = "application/pdf",
-                           object_function = function(input, output) {
-                             write_file(input, output)
-                           },
-                           predefinedAcl = "bucketLevel")
-      log_success("Uploaded pdf {i}")
-      internal_link <- gcs_download_url(links[i, "id"],
-                                        bucket = "eviction-addresses",
-                                        public = T)
-      log_success("Got public link {i}")
-      query <- glue_sql('UPDATE eviction_addresses."document" SET internal_link = {internal_link}, updated_at = current_timestamp WHERE id = {links[i, "id"]};',
-                        .con = ojodb)
-      DBI::dbExecute(ojodb, query)
 
-      log_success("Completed link {i}/{nrow(links)}")
-      Sys.sleep(2)
-    }
+      for(i in 1:nrow(links)) {
+        logger::log_info("Starting link {i}")
+        document <- httr::GET(links[i, "link"], ua) |>
+          purrr::pluck("content")
+        if(anyNA(document)) {
+          logger::log_info('No pdf found at {links[i, "link"]}')
+          next()
+        }
+        logger::log_success("Got pdf content {i}")
+        upload <- googleCloudStorageR::gcs_upload(document,
+                                                  name = links[i, "id"],
+                                                  bucket = "eviction-addresses",
+                                                  type = "application/pdf",
+                                                  object_function = function(input, output) {
+                                                    readr::write_file(input, output)
+                                                  },
+                                                  predefinedAcl = "bucketLevel")
+        logger::log_success("Uploaded pdf {i}")
+        internal_link <- googleCloudStorageR::gcs_download_url(links[i, "id"],
+                                                               bucket = "eviction-addresses",
+                                                               public = T)
+        logger::log_success("Got public link {i}")
+        query <- glue::glue_sql('UPDATE eviction_addresses."document" SET internal_link = {internal_link}, updated_at = current_timestamp WHERE id = {links[i, "id"]};',
+                                .con = ojodb)
+        DBI::dbExecute(ojodb, query)
+
+        logger::log_success("Completed link {i}/{nrow(links)}")
+        Sys.sleep(2)
+      }
+
+      return()
+    },
+    seed = TRUE) |>
+      then(
+        function() {
+          logger::log_success("Fully hydrated")
+          return()
+        }
+      )
 
     return()
-  },
-  seed = TRUE) |>
-    then(
-      function() {
-        log_success("Fully hydrated")
-        return()
-      }
-    )
+  }
 
-  return()
+  return(f)
 }

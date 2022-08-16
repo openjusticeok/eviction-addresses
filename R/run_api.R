@@ -28,7 +28,7 @@ run_api <- function(config, ..., .background = F) {
       pr_handle("GET", "/dbping", handle_dbping) |>
       pr_handle("GET", "/dbpingfuture", handle_dbpingfuture) |>
       pr_handle("GET", "/refresh", handle_refresh(connection_args)) |>
-      pr_handle("GET", "/hydrate", handle_hydrate) |>
+      pr_handle("GET", "/hydrate", handle_hydrate(connection_args)) |>
       pr_run(...)
   }
 }
