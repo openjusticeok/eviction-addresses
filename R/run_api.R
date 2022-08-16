@@ -23,7 +23,6 @@ run_api <- function(config, ..., .background = F) {
 
   } else {
     pr() |>
-      pr_handle("GET", "/test", handle_test) |>
       pr_handle("GET", "/ping", handle_ping) |>
       pr_handle("GET", "/dbping", handle_dbping) |>
       pr_handle("GET", "/dbpingfuture", handle_dbpingfuture) |>
