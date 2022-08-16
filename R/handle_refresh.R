@@ -34,7 +34,7 @@ handle_refresh <- function(connection_args) {
       log_success("Minutes refreshed: {minutes_res} rows affected")
 
       ## Check whether there are new cases
-      new_cases_query <- sql('SELECT DISTINCT(rte.id), rte.district, rte.case_type, rte.case_number, rte.date_filed, current_timestamp AS created_at, current_timestamp AS updated_at FROM eviction_addresses.recent_tulsa_evictions rte LEFT JOIN eviction_addresses."case" c ON rte.id = c.id WHERE c.id IS NULL;')
+      new_cases_query <- dbplyr::sql('SELECT DISTINCT(rte.id), rte.district, rte.case_type, rte.case_number, rte.date_filed, current_timestamp AS created_at, current_timestamp AS updated_at FROM eviction_addresses.recent_tulsa_evictions rte LEFT JOIN eviction_addresses."case" c ON rte.id = c.id WHERE c.id IS NULL;')
       log_info("Finding new cases")
       new_cases <- dbGetQuery(db, new_cases_query)
       num_new_cases <- nrow(new_cases)
@@ -51,7 +51,7 @@ handle_refresh <- function(connection_args) {
       }
 
       #Check whether there are new minutes
-      new_minutes_query <- sql('SELECT DISTINCT(rtem.id), rtem."case", rtem.description, rtem.link, NULL AS internal_link, current_timestamp AS created_at, current_timestamp AS updated_at FROM eviction_addresses.recent_tulsa_eviction_minutes rtem LEFT JOIN eviction_addresses."document" d ON rtem.id = d.id WHERE d.id IS NULL;')
+      new_minutes_query <- dbplyr::sql('SELECT DISTINCT(rtem.id), rtem."case", rtem.description, rtem.link, NULL AS internal_link, current_timestamp AS created_at, current_timestamp AS updated_at FROM eviction_addresses.recent_tulsa_eviction_minutes rtem LEFT JOIN eviction_addresses."document" d ON rtem.id = d.id WHERE d.id IS NULL;')
       log_info("Finding new minutes")
       new_minutes <- dbGetQuery(db, new_minutes_query)
       num_new_minutes <- nrow(new_minutes)
@@ -69,14 +69,14 @@ handle_refresh <- function(connection_args) {
       ## Remove any queue rows where success is true and it's 2 weeks old
       ## ? Should we check whether the address is found in the db ?
 
-      query <- sql("DELETE FROM eviction_addresses.queue WHERE success IS TRUE AND created_at < current_timestamp - interval '14 days';")
+      query <- dbplyr::sql("DELETE FROM eviction_addresses.queue WHERE success IS TRUE AND created_at < current_timestamp - interval '14 days';")
       num_deleted_queue_rows <- DBI::dbExecute(db, query)
       log_info("{num_deleted_queue_rows} rows deleted")
 
 
       ## Get any cases in case table without an address
       ## and having at least one document, are not in queue
-      query <- sql(r"(SELECT DISTINCT(d."case"), NULL::bool AS success, NULL::bool AS working, 0::int4 AS attempts, NULL::timestamp AS started_at, NULL::timestamp AS stopped_at, current_timestamp AS created_at FROM eviction_addresses."document" d LEFT JOIN eviction_addresses.queue q ON d."case" = q."case" WHERE internal_link IS NOT NULL AND q."case" IS NULL;)")
+      query <- dbplyr::sql(r"(SELECT DISTINCT(d."case"), NULL::bool AS success, NULL::bool AS working, 0::int4 AS attempts, NULL::timestamp AS started_at, NULL::timestamp AS stopped_at, current_timestamp AS created_at FROM eviction_addresses."document" d LEFT JOIN eviction_addresses.queue q ON d."case" = q."case" WHERE internal_link IS NOT NULL AND q."case" IS NULL;)")
       new_jobs <- dbGetQuery(db, query)
 
       num_new_jobs <- nrow(new_jobs)
