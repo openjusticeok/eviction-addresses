@@ -42,18 +42,23 @@ auth_mturk <- function(config = NULL) {
 
 #' @title Create HIT Type
 #'
-#' @param title
-#' @param description
-#' @param reward
-#' @param duration
-#' @param keywords
-#' @param auto.approval.delay
-#' @param ...
+#' @param title The title for the HIT Type
+#' @param description A description to be shown to workers
+#' @param reward A string representing amount to be paid for successful completion in USD
+#' @param duration The time in seconds that a worker has to complete the assignment
+#' @param keywords A string with comma separated terms to be used to search for HITs of this type
+#' @param auto.approval.delay The time in seconds after which a completed assignment is auto-approved
+#' @param ... Additional arguments passed to `pyMTurkR::CreateHITType()`
 #'
-#' @return
+#' @return The HIT Type id
 #' @export
 #'
 #' @examples
+#'
+#' create_hit_type()
+#' create_hit_type(reward = "0.20")
+#' create_hit_type(duration = pyMTurkR::seconds(minutes = 20))
+#'
 create_hit_type <- function(
   title = "eviction-address-transcription",
   description = "Find and transcribe the DEFENDENT'S address from a court document pdf",
@@ -100,23 +105,32 @@ render_hit_layout <- function(layout = NULL) {
 }
 
 
-#' Title
+#' @title New Case from Queue
 #'
-#' @return
+#' @return A case id from the queue
 #' @export
 #'
 #' @examples
+#'
+#' new_case_from_queue()
+#'
 new_case_from_queue <- function() {
   queue_table <- DBI::Id(schema = "eviction_addresses", table = "queue")
 }
 
 
-#' Title
+#' @title New Hit from Case
 #'
-#' @return
+#' @param case The case id from which to create a new HIT
+#' @param hit_type The HIT Type id from which to create a new HIT
+#'
+#' @return A HIT
 #' @export
 #'
 #' @examples
+#'
+#' new_hit_from_case(case = "<insert case id>")
+#'
 new_hit_from_case <- function(case, hit_type = NULL) {
   document_table <- DBI::Id(schema = "eviction_addresses", table = "document")
   hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
@@ -131,12 +145,15 @@ new_hit_from_case <- function(case, hit_type = NULL) {
 }
 
 
-#' Title
+#' @title Check All HITs
 #'
-#' @return
+#' @return Nothing
 #' @export
 #'
 #' @examples
+#'
+#' check_all_hits()
+#'
 check_all_hits <- function() {
   reviewable_hits <- pyMTurkR::GetReviewableHITs() |>
     as_tibble()
@@ -145,12 +162,17 @@ check_all_hits <- function() {
 }
 
 
-#' Title
+#' @title Compare HIT Assignments
 #'
-#' @return
+#' @param The HIT id for which to compare all assignments
+#'
+#' @return Nothing
 #' @export
 #'
 #' @examples
+#'
+#' compare_hit_assignments(hit = "<insert hit id>")
+#'
 compare_hit_assignments <- function(hit = NULL) {
   if(is.null(hit) || !is.character(hit))
 
@@ -158,12 +180,17 @@ compare_hit_assignments <- function(hit = NULL) {
 }
 
 
-#' Title
+#' @title Finalize HIT
 #'
-#' @return
+#' @param hit The HIT id to finalize
+#'
+#' @return Nothing
 #' @export
 #'
 #' @examples
-finalize_hit <- function() {
+#'
+#' finalize_hit(hit = "<insert hit id>")
+#'
+finalize_hit <- function(hit = NULL) {
 
 }

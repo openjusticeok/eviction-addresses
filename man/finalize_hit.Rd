@@ -2,10 +2,21 @@
 % Please edit documentation in R/mturk.R
 \name{finalize_hit}
 \alias{finalize_hit}
-\title{Title}
+\title{Finalize HIT}
 \usage{
-finalize_hit()
+finalize_hit(hit = NULL)
+}
+\arguments{
+\item{hit}{The HIT id to finalize}
+}
+\value{
+Nothing
 }
 \description{
-Title
+Finalize HIT
+}
+\examples{
+
+finalize_hit(hit = "<insert hit id>")
+
 }

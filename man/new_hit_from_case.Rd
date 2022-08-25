@@ -2,10 +2,23 @@
 % Please edit documentation in R/mturk.R
 \name{new_hit_from_case}
 \alias{new_hit_from_case}
-\title{Title}
+\title{New Hit from Case}
 \usage{
-new_hit_from_case()
+new_hit_from_case(case, hit_type = NULL)
+}
+\arguments{
+\item{case}{The case id from which to create a new HIT}
+
+\item{hit_type}{The HIT Type id from which to create a new HIT}
+}
+\value{
+A HIT
 }
 \description{
-Title
+New Hit from Case
+}
+\examples{
+
+new_hit_from_case(case = "<insert case id>")
+
 }

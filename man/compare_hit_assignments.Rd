@@ -2,10 +2,21 @@
 % Please edit documentation in R/mturk.R
 \name{compare_hit_assignments}
 \alias{compare_hit_assignments}
-\title{Title}
+\title{Compare HIT Assignments}
 \usage{
 compare_hit_assignments(hit = NULL)
 }
+\arguments{
+\item{The}{HIT id for which to compare all assignments}
+}
+\value{
+Nothing
+}
 \description{
-Title
+Compare HIT Assignments
+}
+\examples{
+
+compare_hit_assignments(hit = "<insert hit id>")
+
 }

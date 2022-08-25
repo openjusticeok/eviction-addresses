@@ -2,10 +2,18 @@
 % Please edit documentation in R/mturk.R
 \name{check_all_hits}
 \alias{check_all_hits}
-\title{Title}
+\title{Check All HITs}
 \usage{
 check_all_hits()
 }
+\value{
+Nothing
+}
 \description{
-Title
+Check All HITs
+}
+\examples{
+
+check_all_hits()
+
 }
