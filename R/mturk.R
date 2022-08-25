@@ -107,7 +107,7 @@ render_document_links <- function(links) {
     stop("Must supply one or more document links as a character vector")
   }
 
-  link_template <- stringr::str_c("<a href=\"", "{link}", "\">", "{text}", "</a>")
+  link_template <- stringr::str_c("<a href=\"", "{link}\" ","target=\"_blank\"", ">", "{text}", "</a>")
 
   html_string <- c()
 
@@ -144,7 +144,7 @@ render_hit_layout <- function(case = NULL, layout = NULL) {
 
   if(is.null(layout)) {
     logger::log_debug("No layout file supplied; using layout provided by package")
-    layout <- system.file("mturk/layout.xml", package = "evictionAddresses")
+    layout <- system.file("mturk/layout.html", package = "evictionAddresses")
   }
 
   if(!file.exists(layout)) {
@@ -159,6 +159,9 @@ render_hit_layout <- function(case = NULL, layout = NULL) {
   if(!exists("db")) {
     log_debug("Creating new db pool")
     db <- new_db_connection()
+    on.exit({
+      pool::poolClose(db)
+    })
   }
 
   query <- glue::glue_sql(
@@ -211,9 +214,12 @@ new_hit_from_case <- function(case, hit_type = NULL) {
   document_table <- DBI::Id(schema = "eviction_addresses", table = "document")
   hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
 
-  CreateHITWithHITType(
+  hit_layout <- render_hit_layout(case)
+  mturk_question <- pyMTurkR::GenerateHTMLQuestion(character = hit_layout)
+
+  pyMTurkR::CreateHITWithHITType(
     hit.type = hit_type,
-    question = render_hit_layout(case),
+    question = mturk_question,
     expiration = pyMTurkR::seconds(days = 1),
     assignments = "3",
     unique.request.token = uuid::UUIDgenerate(output = "string")
