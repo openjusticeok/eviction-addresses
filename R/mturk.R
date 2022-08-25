@@ -15,6 +15,10 @@ auth_mturk <- function(config = NULL) {
     logger::log_debug("Config file supplied; using config variables")
 
     aws_config <- config::get("aws", file = config)
+    if(is.null(aws_config)) {
+      logger::log_error("A config file path was supplied but no aws section found")
+      return(invisible(F))
+    }
 
     env_set <- Sys.setenv(
       AWS_ACCESS_KEY_ID = aws_config$key.id,
@@ -23,7 +27,7 @@ auth_mturk <- function(config = NULL) {
 
     if(!all(env_set)) {
       logger::log_error("Failed to set environment variables")
-      return(F)
+      return(invisible(F))
     }
   } else {
     logger::log_debug("No config file supplied; using env variables")
@@ -36,7 +40,7 @@ auth_mturk <- function(config = NULL) {
   }
 
   logger::log_error("pyMTurkR didn't find auth keys")
-  return(F)
+  return(invisible(F))
 }
 
 
@@ -81,16 +85,63 @@ create_hit_type <- function(
   return(hit_type)
 }
 
+#' @title Render Document Links
+#'
+#' @param links A character vector of document links
+#'
+#' @return An HTML string
+#' @export
+#'
+#' @examples
+#'
+#' links <- c(
+#'   "https://google.com",
+#'   "https://google.com"
+#' )
+#' render_document_links(links)
+#'
+render_document_links <- function(links) {
+  stopifnot(is.character(links))
 
+  if(length(links) <= 0) {
+    stop("Must supply one or more document links as a character vector")
+  }
+
+  link_template <- stringr::str_c("<a href=\"", "{link}", "\">", "{text}", "</a>")
+
+  html_string <- c()
+
+  for(i in 1:length(links)) {
+    stringr::str_c(html_string, "test", sep = "\n")
+
+    html_string[i] <- stringr::str_glue_data(
+      list(
+        link = links[i],
+        text = stringr::str_glue("Document {i}")
+      ),
+      link_template
+    )
+  }
+
+  html_string <- stringr::str_flatten(html_string, collapse = "<br>")
+
+  return(html_string)
+}
 
 #' @title Render HIT Layout
 #'
+#' @param case A case id used to render the layout
 #' @param layout A file path to an XML layout
 #'
 #' @return A character string containing an XML layout
 #' @export
 #'
-render_hit_layout <- function(layout = NULL) {
+render_hit_layout <- function(case = NULL, layout = NULL) {
+  if(is.null(case)) {
+    logger::log_error("A case id must be supplied; got this instead: {case}")
+    stop("A case id must be supplied")
+  }
+
   if(is.null(layout)) {
     logger::log_debug("No layout file supplied; using layout provided by package")
     layout <- system.file("mturk/layout.xml", package = "evictionAddresses")
@@ -102,6 +153,31 @@ render_hit_layout <- function(layout = NULL) {
   }
 
   raw_layout <- readr::read_file(layout)
+
+  ### Add logic to pull documents by case id
+
+  if(!exists("db")) {
+    log_debug("Creating new db pool")
+    db <- new_db_connection()
+  }
+
+  query <- glue::glue_sql(
+    "select internal_link from eviction_addresses.\"document\" where \"case\" = {case}",
+    .con = db
+  )
+
+  res <- DBI::dbGetQuery(
+    conn = db,
+    statement = query
+  )
+
+  document_links <- res$internal_link
+
+  document_links_html_block <- render_document_links(document_links)
+
+  rendered_layout <- stringr::str_glue(raw_layout)
+
+  return(rendered_layout)
 }
 
 
@@ -137,7 +213,7 @@ new_hit_from_case <- function(case, hit_type = NULL) {
 
   CreateHITWithHITType(
     hit.type = hit_type,
-    question = render_hit_layout(),
+    question = render_hit_layout(case),
     expiration = pyMTurkR::seconds(days = 1),
     assignments = "3",
     unique.request.token = uuid::UUIDgenerate(output = "string")

@@ -6,7 +6,20 @@
 #' @return A database connection pool created by the {pool} package
 #' @export
 #'
-new_db_connection <- function(connection_args) {
+new_db_connection <- function(config = "config.yml") {
+  if(is.null(config)) {
+
+  }
+
+  if(!file.exists(config)) {
+
+  }
+
+  connection_args <- config::get("database", config = config)
+  if(is.null(connection_args)) {
+
+  }
+
   db <- pool::dbPool(odbc::odbc(),
                      Driver = connection_args$driver,
                      Server = connection_args$server,

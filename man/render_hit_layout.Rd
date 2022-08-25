@@ -4,9 +4,11 @@
 \alias{render_hit_layout}
 \title{Render HIT Layout}
 \usage{
-render_hit_layout(layout = NULL)
+render_hit_layout(case = NULL, layout = NULL)
 }
 \arguments{
+\item{case}{A case id used to render the layout}
+
 \item{layout}{A file path to an XML layout}
 }
 \value{

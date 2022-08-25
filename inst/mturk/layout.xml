@@ -18,12 +18,8 @@
         <p>Example: 123 E Main St N #4, Tulsa, OK 74120</p>
         <div>
             <div>
-                <p><strong>Link to the document:</strong></p>
-
-                <!-- Your website URLs will be substituted for the "url" variable when you publish
-                       a batch with an input file containing multiple website URLs -->
-                <a href="${url}" target="_blank">${url}</a>
-
+                <p><strong>Links to the documents:</strong></p>
+                {document_links_html_block}
             </div>
 
             <div>
