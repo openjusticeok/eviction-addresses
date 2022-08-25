@@ -40,7 +40,7 @@ auth_mturk <- function(config = NULL) {
 }
 
 
-#' @title Set HIT Type
+#' @title Create HIT Type
 #'
 #' @param title
 #' @param description
@@ -54,7 +54,7 @@ auth_mturk <- function(config = NULL) {
 #' @export
 #'
 #' @examples
-set_hit_type <- function(
+create_hit_type <- function(
   title = "eviction-address-transcription",
   description = "Find and transcribe the DEFENDENT'S address from a court document pdf",
   reward = "0.15",
@@ -106,9 +106,28 @@ render_hit_layout <- function(layout = NULL) {
 #' @export
 #'
 #' @examples
-new_hit_from_case <- function() {
+new_case_from_queue <- function() {
+  queue_table <- DBI::Id(schema = "eviction_addresses", table = "queue")
+}
+
+
+#' Title
+#'
+#' @return
+#' @export
+#'
+#' @examples
+new_hit_from_case <- function(case, hit_type = NULL) {
+  document_table <- DBI::Id(schema = "eviction_addresses", table = "document")
   hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
 
+  CreateHITWithHITType(
+    hit.type = hit_type,
+    question = render_hit_layout(),
+    expiration = pyMTurkR::seconds(days = 1),
+    assignments = "3",
+    unique.request.token = uuid::UUIDgenerate(output = "string")
+  )
 }
 
 
