@@ -85,6 +85,7 @@ create_hit_type <- function(
   return(hit_type)
 }
 
+
 #' @title Render Document Links
 #'
 #' @param links A character vector of document links
@@ -128,6 +129,7 @@ render_document_links <- function(links) {
   return(html_string)
 }
 
+
 #' @title Render HIT Layout
 #'
 #' @param case A case id used to render the layout
@@ -154,8 +156,6 @@ render_hit_layout <- function(case = NULL, layout = NULL) {
 
   raw_layout <- readr::read_file(layout)
 
-  ### Add logic to pull documents by case id
-
   if(!exists("db")) {
     log_debug("Creating new db pool")
     db <- new_db_connection()
@@ -180,6 +180,8 @@ render_hit_layout <- function(case = NULL, layout = NULL) {
 
   rendered_layout <- stringr::str_glue(raw_layout)
 
+  logger::log_debug("Hit layout rendered for case: {case}")
+
   return(rendered_layout)
 }
 
@@ -194,7 +196,9 @@ render_hit_layout <- function(case = NULL, layout = NULL) {
 #' new_case_from_queue()
 #'
 new_case_from_queue <- function() {
-  queue_table <- DBI::Id(schema = "eviction_addresses", table = "queue")
+  res <- get_case_from_queue()
+
+  return(res)
 }
 
 
@@ -237,10 +241,36 @@ new_hit_from_case <- function(case, hit_type = NULL) {
 #' check_all_hits()
 #'
 check_all_hits <- function() {
-  reviewable_hits <- pyMTurkR::GetReviewableHITs() |>
-    as_tibble()
+  # reviewable_hits <- pyMTurkR::GetReviewableHITs() |>
+  #   tibble::as_tibble()
+  #
+  # pyMTurkR::ListAssignmentsForHIT(get.answers = T)
+}
 
-  pyMTurkR::ListAssignmentsForHIT(get.answers = T)
+
+#' @title Parse HIT Assignment Answers
+#'
+#' @param answers A data.frame containing the answers for one HIT assignment
+#'
+#' @return A parsed address ready for validation
+#' @export
+#'
+parse_assignment_answers <- function(answers) {
+  stopifnot(is.data.frame(answers))
+  stopifnot(all(c("QuestionIdentifier", "FreeText") %in% names(answers)))
+
+  address <- answers |>
+    dplyr::select(QuestionIdentifier, FreeText) |>
+    tibble::deframe() |>
+    as.list()
+
+  line1 <- ""
+  line2 <- ""
+  city <- ""
+  state <- ""
+  zip <- ""
+  country <- "us"
+
 }
 
 
@@ -256,9 +286,34 @@ check_all_hits <- function() {
 #' compare_hit_assignments(hit = "<insert hit id>")
 #'
 compare_hit_assignments <- function(hit = NULL) {
-  if(is.null(hit) || !is.character(hit))
+  if(is.null(hit) || !is.character(hit)) {
+    log_error("No HIT provided to function `compare_hit_assignments()`")
+    stop("Must provide a HIT id")
+  }
 
-  hit_assignments <- pyMTurkR::GetAssignments(hit = hit, get.answers = T)
+  res <- pyMTurkR::GetAssignments(hit = hit, get.answers = T)
+
+  if(!all(c("Assignments", "Answers") %in% names(res))) {
+    logger::log_error("The assignments list object must have fields `Assignments` and `Names`")
+    stop("Could not parse the response from MTurk API: Necessary fields not found")
+  }
+
+  if(is.null(res$Assignments) || is.null(res$Answers)) {
+    logger::log_error("Either the Assignments or Answers field, or both, are NULL")
+    stop("Could not parse the response from MTurk API: Results are NULL")
+  }
+
+  if(nrow(res$Assignments) != 3) {
+    logger::log_error("Only {nrow(res$Assignments)} assignments retrieved. Need 3 to compare. Verify HIT is ready for review")
+    stop("HIT does not have three assignments. Not ready for review")
+  }
+
+  assignments <- res$Assignments
+  answers <- res$Answers |>
+    split(~AssignmentId)
+
+
+  return(hit_assignments)
 }
 
 

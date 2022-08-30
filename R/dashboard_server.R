@@ -208,18 +208,7 @@ dashboard_server <- function(config) {
     current_case <- reactive({
       input$case_refresh
 
-      conn <- pool::poolCheckout(db)
-      DBI::dbBegin(conn)
-
-      case <- DBI::dbGetQuery(
-        conn,
-        dbplyr::sql('SELECT q."case" FROM eviction_addresses.queue q LEFT JOIN eviction_addresses."case" c ON q."case" = c."id" LEFT JOIN public."case" pc ON q."case" = pc.id WHERE "success" IS NOT TRUE AND "working" IS NOT TRUE ORDER BY attempts ASC, pc.status DESC, c.date_filed DESC LIMIT 1;')
-      )
-      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET working = TRUE WHERE "case" = {case}', .con = conn)
-      DBI::dbExecute(conn, query)
-
-      DBI::dbCommit(conn)
-      pool::poolReturn(conn)
+      case <- get_case_from_queue()
 
       case
     })
@@ -238,9 +227,7 @@ dashboard_server <- function(config) {
     documents <- reactive({
       current_case <- current_case()
 
-      query <- glue::glue_sql('SELECT * FROM "eviction_addresses"."document" t WHERE t."case" = {current_case};', .con = db)
-
-      res <- DBI::dbGetQuery(db, query)
+      res <- get_documents_by_case(current_case)
 
       res
     })

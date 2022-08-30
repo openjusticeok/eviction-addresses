@@ -4,7 +4,7 @@
 \alias{new_db_connection}
 \title{New DB Connection}
 \usage{
-new_db_connection(connection_args)
+new_db_connection(config = "config.yml")
 }
 \arguments{
 \item{connection_args}{A list of arguments to be used in the {pool} configuration. This should be created by the {config} package using \code{config::get()} and a \code{config.yml} file}
