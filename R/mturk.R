@@ -5,6 +5,8 @@
 #' @return A logical/boolean representing whether we successfully connected to MTurk
 #' @export
 #'
+#' @import assertthat
+#'
 #' @examples
 #'
 #' auth_mturk()
@@ -34,6 +36,10 @@ auth_mturk <- function(config = NULL) {
   }
 
   check_auth <- pyMTurkR::CheckAWSKeys()
+  assert_that(
+    is.flag(check_auth)
+  )
+
   if(check_auth) {
     logger::log_success("pyMTurkR found auth keys")
     return(invisible(T))
@@ -57,6 +63,8 @@ auth_mturk <- function(config = NULL) {
 #' @return The HIT Type id
 #' @export
 #'
+#' @importFrom assertthat
+#'
 #' @examples
 #'
 #' create_hit_type()
@@ -72,6 +80,15 @@ create_hit_type <- function(
   auto.approval.delay = pyMTurkR::seconds(days = 3),
   ...
 ) {
+  assert_that(
+    is.string(title),
+    is.string(description),
+    is.string(reward),
+    is.number(duration),
+    is.string(keywords),
+    is.number(auto.approval.delay)
+  )
+
   hit_type <- pyMTurkR::CreateHITType(
     title = title,
     description = description,
@@ -93,6 +110,8 @@ create_hit_type <- function(
 #' @return An HTML string
 #' @export
 #'
+#' @import assertthat
+#'
 #' @examples
 #'
 #' links <- c(
@@ -102,11 +121,10 @@ create_hit_type <- function(
 #' render_document_links(links)
 #'
 render_document_links <- function(links) {
-  stopifnot(is.character(links))
-
-  if(length(links) <= 0) {
-    stop("Must supply one or more document links as a character vector")
-  }
+  assert_that(
+    is.character(links),
+    length(links) > 0
+  )
 
   link_template <- stringr::str_c("<a href=\"", "{link}\" ","target=\"_blank\"", ">", "{text}", "</a>")
 
@@ -125,6 +143,9 @@ render_document_links <- function(links) {
   }
 
   html_string <- stringr::str_flatten(html_string, collapse = "<br>")
+  assert_that(
+    is.string(html_string)
+  )
 
   return(html_string)
 }
@@ -138,11 +159,12 @@ render_document_links <- function(links) {
 #' @return A character string containing an XML layout
 #' @export
 #'
+#' @import assertthat
+#'
 render_hit_layout <- function(case = NULL, layout = NULL) {
-  if(is.null(case)) {
-    logger::log_error("A case id must be supplied; got this instead: {case}")
-    stop("A case id must be supplied")
-  }
+  assert_that(
+
+  )
 
   if(is.null(layout)) {
     logger::log_debug("No layout file supplied; using layout provided by package")
@@ -151,7 +173,7 @@ render_hit_layout <- function(case = NULL, layout = NULL) {
 
   if(!file.exists(layout)) {
     logger::log_error("No file found at: {layout}")
-    stop("Could not render layout: No file found at: {layout}")
+    rlang::abort("Could not render layout: No file found at: {layout}")
   }
 
   raw_layout <- readr::read_file(layout)
@@ -288,24 +310,24 @@ parse_assignment_answers <- function(answers) {
 compare_hit_assignments <- function(hit = NULL) {
   if(is.null(hit) || !is.character(hit)) {
     log_error("No HIT provided to function `compare_hit_assignments()`")
-    stop("Must provide a HIT id")
+    rlang::abort("Must provide a HIT id")
   }
 
   res <- pyMTurkR::GetAssignments(hit = hit, get.answers = T)
 
   if(!all(c("Assignments", "Answers") %in% names(res))) {
     logger::log_error("The assignments list object must have fields `Assignments` and `Names`")
-    stop("Could not parse the response from MTurk API: Necessary fields not found")
+    rlang::abort("Could not parse the response from MTurk API: Necessary fields not found")
   }
 
   if(is.null(res$Assignments) || is.null(res$Answers)) {
     logger::log_error("Either the Assignments or Answers field, or both, are NULL")
-    stop("Could not parse the response from MTurk API: Results are NULL")
+    rlang::abort("Could not parse the response from MTurk API: Results are NULL")
   }
 
   if(nrow(res$Assignments) != 3) {
     logger::log_error("Only {nrow(res$Assignments)} assignments retrieved. Need 3 to compare. Verify HIT is ready for review")
-    stop("HIT does not have three assignments. Not ready for review")
+    rlang::abort("HIT does not have three assignments. Not ready for review")
   }
 
   assignments <- res$Assignments

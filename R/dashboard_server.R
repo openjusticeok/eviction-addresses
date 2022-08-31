@@ -456,7 +456,7 @@ dashboard_server <- function(config) {
       current_case <- current_case()
 
       if(!exists("address_entered") | !exists("address_validated")) {
-        stop("Something is wrong. You submitted an address without first validating.")
+        rlang::abort("Something is wrong. You submitted an address without first validating.")
       } else {
 
         new_row <- tibble::tibble(

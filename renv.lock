@@ -113,6 +113,14 @@
       "Hash": "f140675d766cf765bf06a5f14afb149d",
       "Requirements": []
     },
+    "abind": {
+      "Package": "abind",
+      "Version": "1.4-5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "4f57884290cc75ab22f4af9e9d4ca862",
+      "Requirements": []
+    },
     "askpass": {
       "Package": "askpass",
       "Version": "1.1",
@@ -207,6 +215,14 @@
         "rlang",
         "vctrs"
       ]
+    },
+    "brio": {
+      "Package": "brio",
+      "Version": "1.1.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "976cf154dfb043c012d87cddd8bca363",
+      "Requirements": []
     },
     "broom": {
       "Package": "broom",
@@ -457,6 +473,24 @@
         "rprojroot"
       ]
     },
+    "dichromat": {
+      "Package": "dichromat",
+      "Version": "2.0-0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "16e66f2a483e124af5fc6582d26005f7",
+      "Requirements": []
+    },
+    "diffobj": {
+      "Package": "diffobj",
+      "Version": "0.3.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "bcaa8b95f8d7d01a5dedfd959ce88ab8",
+      "Requirements": [
+        "crayon"
+      ]
+    },
     "digest": {
       "Package": "digest",
       "Version": "0.6.29",
@@ -464,6 +498,31 @@
       "Repository": "CRAN",
       "Hash": "cf6b206a045a684728c3267ef7596190",
       "Requirements": []
+    },
+    "dm": {
+      "Package": "dm",
+      "Version": "1.0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "062495209eb3e17905067a9474b48f78",
+      "Requirements": [
+        "DBI",
+        "backports",
+        "cli",
+        "dplyr",
+        "glue",
+        "igraph",
+        "lifecycle",
+        "magrittr",
+        "memoise",
+        "pillar",
+        "purrr",
+        "rlang",
+        "tibble",
+        "tidyr",
+        "tidyselect",
+        "vctrs"
+      ]
     },
     "dplyr": {
       "Package": "dplyr",
@@ -663,6 +722,30 @@
       "Hash": "15e9634c0fcd294799e9b2e929ed1b86",
       "Requirements": []
     },
+    "geojsonsf": {
+      "Package": "geojsonsf",
+      "Version": "2.0.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "8d077646c6713838233e8710910ef92e",
+      "Requirements": [
+        "Rcpp",
+        "geometries",
+        "jsonify",
+        "rapidjsonr",
+        "sfheaders"
+      ]
+    },
+    "geometries": {
+      "Package": "geometries",
+      "Version": "0.2.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "be29054e97e756ade56d13a89c6d5243",
+      "Requirements": [
+        "Rcpp"
+      ]
+    },
     "gert": {
       "Package": "gert",
       "Version": "1.7.1",
@@ -782,15 +865,10 @@
     },
     "googleCloudRunner": {
       "Package": "googleCloudRunner",
-      "Version": "0.5.0.9000",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteUsername": "MarkEdmondson1234",
-      "RemoteRepo": "googleCloudRunner",
-      "RemoteRef": "master",
-      "RemoteSha": "b124b975f11b6e518d16a5de64074f20606ed5e9",
-      "RemoteHost": "api.github.com",
-      "Hash": "a3d8689f680da0628ae200e22d5b2b08",
+      "Version": "0.5.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "33747d2ece4513bf2c503704e07996c7",
       "Requirements": [
         "assertthat",
         "cli",
@@ -1018,6 +1096,19 @@
         "uuid"
       ]
     },
+    "igraph": {
+      "Package": "igraph",
+      "Version": "1.3.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "40e38ff98f90967805831b6234afd05f",
+      "Requirements": [
+        "Matrix",
+        "magrittr",
+        "pkgconfig",
+        "rlang"
+      ]
+    },
     "ini": {
       "Package": "ini",
       "Version": "0.3.1",
@@ -1061,6 +1152,17 @@
       "Hash": "5aab57a3bd297eee1c1d862735972182",
       "Requirements": [
         "htmltools"
+      ]
+    },
+    "jsonify": {
+      "Package": "jsonify",
+      "Version": "1.2.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f435875f0eb7de52ade944ed82ee9089",
+      "Requirements": [
+        "Rcpp",
+        "rapidjsonr"
       ]
     },
     "jsonlite": {
@@ -1120,6 +1222,23 @@
       "Hash": "d908914ae53b04d4c0c0fd72ecc35370",
       "Requirements": []
     },
+    "leafem": {
+      "Package": "leafem",
+      "Version": "0.2.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "db6e565a81ce81f137660467644e6fcd",
+      "Requirements": [
+        "base64enc",
+        "geojsonsf",
+        "htmltools",
+        "htmlwidgets",
+        "leaflet",
+        "png",
+        "raster",
+        "sf"
+      ]
+    },
     "leaflet": {
       "Package": "leaflet",
       "Version": "2.1.1",
@@ -1149,6 +1268,18 @@
       "Repository": "CRAN",
       "Hash": "d3082a7beac4a1aeb96100ff06265d7e",
       "Requirements": []
+    },
+    "leafsync": {
+      "Package": "leafsync",
+      "Version": "0.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "819d7169c7d39f0f952473e943375da1",
+      "Requirements": [
+        "htmltools",
+        "htmlwidgets",
+        "leaflet"
+      ]
     },
     "lifecycle": {
       "Package": "lifecycle",
@@ -1186,6 +1317,18 @@
       "Requirements": [
         "cpp11",
         "generics"
+      ]
+    },
+    "lwgeom": {
+      "Package": "lwgeom",
+      "Version": "0.2-8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "68b7afe010f5ddc3d5a5c8113018bb39",
+      "Requirements": [
+        "Rcpp",
+        "sf",
+        "units"
       ]
     },
     "magick": {
@@ -1394,6 +1537,23 @@
       "Hash": "01f28d4278f15c76cddbea05899c5d6f",
       "Requirements": []
     },
+    "pkgload": {
+      "Package": "pkgload",
+      "Version": "1.3.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "4b20f937a363c78a5730265c1925f54a",
+      "Requirements": [
+        "cli",
+        "crayon",
+        "desc",
+        "fs",
+        "glue",
+        "rlang",
+        "rprojroot",
+        "withr"
+      ]
+    },
     "plogr": {
       "Package": "plogr",
       "Version": "0.2.0",
@@ -1454,6 +1614,14 @@
         "R6",
         "later"
       ]
+    },
+    "praise": {
+      "Package": "praise",
+      "Version": "1.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a555924add98c99d2f411e37e7d25e9f",
+      "Requirements": []
     },
     "prettyunits": {
       "Package": "prettyunits",
@@ -1812,6 +1980,17 @@
         "units"
       ]
     },
+    "sfheaders": {
+      "Package": "sfheaders",
+      "Version": "0.4.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c1bd5fbd6bed3c16a20df15d9bc20c55",
+      "Requirements": [
+        "Rcpp",
+        "geometries"
+      ]
+    },
     "shiny": {
       "Package": "shiny",
       "Version": "1.7.2",
@@ -1906,6 +2085,21 @@
         "lattice"
       ]
     },
+    "stars": {
+      "Package": "stars",
+      "Version": "0.5-6",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "76798fa5bef65f2fd55db9c6efb40e96",
+      "Requirements": [
+        "abind",
+        "classInt",
+        "lwgeom",
+        "rlang",
+        "sf",
+        "units"
+      ]
+    },
     "stringi": {
       "Package": "stringi",
       "Version": "1.7.8",
@@ -1950,6 +2144,34 @@
       "Hash": "5d0f75086235149ccfa42c3f3596a079",
       "Requirements": [
         "Rcpp"
+      ]
+    },
+    "testthat": {
+      "Package": "testthat",
+      "Version": "3.1.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f76c2a02d0fdc24aa7a47ea34261a6e3",
+      "Requirements": [
+        "R6",
+        "brio",
+        "callr",
+        "cli",
+        "crayon",
+        "desc",
+        "digest",
+        "ellipsis",
+        "evaluate",
+        "jsonlite",
+        "lifecycle",
+        "magrittr",
+        "pkgload",
+        "praise",
+        "processx",
+        "ps",
+        "rlang",
+        "waldo",
+        "withr"
       ]
     },
     "tibble": {
@@ -2094,6 +2316,48 @@
         "xfun"
       ]
     },
+    "tmap": {
+      "Package": "tmap",
+      "Version": "3.3-3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "7c1c0624e51105988b579d77289cea7b",
+      "Requirements": [
+        "RColorBrewer",
+        "abind",
+        "classInt",
+        "htmltools",
+        "htmlwidgets",
+        "leafem",
+        "leaflet",
+        "leafsync",
+        "rlang",
+        "sf",
+        "stars",
+        "tmaptools",
+        "units",
+        "viridisLite",
+        "widgetframe"
+      ]
+    },
+    "tmaptools": {
+      "Package": "tmaptools",
+      "Version": "3.1-1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "dfcb77371df343b663d6668d2d63ac35",
+      "Requirements": [
+        "RColorBrewer",
+        "XML",
+        "dichromat",
+        "lwgeom",
+        "magrittr",
+        "sf",
+        "stars",
+        "units",
+        "viridisLite"
+      ]
+    },
     "tzdb": {
       "Package": "tzdb",
       "Version": "0.3.0",
@@ -2213,6 +2477,22 @@
         "withr"
       ]
     },
+    "waldo": {
+      "Package": "waldo",
+      "Version": "0.4.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "035fba89d0c86e2113120f93301b98ad",
+      "Requirements": [
+        "cli",
+        "diffobj",
+        "fansi",
+        "glue",
+        "rematch2",
+        "rlang",
+        "tibble"
+      ]
+    },
     "webutils": {
       "Package": "webutils",
       "Version": "1.1",
@@ -2231,6 +2511,19 @@
       "Repository": "CRAN",
       "Hash": "ca970b96d894e90397ed20637a0c1bbe",
       "Requirements": []
+    },
+    "widgetframe": {
+      "Package": "widgetframe",
+      "Version": "0.3.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0ee89e6cb58182d39b30a5b506e04808",
+      "Requirements": [
+        "htmltools",
+        "htmlwidgets",
+        "magrittr",
+        "purrr"
+      ]
     },
     "withr": {
       "Package": "withr",

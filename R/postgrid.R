@@ -67,12 +67,12 @@ format_postgrid_request <- function(
 
   if(is.na(city)) {
     logger::log_error("No city supplied to `format_postgrid_request`")
-    stop("Must supply city")
+    rlang::abort("Must supply city")
   }
 
   if(is.na(zip)) {
     logger::log_error("No zip supplied to `format_postgrid_request`")
-    stop("Must supply zip")
+    rlang::abort("Must supply zip")
   }
 
   line_check <- check_line_args(line1 = line1, line2 = line2)
@@ -86,7 +86,7 @@ format_postgrid_request <- function(
 
   if(line_check && street_check) {
     logger::log_error("Both `street_` and `line` variables were supplied. Address specification is ambiguous. Please use only one set of variables.")
-    stop("Must supply only one of either `line` or `street_` variables")
+    rlang::abort("Must supply only one of either `line` or `street_` variables")
   } else {
     if(line_check) {
       logger::log_debug("Using `line` arguments in `format_postgrid_request`")
@@ -97,7 +97,7 @@ format_postgrid_request <- function(
         !is.na(street_type)
       )) {
         logger::log_error("Both `street_` and `line` variables were supplied. Address specification is ambiguous. Please use only one set of variables.")
-        stop("Must supply only one of either `line` or `street_` variables")
+        rlang::abort("Must supply only one of either `line` or `street_` variables")
       }
     }
 
@@ -109,7 +109,7 @@ format_postgrid_request <- function(
         !is.na(line2)
       )) {
         logger::log_error("Both `street_` and `line` variables were supplied. Address specification is ambiguous. Please use only one set of variables.")
-        stop("Must supply only one of either `line` or `street_` variables")
+        rlang::abort("Must supply only one of either `line` or `street_` variables")
       }
 
       line1 <- stringr::str_c(
@@ -127,7 +127,7 @@ format_postgrid_request <- function(
 
     if(!line_check && !street_check) {
       logger::log_error("`line1` isn't present and at least one `street_` variable is missing")
-      stop("Either `line1` or all of the `street_` variables must be supplied")
+      rlang::abort("Either `line1` or all of the `street_` variables must be supplied")
     }
   }
 
@@ -196,7 +196,7 @@ parse_postgrid_response <- function(res) {
   body <- content(res, as = "parsed", type = "application/json")
   if(body$status != "success") {
     log_error("[PostGrid]: {body$status}")
-    stop()
+    rlang::abort()
   }
 
   log_info("[PostGrid]: {body$message}")
