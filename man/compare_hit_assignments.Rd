@@ -4,10 +4,10 @@
 \alias{compare_hit_assignments}
 \title{Compare HIT Assignments}
 \usage{
-compare_hit_assignments(hit = NULL)
+compare_hit_assignments(hit)
 }
 \arguments{
-\item{The}{HIT id for which to compare all assignments}
+\item{hit}{The HIT id for which to compare all assignments}
 }
 \value{
 Nothing

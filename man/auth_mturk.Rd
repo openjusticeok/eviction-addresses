@@ -17,7 +17,7 @@ Auth MTurk
 }
 \examples{
 
-auth_mturk()
-auth_mturk(config = "config.yml")
+try(auth_mturk())
+try(auth_mturk(config = "config.yml"))
 
 }

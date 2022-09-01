@@ -51,6 +51,8 @@ check_street_args <- function(street_number, street_direction, street_name, stre
 #'
 #' @return A list with fields suitable for a PostGrid request
 #'
+#' @import assertthat
+#'
 format_postgrid_request <- function(
     line1 = NA_character_,
     line2 = NA_character_,
@@ -64,6 +66,8 @@ format_postgrid_request <- function(
     street_type = NA_character_,
     unit = NA_character_
   ) {
+
+  rlang::check_exclusive(line1, street_number)
 
   if(is.na(city)) {
     logger::log_error("No city supplied to `format_postgrid_request`")

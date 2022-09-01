@@ -9,8 +9,8 @@
 #'
 #' @examples
 #'
-#' auth_mturk()
-#' auth_mturk(config = "config.yml")
+#' try(auth_mturk())
+#' try(auth_mturk(config = "config.yml"))
 #'
 auth_mturk <- function(config = NULL) {
   if(!is.null(config)) {
@@ -63,7 +63,7 @@ auth_mturk <- function(config = NULL) {
 #' @return The HIT Type id
 #' @export
 #'
-#' @importFrom assertthat
+#' @import assertthat
 #'
 #' @examples
 #'
@@ -161,9 +161,9 @@ render_document_links <- function(links) {
 #'
 #' @import assertthat
 #'
-render_hit_layout <- function(case = NULL, layout = NULL) {
+render_hit_layout <- function(case, layout = NULL) {
   assert_that(
-
+    is.string(case)
   )
 
   if(is.null(layout)) {
@@ -171,10 +171,9 @@ render_hit_layout <- function(case = NULL, layout = NULL) {
     layout <- system.file("mturk/layout.html", package = "evictionAddresses")
   }
 
-  if(!file.exists(layout)) {
-    logger::log_error("No file found at: {layout}")
-    rlang::abort("Could not render layout: No file found at: {layout}")
-  }
+  assert_that(
+    is.readable(layout)
+  )
 
   raw_layout <- readr::read_file(layout)
 
@@ -201,6 +200,10 @@ render_hit_layout <- function(case = NULL, layout = NULL) {
   document_links_html_block <- render_document_links(document_links)
 
   rendered_layout <- stringr::str_glue(raw_layout)
+
+  assert_that(
+    is.string(rendered_layout)
+  )
 
   logger::log_debug("Hit layout rendered for case: {case}")
 
@@ -232,11 +235,17 @@ new_case_from_queue <- function() {
 #' @return A HIT
 #' @export
 #'
+#' @import assertthat
+#'
 #' @examples
 #'
 #' new_hit_from_case(case = "<insert case id>")
 #'
 new_hit_from_case <- function(case, hit_type = NULL) {
+  assert_that(
+    is.string(case)
+  )
+
   document_table <- DBI::Id(schema = "eviction_addresses", table = "document")
   hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
 
@@ -277,9 +286,14 @@ check_all_hits <- function() {
 #' @return A parsed address ready for validation
 #' @export
 #'
+#' @import assertthat
+#'
 parse_assignment_answers <- function(answers) {
-  stopifnot(is.data.frame(answers))
-  stopifnot(all(c("QuestionIdentifier", "FreeText") %in% names(answers)))
+  assert_that(
+    is.data.frame(answers),
+    has_name(answers, "QuestionIdentifier"),
+    has_name(answers, "FreeText")
+  )
 
   address <- answers |>
     dplyr::select(QuestionIdentifier, FreeText) |>
@@ -298,37 +312,40 @@ parse_assignment_answers <- function(answers) {
 
 #' @title Compare HIT Assignments
 #'
-#' @param The HIT id for which to compare all assignments
+#' @param hit The HIT id for which to compare all assignments
 #'
 #' @return Nothing
 #' @export
+#'
+#' @import assertthat
 #'
 #' @examples
 #'
 #' compare_hit_assignments(hit = "<insert hit id>")
 #'
-compare_hit_assignments <- function(hit = NULL) {
-  if(is.null(hit) || !is.character(hit)) {
-    log_error("No HIT provided to function `compare_hit_assignments()`")
-    rlang::abort("Must provide a HIT id")
-  }
+compare_hit_assignments <- function(hit) {
+  assert_that(
+    is.string(hit)
+  )
 
   res <- pyMTurkR::GetAssignments(hit = hit, get.answers = T)
 
-  if(!all(c("Assignments", "Answers") %in% names(res))) {
-    logger::log_error("The assignments list object must have fields `Assignments` and `Names`")
-    rlang::abort("Could not parse the response from MTurk API: Necessary fields not found")
-  }
+  assert_that(
+    has_name(res, "Assignments"),
+    has_name(res, "Answers"),
+    msg = "Could not parse the response from MTurk API: Necessary fields not found"
+  )
 
-  if(is.null(res$Assignments) || is.null(res$Answers)) {
-    logger::log_error("Either the Assignments or Answers field, or both, are NULL")
-    rlang::abort("Could not parse the response from MTurk API: Results are NULL")
-  }
+  assert_that(
+    is.data.frame(res$Assignments),
+    is.data.frame(res$Answers),
+    msg = "Could not parse the response from MTurk API: Fields not returned as data.frame"
+  )
 
-  if(nrow(res$Assignments) != 3) {
-    logger::log_error("Only {nrow(res$Assignments)} assignments retrieved. Need 3 to compare. Verify HIT is ready for review")
-    rlang::abort("HIT does not have three assignments. Not ready for review")
-  }
+  assert_that(
+    nrow(res$Assignments) == 3,
+    msg = "{nrow(res$Assignments)} retreived. Need 3 to compare. Are you sure this HIT is ready for review?"
+  )
 
   assignments <- res$Assignments
   answers <- res$Answers |>
