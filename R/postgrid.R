@@ -1,40 +1,3 @@
-#' @title Check Line Arguments
-#'
-#' @param line1 Line 1 of the address
-#' @param line2 Line 2 of the address
-#'
-#'
-check_line_args <- function(line1, line2) {
-  if(!is.na(line1)) {
-    return(T)
-  }
-
-  return(F)
-}
-
-
-#' @title Check Street Arguments
-#'
-#' @param street_number Street number
-#' @param street_direction Street direction
-#' @param street_name Street name
-#' @param street_type Street type
-#' @param unit Unit
-#'
-check_street_args <- function(street_number, street_direction, street_name, street_type, unit) {
-  if(all(
-    !is.na(street_number),
-    !is.na(street_direction),
-    !is.na(street_name),
-    !is.na(street_type)
-  )) {
-    return(T)
-  }
-
-  return(F)
-}
-
-
 #' @title Format PostGrid Request
 #'
 #' @param line1 The first line of an address
@@ -67,73 +30,61 @@ format_postgrid_request <- function(
     unit = NA_character_
   ) {
 
-  rlang::check_exclusive(line1, street_number)
-
-  if(is.na(city)) {
-    logger::log_error("No city supplied to `format_postgrid_request`")
-    rlang::abort("Must supply city")
-  }
-
-  if(is.na(zip)) {
-    logger::log_error("No zip supplied to `format_postgrid_request`")
-    rlang::abort("Must supply zip")
-  }
-
-  line_check <- check_line_args(line1 = line1, line2 = line2)
-  street_check <- check_street_args(
-    street_number = street_number,
-    street_direction = street_direction,
-    street_name = street_name,
-    street_type = street_type,
-    unit = unit
+  address_method <- switch(
+    rlang::check_exclusive(line1, street_number),
+    "line1" = "lines",
+    "street_number" = "parts"
   )
 
-  if(line_check && street_check) {
-    logger::log_error("Both `street_` and `line` variables were supplied. Address specification is ambiguous. Please use only one set of variables.")
-    rlang::abort("Must supply only one of either `line` or `street_` variables")
+  assert_that(
+    address_method %in% c("lines", "parts")
+  )
+
+  if(address_method == "lines") {
+    assert_that(
+      is.na(street_number),
+      is.na(street_direction),
+      is.na(street_name),
+      is.na(street_type),
+      is.na(unit)
+    )
+
+    assert_that(
+      is.string(line1) && !is.na(line1),
+      is.string(line2)
+    )
+
   } else {
-    if(line_check) {
-      logger::log_debug("Using `line` arguments in `format_postgrid_request`")
-      if(any(
-        !is.na(street_number),
-        !is.na(street_direction),
-        !is.na(street_name),
-        !is.na(street_type)
-      )) {
-        logger::log_error("Both `street_` and `line` variables were supplied. Address specification is ambiguous. Please use only one set of variables.")
-        rlang::abort("Must supply only one of either `line` or `street_` variables")
-      }
-    }
+    assert_that(
+      is.na(line1),
+      is.na(line2)
+    )
 
-    if(street_check) {
-      logger::log_debug("Using `street_` arguments in `format_postgrid_request`")
+    assert_that(
+      is.string(street_number) && !is.na(street_number),
+      is.string(street_direction) && !is.na(street_direction),
+      is.string(street_name) && !is.na(street_name),
+      is.string(street_type) && !is.na(street_type),
+      is.string(unit)
+    )
 
-      if(any(
-        !is.na(line1),
-        !is.na(line2)
-      )) {
-        logger::log_error("Both `street_` and `line` variables were supplied. Address specification is ambiguous. Please use only one set of variables.")
-        rlang::abort("Must supply only one of either `line` or `street_` variables")
-      }
+    line1 <- stringr::str_c(
+      street_number,
+      street_direction,
+      street_name,
+      street_type,
+      sep = " "
+    )
 
-      line1 <- stringr::str_c(
-        street_number,
-        street_direction,
-        street_name,
-        street_type,
-        sep = " "
-      )
-
-      if(!is.na(unit)) {
-        line2 <- unit
-      }
-    }
-
-    if(!line_check && !street_check) {
-      logger::log_error("`line1` isn't present and at least one `street_` variable is missing")
-      rlang::abort("Either `line1` or all of the `street_` variables must be supplied")
-    }
+    line2 <- unit
   }
+
+  assert_that(
+    is.string(city) && !is.na(city),
+    is.string(state) && !is.na(state),
+    is.string(zip) && !is.na(zip),
+    is.string(country) && !is.na(country)
+  )
 
   line1 <- stringr::str_squish(line1)
 
@@ -161,9 +112,18 @@ format_postgrid_request <- function(
 #' @return A PostGrid response
 #' @export
 #'
+#' @import assertthat
+#'
 send_postgrid_request <- function(address = list(), geocode = T) {
-  stopifnot(is.list(address))
-  stopifnot(rlang::is_scalar_logical(geocode))
+  assert_that(
+    is.list(address),
+    has_name(address, "line1"),
+    has_name(address, "line2"),
+    has_name(address, "city"),
+    has_name(address, "provinceOrState"),
+    has_name(address, "country"),
+    is.flag(geocode)
+  )
 
   req_body <- list(
     address = address
@@ -196,7 +156,15 @@ send_postgrid_request <- function(address = list(), geocode = T) {
 #' @return A list with values specified according to the PostGrid documentation
 #' @export
 #'
+#' @import assertthat
+#'
 parse_postgrid_response <- function(res) {
+  assert_that(
+    inherits(res, "response"),
+    has_name(res, "status_code"),
+    res$status_code == 200L
+  )
+
   body <- content(res, as = "parsed", type = "application/json")
   if(body$status != "success") {
     log_error("[PostGrid]: {body$status}")
@@ -237,4 +205,6 @@ parse_postgrid_response <- function(res) {
     vacant = body$data$details$vacant,
     firm_name = body$data$firmName
   )
+
+  return(parsed_address)
 }
