@@ -65,8 +65,8 @@ Some addresses in Tulsa County are... weird.
 There can be 'half' street numbers. Often times people mis attribute the 1/2 to the street *name* rather than *number*. See the screen shots below. Including the 1/2 in the street number correctly validates, while including it in the street name fails.
 
 ```{r, fig.width=10}
-image1 <- fig("../assets/half_number_address_1.png")
-image2 <- fig("../assets/half_number_address_2.png")
+image1 <- fig("../inst/assets/half_number_address_1.png")
+image2 <- fig("../inst/assets/half_number_address_2.png")
 
 image1
 image2
