@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!-- You must include this JavaScript file -->
+<script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
+
+<!-- For the full list of available Crowd HTML Elements and their input/output documentation,
+      please refer to https://docs.aws.amazon.com/sagemaker/latest/dg/sms-ui-template-reference.html -->
+
+<!-- You must include crowd-form so that your task submits answers to MTurk -->
+<crowd-form answer-format="flatten-objects">
+
+    <div>
+        <strong>Instructions: </strong>
+        <span>Click the link below to review the document. Collect the following information for the defendant (also referred to as "resident" or "occupant") if it's available. </span>
+        <p><b>Do not to enter the address for the attorney, the plaintiff, or the apartment building.</b></p>
+        <p>If the address for the defendant is not available, enter NA for all fields and check the box marked "Address not available".</p>
+        <p>Example: 123 E Main St N #4, Tulsa, OK 74120</p>
+        <div>
+            <div>
+                <p><strong>Links to the documents:</strong></p>
+                {document_links_html_block}
+            </div>
+
+            <div>
+                <p><strong>Address:</strong></p>
+                <p><crowd-input name="street_number" placeholder="Street Number (ex. 123)" required></crowd-input></p>
+                <p><crowd-input name="pre_direction" placeholder="Street Pre-Direction (ex. E)"></crowd-input></p>
+                <p><crowd-input name="street_name" placeholder="Street Name (ex. Main)" required></crowd-input></p>
+                <p><crowd-input name="street_type" placeholder="Street Type (ex. St)" required></crowd-input></p>
+                <p><crowd-input name="street_direction" placeholder="Street Direction (ex. N)"></crowd-input></p>
+                <p><crowd-input name="suite_id" placeholder="Apt/Suite/Unit (ex. 4)"></crowd-input></p>
+                <p><crowd-input name="city" placeholder="City (ex. Tulsa)" required></crowd-input></p>
+                <p><crowd-input name="state" placeholder="State (ex. OK)" required></crowd-input></p>
+                <p><crowd-input name="zip" placeholder="Zip Code (ex. 74120)" required></crowd-input></p>
+                <p><crowd-checkbox name="website-found">Address not available</crowd-checkbox></p>
+            </div>
+
+        </div>
+    </div>
+</crowd-form>

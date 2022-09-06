@@ -1,0 +1,5 @@
+services:
+    dashboard:
+        build: inst/shiny/dashboard/
+        ports:
+            - "3838:3838"

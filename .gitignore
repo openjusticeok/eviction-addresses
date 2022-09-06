@@ -40,3 +40,6 @@ dashboard/shiny-apps-certs
 
 test.log
 eviction-addresses-service-account.json
+.Rproj.user
+inst/doc
+docs
