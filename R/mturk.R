@@ -89,7 +89,7 @@ create_hit_type <- function(
     is.number(auto.approval.delay)
   )
 
-  hit_type <- pyMTurkR::CreateHITType(
+  res <- pyMTurkR::CreateHITType(
     title = title,
     description = description,
     reward = reward,
@@ -99,7 +99,22 @@ create_hit_type <- function(
     ...
   )
 
-  return(hit_type)
+  assert_that(
+    has_names(res, c("HITTypeId", "Valid"))
+  )
+
+  valid <- as.logical(res$Valid)
+
+  assert_that(
+    is.flag(valid),
+    isTRUE(valid)
+  )
+
+  assert_that(
+    is.string(res$HITTypeId)
+  )
+
+  return(res$HITTypeId)
 }
 
 

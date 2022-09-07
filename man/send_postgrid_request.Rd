@@ -7,7 +7,7 @@
 send_postgrid_request(address = list(), geocode = T)
 }
 \arguments{
-\item{address}{}
+\item{address}{A list with elements \code{line1}, \code{line2}, \code{city}, \code{provinceOrState}, and \code{country}}
 }
 \value{
 A PostGrid response

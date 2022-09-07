@@ -1,7 +1,7 @@
 #' @title New DB Connection
 #' @description Creates a new connection to the database
 #'
-#' @param connection_args A list of arguments to be used in the {pool} configuration. This should be created by the {config} package using `config::get()` and a `config.yml` file
+#' @param config The path to a `config.yml` file to be read by the {config} package using `config::get()`
 #'
 #' @return A database connection pool created by the {pool} package
 #' @export

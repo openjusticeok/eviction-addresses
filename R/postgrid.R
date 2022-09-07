@@ -107,7 +107,7 @@ format_postgrid_request <- function(
 
 #' @title Send PostGrid Request
 #'
-#' @param address
+#' @param address A list with elements `line1`, `line2`, `city`, `provinceOrState`, and `country`
 #'
 #' @return A PostGrid response
 #' @export
@@ -151,7 +151,7 @@ send_postgrid_request <- function(address = list(), geocode = T) {
 
 #' @title Parse PostGrid Response
 #'
-#' @param res
+#' @param res A response from the Postgrid API
 #'
 #' @return A list with values specified according to the PostGrid documentation
 #' @export

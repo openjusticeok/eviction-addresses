@@ -7,7 +7,7 @@
 parse_postgrid_response(res)
 }
 \arguments{
-\item{res}{}
+\item{res}{A response from the Postgrid API}
 }
 \value{
 A list with values specified according to the PostGrid documentation
