@@ -1,4 +1,11 @@
+options(pyMTurkR.sandbox = T)
 logger::log_threshold(FATAL)
+
+
+test_that("MTurk auth succeeds with valid config", {
+  res <- mturk_auth("config.yml")
+  expect_true(res)
+})
 
 test_that("MTurk auth fails on no config or env variables", {
   withr::local_envvar(
@@ -8,8 +15,12 @@ test_that("MTurk auth fails on no config or env variables", {
     )
   )
 
-  res <- auth_mturk()
+  res <- mturk_auth()
 
   expect_false(res)
 })
 
+
+test_that("Create HIT Type works as expected", {
+  res <- create_hit_type()
+})

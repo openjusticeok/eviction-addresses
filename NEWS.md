@@ -1,4 +1,6 @@
 # evictionAddresses (development version)
+- Added tests for `mturk.R` functions
+- Added `{webmockr}` and `{vcr}` as `Suggests` in `DESCRIPTION`
 
 # evictionAddresses 0.0.0.9000
 
