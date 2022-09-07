@@ -1,4 +1,4 @@
-#' @title Auth MTurk
+#' @title MTurk Authorization
 #'
 #' @param config A file path to a config.yml
 #'
@@ -9,10 +9,10 @@
 #'
 #' @examples
 #'
-#' try(auth_mturk())
-#' try(auth_mturk(config = "config.yml"))
+#' try(mturk_auth())
+#' try(mturk_auth(config = "config.yml"))
 #'
-auth_mturk <- function(config = NULL) {
+mturk_auth <- function(config = NULL) {
   if(!is.null(config)) {
     logger::log_debug("Config file supplied; using config variables")
 
