@@ -5,7 +5,7 @@
 \alias{boto3}
 \title{Boto3}
 \format{
-An object of class \code{python.builtin.module} (inherits from \code{python.builtin.object}) of length 0.
+An object of class \code{NULL} of length 0.
 }
 \usage{
 boto3

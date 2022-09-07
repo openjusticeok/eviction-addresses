@@ -2,13 +2,15 @@
 % Please edit documentation in R/boto3.R
 \name{install_boto3}
 \alias{install_boto3}
-\title{Title}
+\title{Install Boto3}
 \usage{
 install_boto3(method = "auto", conda = "auto")
 }
 \arguments{
-\item{conda}{}
+\item{method}{A string (character vector length one)}
+
+\item{conda}{A string (character vector length one)}
 }
 \description{
-Title
+Install Boto3
 }
