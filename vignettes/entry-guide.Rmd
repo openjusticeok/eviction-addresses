@@ -2,9 +2,11 @@
 title: "Eviction Address Entry Guide"
 author: "Brancen Gregory"
 date: "1/12/2022"
-output:
-  html_document:
-    df_print: paged
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Eviction Address Entry Guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}

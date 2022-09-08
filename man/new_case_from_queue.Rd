@@ -14,6 +14,8 @@ New Case from Queue
 }
 \examples{
 
+\dontrun{
 new_case_from_queue()
+}
 
 }

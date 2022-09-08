@@ -1,12 +1,12 @@
 #' @title Eviction Addresses Dashboard Server
-#' @description The server function passed to `shinyApp`
+#' @description Generates the server function passed to `shinyApp`
 #'
-#' @param input The server input
-#' @param output The server output
-#' @param session The server session
+#' @param config The path to a config file
 #'
 #' @return A Shiny server function
 #' @export
+#'
+#' @import shiny shinydashboard
 #'
 dashboard_server <- function(config) {
 
@@ -24,27 +24,25 @@ dashboard_server <- function(config) {
       file = config
     )
 
-    db <- new_db_connection(connection_args = connection_args)
+    db <- new_db_connection()
     shiny::onStop(function() {
       pool::poolClose(db)
     })
 
-    user_base <- get_users_from_db(
-      conn = db
-    )
+    user_base <- get_users_from_db(db)
 
     # call login module supplying data frame, user and password cols and reactive trigger
     credentials <- shinyauthr::loginServer(
       id = "login",
       data = user_base,
-      user_col = user,
-      pwd_col = password_hash,
+      user_col = "user",
+      pwd_col = "password_hash",
       sodium_hashed = TRUE,
       cookie_logins = TRUE,
-      sessionid_col = sessionid,
+      sessionid_col = "sessionid",
       cookie_getter = get_sessions_from_db(db),
       cookie_setter = add_session_to_db(db),
-      log_out = reactive(logout_init())
+      log_out = shiny::reactive(logout_init())
     )
 
     # call the logout module with reactive trigger to hide/show
@@ -340,6 +338,9 @@ dashboard_server <- function(config) {
         )
       )
     })
+
+    address_entered <- NULL
+    address_validated <- NULL
 
     observeEvent(input$address_validate, {
 

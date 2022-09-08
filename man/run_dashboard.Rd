@@ -4,10 +4,12 @@
 \alias{run_dashboard}
 \title{Run Dashboard}
 \usage{
-run_dashboard(config, ...)
+run_dashboard(config, db, ...)
 }
 \arguments{
 \item{config}{The path to a config.yml file}
+
+\item{db}{A database connection pool created with \code{pool::dbPool}}
 
 \item{...}{Additional arguments passed to \code{shiny::shinyApp}}
 }

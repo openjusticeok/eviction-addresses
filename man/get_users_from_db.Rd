@@ -4,10 +4,10 @@
 \alias{get_users_from_db}
 \title{Get Users from DB}
 \usage{
-get_users_from_db(conn = db)
+get_users_from_db(db)
 }
 \arguments{
-\item{conn}{The database connection}
+\item{db}{A database connection pool created with \code{pool::dbPool}}
 }
 \value{
 A tibble of user info

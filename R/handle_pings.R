@@ -13,11 +13,13 @@ handle_ping <- function() {
 #' @title Handle DB Ping
 #' @description A plumber handler that pings the database
 #'
+#' @param db A database connection pool created with `pool::dbPool`
+#'
 #' @return Empty
 #' @export
 #'
-handle_dbping <- function() {
-  test <- DBI::dbGetQuery(ojodb, "SELECT NULL as n")
+handle_dbping <- function(db) {
+  test <- DBI::dbGetQuery(db, "SELECT NULL as n")
 
   log_success("db pong")
   return()
@@ -34,10 +36,10 @@ handle_dbpingfuture <- function() {
   promises::future_promise({
     logger::log_appender(appender_tee("test.log"))
 
-    ojodb <- new_db_connection(connection_args)
-    on.exit(pool::poolClose(ojodb))
+    db <- new_db_connection()
+    on.exit(pool::poolClose(db))
 
-    test <- DBI::dbGetQuery(ojodb, "SELECT NULL as n")
+    test <- DBI::dbGetQuery(db, "SELECT NULL as n")
     logger::log_info("Going to sleep now")
     Sys.sleep(10)
     return()

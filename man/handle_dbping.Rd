@@ -4,7 +4,10 @@
 \alias{handle_dbping}
 \title{Handle DB Ping}
 \usage{
-handle_dbping()
+handle_dbping(db)
+}
+\arguments{
+\item{db}{A database connection pool created with \code{pool::dbPool}}
 }
 \value{
 Empty

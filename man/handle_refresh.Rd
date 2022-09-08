@@ -4,7 +4,7 @@
 \alias{handle_refresh}
 \title{Handle API Refresh}
 \usage{
-handle_refresh(connection_args)
+handle_refresh()
 }
 \value{
 A 200 if successful

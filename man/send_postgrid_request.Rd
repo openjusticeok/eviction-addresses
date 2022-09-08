@@ -4,10 +4,18 @@
 \alias{send_postgrid_request}
 \title{Send PostGrid Request}
 \usage{
-send_postgrid_request(address = list(), geocode = T)
+send_postgrid_request(
+  postgrid_args = postgrid_args,
+  address = list(),
+  geocode = T
+)
 }
 \arguments{
+\item{postgrid_args}{A list of Postgrid args created by reading the \code{postgrid} section of a \code{config.yml} file with \code{config::get(value = "postgrid")}}
+
 \item{address}{A list with elements \code{line1}, \code{line2}, \code{city}, \code{provinceOrState}, and \code{country}}
+
+\item{geocode}{A flag (logical vector of length one) indicating whether to geocode the address. Uses another Postgrid unit. Defaults to \code{TRUE}}
 }
 \value{
 A PostGrid response

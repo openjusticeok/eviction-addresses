@@ -7,15 +7,11 @@
 dashboard_server(config)
 }
 \arguments{
-\item{input}{The server input}
-
-\item{output}{The server output}
-
-\item{session}{The server session}
+\item{config}{The path to a config file}
 }
 \value{
 A Shiny server function
 }
 \description{
-The server function passed to \code{shinyApp}
+Generates the server function passed to \code{shinyApp}
 }

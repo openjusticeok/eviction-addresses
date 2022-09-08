@@ -4,7 +4,10 @@
 \alias{get_case_from_queue}
 \title{Get Case from Queue}
 \usage{
-get_case_from_queue()
+get_case_from_queue(db)
+}
+\arguments{
+\item{db}{A database connection pool created with \code{pool::dbPool}}
 }
 \value{
 A case id

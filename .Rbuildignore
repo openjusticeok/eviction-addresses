@@ -1,3 +1,12 @@
+^client-id\.json$
+^build\.R$
+^build_test\.R$
+^compose\.yml$
+^config\.yml$
+^eviction-addresses-service-account\.json$
+^googlecloudrunner-auth-key\.json$
+^shiny-apps-certs$
+^test.log$
 ^requirements\.txt$
 ^renv$
 ^renv\.lock$

@@ -107,14 +107,16 @@ format_postgrid_request <- function(
 
 #' @title Send PostGrid Request
 #'
+#' @param postgrid_args A list of Postgrid args created by reading the `postgrid` section of a `config.yml` file with `config::get(value = "postgrid")`
 #' @param address A list with elements `line1`, `line2`, `city`, `provinceOrState`, and `country`
+#' @param geocode A flag (logical vector of length one) indicating whether to geocode the address. Uses another Postgrid unit. Defaults to `TRUE`
 #'
 #' @return A PostGrid response
 #' @export
 #'
 #' @import assertthat
 #'
-send_postgrid_request <- function(address = list(), geocode = T) {
+send_postgrid_request <- function(postgrid_args = postgrid_args, address = list(), geocode = T) {
   assert_that(
     is.list(address),
     has_name(address, "line1"),
@@ -165,7 +167,7 @@ parse_postgrid_response <- function(res) {
     res$status_code == 200L
   )
 
-  body <- content(res, as = "parsed", type = "application/json")
+  body <- httr::content(res, as = "parsed", type = "application/json")
   if(body$status != "success") {
     log_error("[PostGrid]: {body$status}")
     rlang::abort()

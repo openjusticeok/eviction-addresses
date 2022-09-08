@@ -4,9 +4,11 @@
 \alias{get_documents_by_case}
 \title{Get Documents by Case}
 \usage{
-get_documents_by_case(id)
+get_documents_by_case(db, id)
 }
 \arguments{
+\item{db}{A database connection pool created with \code{pool::dbPool}}
+
 \item{id}{The id of the case for which to return documents}
 }
 \value{

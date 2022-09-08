@@ -19,6 +19,8 @@ New Hit from Case
 }
 \examples{
 
+\dontrun{
 new_hit_from_case(case = "<insert case id>")
+}
 
 }

@@ -6,10 +6,11 @@
 #' documents, stores them in a Google Cloud bucket, then creates an internal
 #' link to the document.
 #'
+#'
 #' @return A 200, if successful
 #' @export
 #'
-handle_hydrate <- function(connection_args) {
+handle_hydrate <- function() {
 
   f <- function(res) {
     ua <- httr::user_agent(agent = "1ecbd577-793f-4a38-b82f-e361ed335168")
@@ -20,7 +21,7 @@ handle_hydrate <- function(connection_args) {
 
       googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
 
-      ojodb <- new_db_connection(connection_args)
+      ojodb <- new_db_connection()
       on.exit(pool::poolClose(ojodb))
 
       query <- dplyr::sql("SELECT id, link FROM eviction_addresses.document WHERE internal_link IS NULL ORDER BY created_at;")

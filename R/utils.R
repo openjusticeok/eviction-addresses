@@ -27,8 +27,8 @@ has_names <- function(x, names) {
 }
 
 skip_if_no_config <- function() {
-  skip_if(
-    !file.exists("config.yml")
+  testthat::skip_if_not(
+    file.exists("config.yml")
   )
 }
 
@@ -37,8 +37,8 @@ skip_if_no_config <- function() {
 #' @export
 #'
 skip_if_no_mturk <- function() {
-  skip_if(
-    !mturk_auth()
+  testthat::skip_if_not(
+    mturk_auth()
   )
 }
 

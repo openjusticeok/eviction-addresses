@@ -1,9 +1,11 @@
 #' @title Get Case from Queue
 #'
+#' @param db A database connection pool created with `pool::dbPool`
+#'
 #' @return A case id
 #' @export
 #'
-get_case_from_queue <- function() {
+get_case_from_queue <- function(db) {
 
   pool::poolWithTransaction(db, func = function(conn) {
     case <- DBI::dbGetQuery(

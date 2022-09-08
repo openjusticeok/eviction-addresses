@@ -9,7 +9,7 @@ get_sessions_from_db(conn, cookie_expiry = 7)
 \arguments{
 \item{conn}{The database connection}
 
-\item{expiry}{The cookie expiration}
+\item{cookie_expiry}{The cookie expiration}
 }
 \value{
 A tibble of session info

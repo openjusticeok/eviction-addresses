@@ -1,9 +1,7 @@
 #' @title Add Session to DB
 #' @description Adds a session to the database for {shinyauth}
 #'
-#' @param user The username associated with this session
-#' @param sessionid The id to use for this session
-#' @param conn The database connection
+#' @param db A database connection Pool
 #'
 #' @return Returns invisibly if successful
 #' @export

@@ -9,8 +9,10 @@
 #'
 #' @examples
 #'
+#' \dontrun{
 #' try(mturk_auth())
 #' try(mturk_auth(config = "config.yml"))
+#' }
 #'
 mturk_auth <- function(config = NULL) {
   if(!is.null(config)) {
@@ -67,9 +69,11 @@ mturk_auth <- function(config = NULL) {
 #'
 #' @examples
 #'
+#' \dontrun{
 #' create_hit_type()
 #' create_hit_type(reward = "0.20")
 #' create_hit_type(duration = pyMTurkR::seconds(minutes = 20))
+#' }
 #'
 create_hit_type <- function(
   title = "eviction-address-transcription",
@@ -233,7 +237,9 @@ render_hit_layout <- function(case, layout = NULL) {
 #'
 #' @examples
 #'
+#' \dontrun{
 #' new_case_from_queue()
+#' }
 #'
 new_case_from_queue <- function() {
   res <- get_case_from_queue()
@@ -254,7 +260,9 @@ new_case_from_queue <- function() {
 #'
 #' @examples
 #'
+#' \dontrun{
 #' new_hit_from_case(case = "<insert case id>")
+#' }
 #'
 new_hit_from_case <- function(case, hit_type = NULL) {
   assert_that(
@@ -301,6 +309,7 @@ check_all_hits <- function() {
 #' @return A parsed address ready for validation
 #' @export
 #'
+#' @importFrom rlang .data
 #' @import assertthat
 #'
 parse_assignment_answers <- function(answers) {
@@ -311,7 +320,7 @@ parse_assignment_answers <- function(answers) {
   )
 
   address <- answers |>
-    dplyr::select(QuestionIdentifier, FreeText) |>
+    dplyr::select(.data$QuestionIdentifier, .data$FreeText) |>
     tibble::deframe() |>
     as.list()
 
@@ -336,8 +345,9 @@ parse_assignment_answers <- function(answers) {
 #'
 #' @examples
 #'
+#' \dontrun{
 #' compare_hit_assignments(hit = "<insert hit id>")
-#'
+#' }
 compare_hit_assignments <- function(hit) {
   assert_that(
     is.string(hit)
@@ -367,7 +377,7 @@ compare_hit_assignments <- function(hit) {
     split(~AssignmentId)
 
 
-  return(hit_assignments)
+  return()
 }
 
 

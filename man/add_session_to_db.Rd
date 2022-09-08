@@ -7,11 +7,7 @@
 add_session_to_db(db)
 }
 \arguments{
-\item{user}{The username associated with this session}
-
-\item{sessionid}{The id to use for this session}
-
-\item{conn}{The database connection}
+\item{db}{A database connection Pool}
 }
 \value{
 Returns invisibly if successful

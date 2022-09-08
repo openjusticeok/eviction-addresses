@@ -2,10 +2,11 @@
 title: "Eviction Addresses Pipeline"
 author: "Brancen Gregory"
 date: "7/9/2021"
-output:
-  pdf_document:
-    toc: yes
-    number_sections: true
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Eviction Addresses Pipeline Proposal}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 editor_options: 
   markdown: 
     wrap: 72

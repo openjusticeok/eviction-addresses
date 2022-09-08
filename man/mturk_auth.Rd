@@ -17,7 +17,9 @@ MTurk Authorization
 }
 \examples{
 
+\dontrun{
 try(mturk_auth())
 try(mturk_auth(config = "config.yml"))
+}
 
 }

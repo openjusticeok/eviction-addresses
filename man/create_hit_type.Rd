@@ -37,8 +37,10 @@ Create HIT Type
 }
 \examples{
 
+\dontrun{
 create_hit_type()
 create_hit_type(reward = "0.20")
 create_hit_type(duration = pyMTurkR::seconds(minutes = 20))
+}
 
 }

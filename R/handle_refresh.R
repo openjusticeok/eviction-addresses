@@ -13,12 +13,12 @@
 #' @import DBI
 #' @import promises
 #'
-handle_refresh <- function(connection_args) {
+handle_refresh <- function() {
   f <- function(res) {
     future_promise({
       log_appender(appender_tee("test.log"))
 
-      db <- new_db_connection(connection_args)
+      db <- new_db_connection()
       on.exit(pool::poolClose(db))
 
       ## Refresh both materialized views to ingest new eviction cases and minutes
