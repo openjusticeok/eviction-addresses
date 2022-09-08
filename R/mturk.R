@@ -85,6 +85,11 @@ create_hit_type <- function(
   ...
 ) {
   assert_that(
+    pyMTurkR::CheckAWSKeys(),
+    msg = "AWS keys not available"
+  )
+
+  assert_that(
     is.string(title),
     is.string(description),
     is.string(reward),
@@ -104,7 +109,8 @@ create_hit_type <- function(
   )
 
   assert_that(
-    has_names(res, c("HITTypeId", "Valid"))
+    has_names(res, c("HITTypeId", "Valid")),
+    msg = "The response from pyMTurkR did not succeed or has an unexpected structure"
   )
 
   valid <- as.logical(res$Valid)
@@ -141,6 +147,8 @@ create_hit_type <- function(
 #'
 render_document_links <- function(links) {
   assert_that(
+    assertthat::not_empty(links),
+    assertthat::noNA(links),
     is.character(links),
     length(links) > 0
   )
