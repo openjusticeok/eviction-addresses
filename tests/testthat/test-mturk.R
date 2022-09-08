@@ -6,10 +6,12 @@ logger::log_threshold(FATAL)
 
 
 test_that("MTurk auth succeeds with valid config", {
-  skip_on_covr()
-  skip_if_no_config()
+  #skip_on_covr()
+  #skip_if_no_config()
 
-  res <- mturk_auth("config.yml")
+  vcr::use_cassette("mturk_auth", {
+    res <- mturk_auth("config.yml")
+  })
   expect_true(res)
 })
 

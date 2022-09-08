@@ -1,9 +1,3 @@
-boto3 <- NULL
-
-rlang::on_load(
-  boto3 <<- reticulate::import("boto3", delay_load = T)
-)
-
 #' @title Install Boto3
 #'
 #' @param method A string (character vector length one)

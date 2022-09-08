@@ -1,5 +1,5 @@
 .onLoad <- function(libname, pkgname) {
-  rlang::run_on_load()
+  reticulate::configure_environment(pkgname)
 
   invisible()
 }

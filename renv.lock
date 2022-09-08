@@ -8,6 +8,11 @@
       }
     ]
   },
+  "Python": {
+    "Version": "3.10.6",
+    "Type": "virtualenv",
+    "Name": "./renv/python/virtualenvs/renv-python-3.10"
+  },
   "Packages": {
     "DBI": {
       "Package": "DBI",
@@ -1999,10 +2004,10 @@
     },
     "reticulate": {
       "Package": "reticulate",
-      "Version": "1.25",
+      "Version": "1.26",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "786b311743eb8cd347491f8f0a571941",
+      "Hash": "91c176c84a2e3558572d2cbaddc08bd4",
       "Requirements": [
         "Matrix",
         "Rcpp",
