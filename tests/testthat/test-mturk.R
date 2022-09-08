@@ -117,7 +117,7 @@ test_that("Create HIT Type returns correct value with mock pyMTurkR response", {
 
 test_that("Render document links rejects args correctly", {
   links <- c(1, 2, 3)
-  expect_error(render_document_links(links), "is not a character")
+  expect_error(render_document_links(links), "character")
 
   links <- NA_character_
   expect_error(render_document_links(links), "missing values")
