@@ -1,6 +1,6 @@
 Tests and Coverage
 ================
-06 September, 2022 11:37:30
+08 September, 2022 09:56:59
 
 -   <a href="#coverage" id="toc-coverage">Coverage</a>
 -   <a href="#unit-tests" id="toc-unit-tests">Unit Tests</a>
@@ -15,8 +15,9 @@ Coverage summary is created using the
 
 | Object                                                    | Coverage (%) |
 |:----------------------------------------------------------|:------------:|
-| evictionAddresses                                         |     5.70     |
+| evictionAddresses                                         |     8.44     |
 | [R/add_session_to_db.R](../R/add_session_to_db.R)         |     0.00     |
+| [R/boto3.R](../R/boto3.R)                                 |     0.00     |
 | [R/dashboard_server.R](../R/dashboard_server.R)           |     0.00     |
 | [R/dashboard_ui.R](../R/dashboard_ui.R)                   |     0.00     |
 | [R/get_case_from_queue.R](../R/get_case_from_queue.R)     |     0.00     |
@@ -26,11 +27,13 @@ Coverage summary is created using the
 | [R/handle_hydrate.R](../R/handle_hydrate.R)               |     0.00     |
 | [R/handle_pings.R](../R/handle_pings.R)                   |     0.00     |
 | [R/handle_refresh.R](../R/handle_refresh.R)               |     0.00     |
-| [R/mturk.R](../R/mturk.R)                                 |     0.00     |
 | [R/new_db_connection.R](../R/new_db_connection.R)         |     0.00     |
 | [R/run_api.R](../R/run_api.R)                             |     0.00     |
 | [R/run_dashboard.R](../R/run_dashboard.R)                 |     0.00     |
+| [R/zzz.R](../R/zzz.R)                                     |     0.00     |
+| [R/mturk.R](../R/mturk.R)                                 |    12.10     |
 | [R/postgrid.R](../R/postgrid.R)                           |    46.34     |
+| [R/utils.R](../R/utils.R)                                 |    64.71     |
 
 <br>
 
@@ -41,7 +44,10 @@ Unit Test summary is created using the
 
 | file                                        |   n |  time | error | failed | skipped | warning |
 |:--------------------------------------------|----:|------:|------:|-------:|--------:|--------:|
-| [test-postgrid.R](testthat/test-postgrid.R) |   4 | 0.061 |     0 |      0 |       0 |       0 |
+| [test-boto3.R](testthat/test-boto3.R)       |   1 | 0.018 |     0 |      0 |       0 |       0 |
+| [test-mturk.R](testthat/test-mturk.R)       |   3 | 0.798 |     0 |      0 |       0 |       0 |
+| [test-postgrid.R](testthat/test-postgrid.R) |   4 | 0.049 |     0 |      0 |       0 |       0 |
+| [test-utils.R](testthat/test-utils.R)       |   2 | 0.004 |     0 |      0 |       0 |       0 |
 
 <details closed>
 <summary>
@@ -50,10 +56,16 @@ Show Detailed Test Results
 
 | file                                                | context  | test                                                | status |   n |  time |
 |:----------------------------------------------------|:---------|:----------------------------------------------------|:-------|----:|------:|
-| [test-postgrid.R](testthat/test-postgrid.R#L38)     | postgrid | postgrid formatting succeeds with line vars         | PASS   |   1 | 0.003 |
+| [test-boto3.R](testthat/test-boto3.R#L2)            | boto3    | multiplication works                                | PASS   |   1 | 0.018 |
+| [test-mturk.R](testthat/test-mturk.R#L15)           | mturk    | MTurk auth succeeds with valid config               | PASS   |   1 | 0.004 |
+| [test-mturk.R](testthat/test-mturk.R#L28)           | mturk    | MTurk auth fails on no config or env variables      | PASS   |   1 | 0.002 |
+| [test-mturk.R](testthat/test-mturk.R#L36_L39)       | mturk    | Create HIT Type works as expected                   | PASS   |   1 | 0.792 |
+| [test-postgrid.R](testthat/test-postgrid.R#L38)     | postgrid | postgrid formatting succeeds with line vars         | PASS   |   1 | 0.004 |
 | [test-postgrid.R](testthat/test-postgrid.R#L65)     | postgrid | postgrid formatting succeeds with street vars       | PASS   |   1 | 0.003 |
-| [test-postgrid.R](testthat/test-postgrid.R#L69_L78) | postgrid | postgrid formatting fails with line and street vars | PASS   |   1 | 0.032 |
-| [test-postgrid.R](testthat/test-postgrid.R#L82_L88) | postgrid | postgrid formatting errors with neither vars        | PASS   |   1 | 0.023 |
+| [test-postgrid.R](testthat/test-postgrid.R#L69_L78) | postgrid | postgrid formatting fails with line and street vars | PASS   |   1 | 0.027 |
+| [test-postgrid.R](testthat/test-postgrid.R#L82_L88) | postgrid | postgrid formatting errors with neither vars        | PASS   |   1 | 0.015 |
+| [test-utils.R](testthat/test-utils.R#L8)            | utils    | Has names works as expected                         | PASS   |   1 | 0.002 |
+| [test-utils.R](testthat/test-utils.R#L13)           | utils    | Has names fails as expected                         | PASS   |   1 | 0.002 |
 
 </details>
 <details>
