@@ -36,7 +36,7 @@ handle_dbpingfuture <- function() {
   promises::future_promise({
     logger::log_appender(appender_tee("test.log"))
 
-    db <- new_db_connection()
+    db <- new_db_pool()
     on.exit(pool::poolClose(db))
 
     test <- DBI::dbGetQuery(db, "SELECT NULL as n")

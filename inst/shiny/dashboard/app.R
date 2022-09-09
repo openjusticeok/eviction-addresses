@@ -11,7 +11,7 @@ connection_args <- config::get('database')
 
 api_url <- "https://eviction-addresses-api-ie5mdr3jgq-uc.a.run.app"
 
-db <- new_db_connection(connection_args)
+db <- new_db_pool(connection_args)
 
 ui <- dashboard_ui(cookie_expiry)
 server <- dashboard_server(connection_args)

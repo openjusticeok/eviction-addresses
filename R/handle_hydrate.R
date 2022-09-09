@@ -21,7 +21,7 @@ handle_hydrate <- function() {
 
       googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
 
-      ojodb <- new_db_connection()
+      ojodb <- new_db_pool()
       on.exit(pool::poolClose(ojodb))
 
       query <- dplyr::sql("SELECT id, link FROM eviction_addresses.document WHERE internal_link IS NULL ORDER BY created_at;")

@@ -18,7 +18,7 @@ handle_refresh <- function() {
     future_promise({
       log_appender(appender_tee("test.log"))
 
-      db <- new_db_connection()
+      db <- new_db_pool()
       on.exit(pool::poolClose(db))
 
       ## Refresh both materialized views to ingest new eviction cases and minutes

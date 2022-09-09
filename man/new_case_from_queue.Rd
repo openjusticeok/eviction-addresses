@@ -4,7 +4,10 @@
 \alias{new_case_from_queue}
 \title{New Case from Queue}
 \usage{
-new_case_from_queue()
+new_case_from_queue(db)
+}
+\arguments{
+\item{db}{A database connection pool created with \code{pool::db}}
 }
 \value{
 A case id from the queue

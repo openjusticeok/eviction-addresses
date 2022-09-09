@@ -4,7 +4,7 @@
 \alias{new_hit_from_case}
 \title{New Hit from Case}
 \usage{
-new_hit_from_case(case, hit_type = NULL)
+new_hit_from_case(db, case, hit_type = NULL)
 }
 \arguments{
 \item{case}{The case id from which to create a new HIT}

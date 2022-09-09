@@ -2,7 +2,7 @@
 % Please edit documentation in R/mturk.R
 \name{mturk_auth}
 \alias{mturk_auth}
-\title{MTurk Authorization}
+\title{MTurk Authentication}
 \usage{
 mturk_auth(config = NULL)
 }
@@ -13,7 +13,7 @@ mturk_auth(config = NULL)
 A logical/boolean representing whether we successfully connected to MTurk
 }
 \description{
-MTurk Authorization
+MTurk Authentication
 }
 \examples{
 

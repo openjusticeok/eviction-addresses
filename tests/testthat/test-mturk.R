@@ -34,7 +34,7 @@ test_that("Create HIT Type works as expected", {
 
   mturk_auth("config.yml")
   testthat::expect_error(
-    create_hit_type(),
+    new_hit_type(),
     NA
   )
 })
@@ -48,7 +48,7 @@ test_that("Create HIT Type fails with no aws keys", {
   )
 
   expect_error(
-    create_hit_type(),
+    new_hit_type(),
     regexp = "(?i)aws keys"
   )
 })
@@ -57,62 +57,62 @@ test_that("Create HIT Type returns a string", {
   skip_on_covr()
   skip_if_no_config()
 
-  res <- create_hit_type()
+  res <- new_hit_type()
 
   expect_vector(res, ptype = "character", size = 1)
 })
 
 test_that("Create HIT Type fails on bad response from pyMTurkR", {
   mockery::stub(
-    create_hit_type,
+    new_hit_type,
     'pyMTurkR::CreateHITType',
     errorCondition("request failed")
   )
-  expect_error(create_hit_type(), regexp = "(?i)response from pyMTurkR")
+  expect_error(new_hit_type(), regexp = "(?i)response from pyMTurkR")
 
   mockery::stub(
-    create_hit_type,
+    new_hit_type,
     'pyMTurkR::CreateHITType',
     NULL
   )
-  expect_error(create_hit_type(), regexp = "(?i)response from pyMTurkR")
+  expect_error(new_hit_type(), regexp = "(?i)response from pyMTurkR")
 
   mockery::stub(
-    create_hit_type,
+    new_hit_type,
     'pyMTurkR::CreateHITType',
     list(test = 1, b = "two")
   )
-  expect_error(create_hit_type(), regexp = "(?i)response from pyMTurkR")
+  expect_error(new_hit_type(), regexp = "(?i)response from pyMTurkR")
 
   mockery::stub(
-    create_hit_type,
+    new_hit_type,
     'pyMTurkR::CreateHITType',
     list(HITTypeId = "blah", Valid = "test")
   )
-  expect_error(create_hit_type(), "is not TRUE")
+  expect_error(new_hit_type(), "is not TRUE")
 
   mockery::stub(
-    create_hit_type,
+    new_hit_type,
     'pyMTurkR::CreateHITType',
     list(HITTypeId = "blah", Valid = F)
   )
-  expect_error(create_hit_type(), "is not TRUE")
+  expect_error(new_hit_type(), "is not TRUE")
 
   mockery::stub(
-    create_hit_type,
+    new_hit_type,
     'pyMTurkR::CreateHITType',
     list(HITTypeId = 1, Valid = T)
   )
-  expect_error(create_hit_type(), "is not a string")
+  expect_error(new_hit_type(), "is not a string")
 })
 
 test_that("Create HIT Type returns correct value with mock pyMTurkR response", {
   mockery::stub(
-    create_hit_type,
+    new_hit_type,
     'pyMTurkR::CreateHITType',
     list(HITTypeId = "test_id", Valid = T)
   )
-  expect_equal(create_hit_type(), "test_id")
+  expect_equal(new_hit_type(), "test_id")
 })
 
 test_that("Render document links rejects args correctly", {
@@ -136,6 +136,27 @@ test_that("Render documents returns expected value with sample links", {
     render_document_links(links),
     "<a href=\"https://google.com\" target=\"_blank\">Document 1</a><br><a href=\"https://twitter.com\" target=\"_blank\">Document 2</a>"
   )
+})
+
+
+test_that("Render HIT layout works with mocked db", {
+  skip_on_covr()
+
+  db <- new_db_pool("config.yml")
+  res <- get_case_from_queue(db)
+  pool::poolClose(db)
+
+  expect_type(res, "character")
+})
+
+
+test_that("Parse assignment answer works", {
+  answer <- data.frame(
+    QuestionIdentifier = "",
+    FreeText = ""
+  )
+
+  expect_type(parse_assignment_answer(answer), "list")
 })
 
 

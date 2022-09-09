@@ -54,7 +54,8 @@ Suggests:
     callr,
     withr,
     patchwork,
-    figpatch
+    figpatch,
+    dittodb
 VignetteBuilder: knitr
 URL: https://openjusticeok.github.io/eviction-addresses/
 Config/reticulate:

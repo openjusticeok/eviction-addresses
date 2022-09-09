@@ -4,9 +4,11 @@
 \alias{render_hit_layout}
 \title{Render HIT Layout}
 \usage{
-render_hit_layout(case, layout = NULL)
+render_hit_layout(db, case, layout = NULL)
 }
 \arguments{
+\item{db}{A database pool created with \code{pool::dbPool}}
+
 \item{case}{A case id used to render the layout}
 
 \item{layout}{A file path to an XML layout}

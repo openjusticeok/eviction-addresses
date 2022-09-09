@@ -1,6 +1,6 @@
 Tests and Coverage
 ================
-08 September, 2022 14:15:50
+08 September, 2022 15:05:50
 
 -   <a href="#coverage" id="toc-coverage">Coverage</a>
 -   <a href="#unit-tests" id="toc-unit-tests">Unit Tests</a>
@@ -44,8 +44,8 @@ Unit Test summary is created using the
 
 | file                                        |   n |  time | error | failed | skipped | warning |
 |:--------------------------------------------|----:|------:|------:|-------:|--------:|--------:|
-| [test-boto3.R](testthat/test-boto3.R)       |   1 | 0.003 |     0 |      0 |       0 |       0 |
-| [test-mturk.R](testthat/test-mturk.R)       |  16 | 0.729 |     0 |      0 |       0 |       0 |
+| [test-boto3.R](testthat/test-boto3.R)       |   1 | 0.018 |     0 |      0 |       0 |       0 |
+| [test-mturk.R](testthat/test-mturk.R)       |  16 | 1.193 |     0 |      0 |       0 |       0 |
 | [test-postgrid.R](testthat/test-postgrid.R) |   4 | 0.058 |     0 |      0 |       0 |       0 |
 | [test-utils.R](testthat/test-utils.R)       |   2 | 0.004 |     0 |      0 |       0 |       0 |
 
@@ -56,20 +56,20 @@ Show Detailed Test Results
 
 | file                                                | context  | test                                                              | status |   n |  time |
 |:----------------------------------------------------|:---------|:------------------------------------------------------------------|:-------|----:|------:|
-| [test-boto3.R](testthat/test-boto3.R#L2)            | boto3    | multiplication works                                              | PASS   |   1 | 0.003 |
-| [test-mturk.R](testthat/test-mturk.R#L15)           | mturk    | MTurk auth succeeds with valid config                             | PASS   |   1 | 0.002 |
-| [test-mturk.R](testthat/test-mturk.R#L28)           | mturk    | MTurk auth fails on no config or env variables                    | PASS   |   1 | 0.002 |
-| [test-mturk.R](testthat/test-mturk.R#L36_L39)       | mturk    | Create HIT Type works as expected                                 | PASS   |   1 | 0.350 |
-| [test-mturk.R](testthat/test-mturk.R#L50_L53)       | mturk    | Create HIT Type fails with no aws keys                            | PASS   |   1 | 0.005 |
-| [test-mturk.R](testthat/test-mturk.R#L62)           | mturk    | Create HIT Type returns a string                                  | PASS   |   1 | 0.325 |
-| [test-mturk.R](testthat/test-mturk.R#L71)           | mturk    | Create HIT Type fails on bad response from pyMTurkR               | PASS   |   6 | 0.028 |
+| [test-boto3.R](testthat/test-boto3.R#L2)            | boto3    | multiplication works                                              | PASS   |   1 | 0.018 |
+| [test-mturk.R](testthat/test-mturk.R#L15)           | mturk    | MTurk auth succeeds with valid config                             | PASS   |   1 | 0.003 |
+| [test-mturk.R](testthat/test-mturk.R#L28)           | mturk    | MTurk auth fails on no config or env variables                    | PASS   |   1 | 0.003 |
+| [test-mturk.R](testthat/test-mturk.R#L36_L39)       | mturk    | Create HIT Type works as expected                                 | PASS   |   1 | 0.786 |
+| [test-mturk.R](testthat/test-mturk.R#L50_L53)       | mturk    | Create HIT Type fails with no aws keys                            | PASS   |   1 | 0.011 |
+| [test-mturk.R](testthat/test-mturk.R#L62)           | mturk    | Create HIT Type returns a string                                  | PASS   |   1 | 0.321 |
+| [test-mturk.R](testthat/test-mturk.R#L71)           | mturk    | Create HIT Type fails on bad response from pyMTurkR               | PASS   |   6 | 0.051 |
 | [test-mturk.R](testthat/test-mturk.R#L115)          | mturk    | Create HIT Type returns correct value with mock pyMTurkR response | PASS   |   1 | 0.003 |
-| [test-mturk.R](testthat/test-mturk.R#L122)          | mturk    | Render document links rejects args correctly                      | PASS   |   3 | 0.012 |
-| [test-mturk.R](testthat/test-mturk.R#L137_L140)     | mturk    | Render documents returns expected value with sample links         | PASS   |   1 | 0.002 |
-| [test-postgrid.R](testthat/test-postgrid.R#L38)     | postgrid | postgrid formatting succeeds with line vars                       | PASS   |   1 | 0.004 |
+| [test-mturk.R](testthat/test-mturk.R#L120)          | mturk    | Render document links rejects args correctly                      | PASS   |   3 | 0.012 |
+| [test-mturk.R](testthat/test-mturk.R#L135_L138)     | mturk    | Render documents returns expected value with sample links         | PASS   |   1 | 0.003 |
+| [test-postgrid.R](testthat/test-postgrid.R#L38)     | postgrid | postgrid formatting succeeds with line vars                       | PASS   |   1 | 0.005 |
 | [test-postgrid.R](testthat/test-postgrid.R#L65)     | postgrid | postgrid formatting succeeds with street vars                     | PASS   |   1 | 0.003 |
-| [test-postgrid.R](testthat/test-postgrid.R#L69_L78) | postgrid | postgrid formatting fails with line and street vars               | PASS   |   1 | 0.019 |
-| [test-postgrid.R](testthat/test-postgrid.R#L82_L88) | postgrid | postgrid formatting errors with neither vars                      | PASS   |   1 | 0.032 |
+| [test-postgrid.R](testthat/test-postgrid.R#L69_L78) | postgrid | postgrid formatting fails with line and street vars               | PASS   |   1 | 0.033 |
+| [test-postgrid.R](testthat/test-postgrid.R#L82_L88) | postgrid | postgrid formatting errors with neither vars                      | PASS   |   1 | 0.017 |
 | [test-utils.R](testthat/test-utils.R#L8)            | utils    | Has names works as expected                                       | PASS   |   1 | 0.002 |
 | [test-utils.R](testthat/test-utils.R#L13)           | utils    | Has names fails as expected                                       | PASS   |   1 | 0.002 |
 

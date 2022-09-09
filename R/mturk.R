@@ -1,4 +1,11 @@
-#' @title MTurk Authorization
+## These constants define valid statuses according to MTurk documentation
+## They are used in functions that get statuses
+valid_hit_statuses <- c("Assignable", "Unassignable", "Reviewable", "Reviewing", "Disposed")
+valid_hit_review_statuses <- c("NotReviewed", "MarkedForReview", "ReviewedAppropriate", "ReviewedInappropriate")
+valid_assignment_statuses <- c("Submitted", "Approved", "Rejected")
+
+
+#' @title MTurk Authentication
 #'
 #' @param config A file path to a config.yml
 #'
@@ -52,7 +59,7 @@ mturk_auth <- function(config = NULL) {
 }
 
 
-#' @title Create HIT Type
+#' @title New HIT Type
 #'
 #' @param title The title for the HIT Type
 #' @param description A description to be shown to workers
@@ -70,12 +77,12 @@ mturk_auth <- function(config = NULL) {
 #' @examples
 #'
 #' \dontrun{
-#' create_hit_type()
-#' create_hit_type(reward = "0.20")
-#' create_hit_type(duration = pyMTurkR::seconds(minutes = 20))
+#' new_hit_type()
+#' new_hit_type(reward = "0.20")
+#' new_hit_type(duration = pyMTurkR::seconds(minutes = 20))
 #' }
 #'
-create_hit_type <- function(
+new_hit_type <- function(
   title = "eviction-address-transcription",
   description = "Find and transcribe the DEFENDENT'S address from a court document pdf",
   reward = "0.15",
@@ -125,6 +132,26 @@ create_hit_type <- function(
   )
 
   return(res$HITTypeId)
+}
+
+
+#' @title New Case from Queue
+#'
+#' @param db A database connection pool created with `pool::db`
+#'
+#' @return A case id from the queue
+#' @export
+#'
+#' @examples
+#'
+#' \dontrun{
+#' new_case_from_queue()
+#' }
+#'
+new_case_from_queue <- function(db) {
+  res <- get_case_from_queue(db)
+
+  return(res)
 }
 
 
@@ -180,6 +207,7 @@ render_document_links <- function(links) {
 
 #' @title Render HIT Layout
 #'
+#' @param db A database pool created with `pool::dbPool`
 #' @param case A case id used to render the layout
 #' @param layout A file path to an XML layout
 #'
@@ -188,7 +216,7 @@ render_document_links <- function(links) {
 #'
 #' @import assertthat
 #'
-render_hit_layout <- function(case, layout = NULL) {
+render_hit_layout <- function(db, case, layout = NULL) {
   assert_that(
     is.string(case)
   )
@@ -203,14 +231,6 @@ render_hit_layout <- function(case, layout = NULL) {
   )
 
   raw_layout <- readr::read_file(layout)
-
-  if(!exists("db")) {
-    log_debug("Creating new db pool")
-    db <- new_db_connection()
-    on.exit({
-      pool::poolClose(db)
-    })
-  }
 
   query <- glue::glue_sql(
     "select internal_link from eviction_addresses.\"document\" where \"case\" = {case}",
@@ -238,24 +258,6 @@ render_hit_layout <- function(case, layout = NULL) {
 }
 
 
-#' @title New Case from Queue
-#'
-#' @return A case id from the queue
-#' @export
-#'
-#' @examples
-#'
-#' \dontrun{
-#' new_case_from_queue()
-#' }
-#'
-new_case_from_queue <- function() {
-  res <- get_case_from_queue()
-
-  return(res)
-}
-
-
 #' @title New Hit from Case
 #'
 #' @param case The case id from which to create a new HIT
@@ -272,7 +274,7 @@ new_case_from_queue <- function() {
 #' new_hit_from_case(case = "<insert case id>")
 #' }
 #'
-new_hit_from_case <- function(case, hit_type = NULL) {
+new_hit_from_case <- function(db, case, hit_type = NULL) {
   assert_that(
     is.string(case)
   )
@@ -280,7 +282,7 @@ new_hit_from_case <- function(case, hit_type = NULL) {
   document_table <- DBI::Id(schema = "eviction_addresses", table = "document")
   hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
 
-  hit_layout <- render_hit_layout(case)
+  hit_layout <- render_hit_layout(db, case)
   mturk_question <- pyMTurkR::GenerateHTMLQuestion(character = hit_layout)
 
   pyMTurkR::CreateHITWithHITType(
@@ -292,27 +294,84 @@ new_hit_from_case <- function(case, hit_type = NULL) {
   )
 }
 
-
-#' @title Check All HITs
+#' @title Get HIT Status
 #'
-#' @return Nothing
+#' @param hit The hit id. A string (character vector of length one)
+#'
+#' @return The HIT status. A string (character vector of length one). See `valid_hit_statuses` for possible values.
 #' @export
 #'
-#' @examples
-#'
-#' check_all_hits()
-#'
-check_all_hits <- function() {
-  # reviewable_hits <- pyMTurkR::GetReviewableHITs() |>
-  #   tibble::as_tibble()
-  #
-  # pyMTurkR::ListAssignmentsForHIT(get.answers = T)
+get_hit_status <- function(hit) {
+  assert_that(
+    is.string(hit)
+  )
+
+  hit_details <- pyMTurkR::status(hit = hit)
+  assert_that(
+    is.data.frame(hit_details),
+    has_name(hit_details, "HITStatus")
+  )
+
+  hit_status <- hit_details$HITStatus
+
+  assert_that(
+    is.string(hit_status),
+    hit_status %in% valid_hit_statuses
+  )
+
+  return(tolower(hit_status))
 }
 
 
-#' @title Parse HIT Assignment Answers
+#' @title Get HIT Assignments
 #'
-#' @param answers A data.frame containing the answers for one HIT assignment
+#' @param hit The HIT id. A string (character vector length one)
+#'
+#' @return A character vector of Assignment ids
+#' @export
+#'
+get_hit_assignments <- function(hit) {
+  assert_that(
+    is.string(hit)
+  )
+
+  res <- pyMTurkR::GetAssignments(hit = hit)
+  assert_that(
+    is.data.frame(res),
+    length(res) > 0
+  )
+
+  assignments <- res$AssignmentId
+  assert_that(
+    is.character(assignments),
+    length(assignments) >= 0,
+    noNA(assignments)
+  )
+
+  return(assignments)
+}
+
+
+#' @title Get Assignment Status
+#'
+#' @param assignment The assignment id. A string (character vector length one).
+#'
+#' @return The assignment status. A string (character vector length one). See `valid_assignment_statuses` for possible values.
+#' @export
+#'
+get_assignment_status <- function(assignment) {
+  assert_that(
+    is.string(assignment)
+  )
+
+  assignment_details <- GetAssignment(assignment)
+
+}
+
+
+#' @title Parse HIT Assignment Answer
+#'
+#' @param answer A data.frame containing the answer for one HIT assignment
 #'
 #' @return A parsed address ready for validation
 #' @export
@@ -320,25 +379,60 @@ check_all_hits <- function() {
 #' @importFrom rlang .data
 #' @import assertthat
 #'
-parse_assignment_answers <- function(answers) {
+parse_assignment_answer <- function(answer) {
   assert_that(
-    is.data.frame(answers),
-    has_name(answers, "QuestionIdentifier"),
-    has_name(answers, "FreeText")
+    is.data.frame(answer),
+    has_name(answer, "QuestionIdentifier"),
+    has_name(answer, "FreeText")
   )
 
-  address <- answers |>
+  address <- answer |>
     dplyr::select(.data$QuestionIdentifier, .data$FreeText) |>
     tibble::deframe() |>
     as.list()
+  #
+  #   line1 <- ""
+  #   line2 <- ""
+  #   city <- ""
+  #   state <- ""
+  #   zip <- ""
+  #   country <- "us"
 
-  line1 <- ""
-  line2 <- ""
-  city <- ""
-  state <- ""
-  zip <- ""
-  country <- "us"
 
+}
+
+
+#' @title Get Assignment Answer
+#'
+#' @param assignment The Assignment id. A string (character vector length one)
+#'
+#' @return The parsed assignment as a ??
+#' @export
+#'
+get_assignment_answer <- function(assignment) {
+  assert_that(
+    is.string(assignment)
+  )
+
+  assignment_details <- pyMTurkR::GetAssignment(assignment = assignment, get.answers = T)
+
+  answer <- assignment_details$Answer |>
+    parse_assignment_answer()
+
+  return(answer)
+}
+
+
+#' @title Review Assignment
+#'
+#' @param assignment The Assignment id. A string (character vector length one)
+#'
+#' @return ??
+#' @export
+#'
+review_assignment <- function(assignment) {
+
+  return()
 }
 
 
@@ -377,7 +471,7 @@ compare_hit_assignments <- function(hit) {
 
   assert_that(
     nrow(res$Assignments) == 3,
-    msg = "{nrow(res$Assignments)} retreived. Need 3 to compare. Are you sure this HIT is ready for review?"
+    msg = "{nrow(res$Assignments)} retreived. Need 3 to compare. HIT is not ready for review."
   )
 
   assignments <- res$Assignments
@@ -385,21 +479,34 @@ compare_hit_assignments <- function(hit) {
     split(~AssignmentId)
 
 
+  return(answers)
+}
+
+
+#' @title Review HIT
+#'
+#' @param hit The HIT id. A string (character vector length one)
+#'
+#' @return ??
+#' @export
+#'
+review_hit <- function(hit) {
+
   return()
 }
 
 
-#' @title Finalize HIT
+#' @title Dispose HIT
 #'
-#' @param hit The HIT id to finalize
+#' @param hit The HIT id to dispose
 #'
 #' @return Nothing
 #' @export
 #'
 #' @examples
 #'
-#' finalize_hit(hit = "<insert hit id>")
+#' dispose_hit(hit = "<insert hit id>")
 #'
-finalize_hit <- function(hit = NULL) {
+dispose_hit <- function(hit = NULL) {
 
 }

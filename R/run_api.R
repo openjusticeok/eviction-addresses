@@ -17,7 +17,7 @@ run_api <- function(config, ..., .background = F) {
     file = config
   )
 
-  db <- new_db_connection(connection_args)
+  db <- new_db_pool(connection_args)
 
   if(.background) {
 

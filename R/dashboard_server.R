@@ -24,7 +24,7 @@ dashboard_server <- function(config) {
       file = config
     )
 
-    db <- new_db_connection()
+    db <- new_db_pool()
     shiny::onStop(function() {
       pool::poolClose(db)
     })
