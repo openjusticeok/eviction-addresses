@@ -9,6 +9,9 @@ get_hit_status(hit)
 \arguments{
 \item{hit}{The hit id. A string (character vector of length one)}
 }
+\value{
+The HIT status. A string (character vector of length one). See \code{valid_hit_statuses} for possible values.
+}
 \description{
 Get HIT Status
 }

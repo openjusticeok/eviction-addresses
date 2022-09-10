@@ -365,7 +365,16 @@ get_assignment_status <- function(assignment) {
   )
 
   assignment_details <- GetAssignment(assignment)
+  assert_that(
+    is.data.frame(assignment_details),
+    length(assignment_details) > 0
+  )
 
+  assignment_status <- assignment_details$AssignmentStatus
+  assert_that(
+    is.string(assignment_status),
+    assignment_status %in% valid_assignment_statuses
+  )
 }
 
 
@@ -508,5 +517,15 @@ review_hit <- function(hit) {
 #' dispose_hit(hit = "<insert hit id>")
 #'
 dispose_hit <- function(hit = NULL) {
+
+}
+
+
+#' @title New Sample HIT
+#'
+#' @return The HIT id. A string (character vector length one)
+#' @export
+#'
+new_sample_hit <- function() {
 
 }
