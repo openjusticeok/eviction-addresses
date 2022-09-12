@@ -3,6 +3,7 @@ options(
   pyMTurkR.verbose = F
 )
 logger::log_threshold(FATAL)
+mturk_auth("config.yml")
 
 
 test_that("MTurk auth succeeds with valid config", {
@@ -151,12 +152,18 @@ test_that("Render HIT layout works with mocked db", {
 
 
 test_that("Parse assignment answer works", {
+  # test_hit <- new_sample_hit()
+  # withr::defer(expr = dispose_hit(test_hit), )
+
   answer <- data.frame(
     QuestionIdentifier = "",
     FreeText = ""
   )
 
-  expect_type(parse_assignment_answer(answer), "list")
+  ans <- parse_assignment_answer(answer)
+
+  expect_type(ans, "list")
+  expect_named(ans, c("line1", "line2"))
 })
 
 
