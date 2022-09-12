@@ -13,13 +13,10 @@
 #' @import DBI
 #' @import promises
 #'
-handle_refresh <- function() {
+handle_refresh <- function(db) {
   f <- function(res) {
     future_promise({
       log_appender(appender_tee("test.log"))
-
-      db <- new_db_pool()
-      on.exit(pool::poolClose(db))
 
       ## Refresh both materialized views to ingest new eviction cases and minutes
       refresh_cases_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_evictions;"

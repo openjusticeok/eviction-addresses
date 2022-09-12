@@ -10,24 +10,20 @@
 #'
 #' @import plumber
 run_api <- function(config, ..., .background = F) {
-  future::plan(future.callr::callr)
 
-  connection_args <- config::get(
-    value = "database",
-    file = config
-  )
-
-  db <- new_db_pool(connection_args)
+  db <- new_db_pool(config)
 
   if(.background) {
+    future::plan(future.callr::callr)
 
   } else {
     pr() |>
-      pr_handle("GET", "/ping", handle_ping) |>
-      pr_handle("GET", "/dbping", handle_dbping) |>
-      pr_handle("GET", "/dbpingfuture", handle_dbpingfuture) |>
-      pr_handle("GET", "/refresh", handle_refresh) |>
-      pr_handle("GET", "/hydrate", handle_hydrate) |>
+      pr_handle("GET", "/ping", handle_ping()) |>
+      pr_handle("GET", "/dbping", handle_dbping(db)) |>
+      pr_handle("GET", "/dbpingfuture", handle_dbpingfuture(db)) |>
+      pr_handle("GET", "/refresh", handle_refresh(db)) |>
+      pr_handle("GET", "/hydrate", handle_hydrate(db)) |>
+      pr_handle("POST", "/address/validate", handle_address_validate(db, config)) |>
       pr_run(...)
   }
 }

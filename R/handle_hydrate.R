@@ -10,9 +10,9 @@
 #' @return A 200, if successful
 #' @export
 #'
-handle_hydrate <- function() {
+handle_hydrate <- function(db) {
 
-  f <- function(res) {
+  f <- function() {
     ua <- httr::user_agent(agent = "1ecbd577-793f-4a38-b82f-e361ed335168")
 
     promises::future_promise({
@@ -21,11 +21,8 @@ handle_hydrate <- function() {
 
       googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
 
-      ojodb <- new_db_pool()
-      on.exit(pool::poolClose(ojodb))
-
       query <- dplyr::sql("SELECT id, link FROM eviction_addresses.document WHERE internal_link IS NULL ORDER BY created_at;")
-      links <- DBI::dbGetQuery(ojodb, query)
+      links <- DBI::dbGetQuery(db, query)
 
       if(nrow(links) == 0) {
         msg <- "No new documents to retrieve"
@@ -56,8 +53,8 @@ handle_hydrate <- function() {
                                                                public = T)
         logger::log_success("Got public link {i}")
         query <- glue::glue_sql('UPDATE eviction_addresses."document" SET internal_link = {internal_link}, updated_at = current_timestamp WHERE id = {links[i, "id"]};',
-                                .con = ojodb)
-        DBI::dbExecute(ojodb, query)
+                                .con = db)
+        DBI::dbExecute(db, query)
 
         logger::log_success("Completed link {i}/{nrow(links)}")
         Sys.sleep(2)

@@ -4,7 +4,7 @@
 \alias{handle_dbpingfuture}
 \title{Handle Future DB Ping}
 \usage{
-handle_dbpingfuture()
+handle_dbpingfuture(db)
 }
 \value{
 Empty

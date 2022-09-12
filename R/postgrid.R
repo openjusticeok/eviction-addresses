@@ -107,7 +107,7 @@ format_postgrid_request <- function(
 
 #' @title Send PostGrid Request
 #'
-#' @param postgrid_args A list of Postgrid args created by reading the `postgrid` section of a `config.yml` file with `config::get(value = "postgrid")`
+#' @param config The path of a `config.yml` file with section to be parsed by `config::get(value = "postgrid")`
 #' @param address A list with elements `line1`, `line2`, `city`, `provinceOrState`, and `country`
 #' @param geocode A flag (logical vector of length one) indicating whether to geocode the address. Uses another Postgrid unit. Defaults to `TRUE`
 #'
@@ -116,7 +116,14 @@ format_postgrid_request <- function(
 #'
 #' @import assertthat
 #'
-send_postgrid_request <- function(postgrid_args = postgrid_args, address = list(), geocode = T) {
+send_postgrid_request <- function(config = NULL, address = list(), geocode = T) {
+  assert_that(
+    not_empty(config),
+    is.readable(config)
+  )
+
+  postgrid_args <- config::get(value = "postgrid", config = config)
+
   assert_that(
     is.list(address),
     has_name(address, "line1"),

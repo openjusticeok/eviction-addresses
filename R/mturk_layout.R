@@ -113,7 +113,7 @@ render_hit_layout_for_case <- function(db, case, layout = NULL) {
     statement = query
   )
 
-  document_links <- res$internal_link
+  document_links <- res$internal_link[!is.na(res$internal_link)]
 
   rendered_layout <- render_hit_layout(links = document_links, layout = layout)
 

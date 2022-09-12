@@ -50,6 +50,8 @@ get_assignment_status <- function(assignment) {
     is.string(assignment_status),
     assignment_status %in% valid_assignment_statuses
   )
+
+  return(tolower(assignment_status))
 }
 
 
@@ -74,15 +76,22 @@ parse_assignment_answer <- function(answer) {
     dplyr::select(.data$QuestionIdentifier, .data$FreeText) |>
     tibble::deframe() |>
     as.list()
-  #
-  #   line1 <- ""
-  #   line2 <- ""
-  #   city <- ""
-  #   state <- ""
-  #   zip <- ""
-  #   country <- "us"
 
+  assert_that(
+    is.list(address),
+    has_names(address, c("line1", "line2", "city", "state", "zip"))
+  )
 
+  address <- list(
+    line1 = address$line1,
+    line2 = address$line2,
+    city = address$city,
+    provinceOrState = address$state,
+    zip = address$zip,
+    country = "us"
+  )
+
+  return(address)
 }
 
 

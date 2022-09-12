@@ -5,8 +5,12 @@
 #' @export
 #'
 handle_ping <- function() {
-  logger::log_success("pong")
-  return()
+  f <- function() {
+    logger::log_success("pong")
+
+    return("pong")
+  }
+  return(f)
 }
 
 
@@ -19,10 +23,15 @@ handle_ping <- function() {
 #' @export
 #'
 handle_dbping <- function(db) {
-  test <- DBI::dbGetQuery(db, "SELECT NULL as n")
+  f <- function() {
+    test <- DBI::dbGetQuery(db, "SELECT NULL as n")
 
-  log_success("db pong")
-  return()
+    log_success("db pong")
+
+    return("db pong")
+  }
+
+  return(f)
 }
 
 
@@ -32,25 +41,24 @@ handle_dbping <- function(db) {
 #' @return Empty
 #' @export
 #'
-handle_dbpingfuture <- function() {
-  promises::future_promise({
-    logger::log_appender(appender_tee("test.log"))
+handle_dbpingfuture <- function(db) {
+  f <- function() {
+    promises::future_promise({
+      logger::log_appender(appender_tee("test.log"))
 
-    db <- new_db_pool()
-    on.exit(pool::poolClose(db))
+      test <- DBI::dbGetQuery(db, "SELECT NULL as n")
+      logger::log_info("Going to sleep now")
+      Sys.sleep(10)
+      return()
+    },
+    seed = TRUE) |>
+      then(
+        function() {
+          logger::log_success("long db pong")
+          return()
+        }
+      )
+  }
 
-    test <- DBI::dbGetQuery(db, "SELECT NULL as n")
-    logger::log_info("Going to sleep now")
-    Sys.sleep(10)
-    return()
-  },
-  seed = TRUE) |>
-    then(
-      function() {
-        logger::log_success("long db pong")
-        return()
-      }
-    )
-
-  return()
+  return(f)
 }

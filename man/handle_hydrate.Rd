@@ -4,7 +4,7 @@
 \alias{handle_hydrate}
 \title{Handle Hydrate}
 \usage{
-handle_hydrate()
+handle_hydrate(db)
 }
 \value{
 A 200, if successful
