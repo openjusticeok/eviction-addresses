@@ -4,17 +4,15 @@
 \alias{render_hit_layout}
 \title{Render HIT Layout}
 \usage{
-render_hit_layout(db, case, layout = NULL)
+render_hit_layout(links, layout)
 }
 \arguments{
-\item{db}{A database pool created with \code{pool::dbPool}}
+\item{links}{A character vector of length greater tha zero, containing HTML links, with no missing values}
 
-\item{case}{A case id used to render the layout}
-
-\item{layout}{A file path to an XML layout}
+\item{layout}{A file path to a MTurk layout as specified by MTurk documentation}
 }
 \value{
-A character string containing an XML layout
+A string (character vector length one)
 }
 \description{
 Render HIT Layout

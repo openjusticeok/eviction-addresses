@@ -207,18 +207,16 @@ render_document_links <- function(links) {
 
 #' @title Render HIT Layout
 #'
-#' @param db A database pool created with `pool::dbPool`
-#' @param case A case id used to render the layout
-#' @param layout A file path to an XML layout
+#' @param links A character vector of length greater tha zero, containing HTML links, with no missing values
+#' @param layout A file path to a MTurk layout as specified by MTurk documentation
 #'
-#' @return A character string containing an XML layout
+#' @return A string (character vector length one)
 #' @export
 #'
-#' @import assertthat
-#'
-render_hit_layout <- function(db, case, layout = NULL) {
+render_hit_layout <- function(links, layout = NULL) {
   assert_that(
-    is.string(case)
+    is.character(links),
+    noNA(links)
   )
 
   if(is.null(layout)) {
@@ -232,6 +230,36 @@ render_hit_layout <- function(db, case, layout = NULL) {
 
   raw_layout <- readr::read_file(layout)
 
+  document_links_html_block <- render_document_links(links)
+
+  rendered_layout <- stringr::str_glue(raw_layout)
+
+  assert_that(
+    is.string(rendered_layout)
+  )
+
+  logger::log_debug("Hit layout rendered using supplied links")
+
+  return(rendered_layout)
+}
+
+
+#' @title Render HIT Layout for Case
+#'
+#' @param db A database pool created with `pool::dbPool`
+#' @param case A case id used to render the layout
+#' @param layout A file path to an XML layout
+#'
+#' @return A character string containing an XML layout
+#' @export
+#'
+#' @import assertthat
+#'
+render_hit_layout_for_case <- function(db, case, layout = NULL) {
+  assert_that(
+    is.string(case)
+  )
+
   query <- glue::glue_sql(
     "select internal_link from eviction_addresses.\"document\" where \"case\" = {case}",
     .con = db
@@ -244,13 +272,7 @@ render_hit_layout <- function(db, case, layout = NULL) {
 
   document_links <- res$internal_link
 
-  document_links_html_block <- render_document_links(document_links)
-
-  rendered_layout <- stringr::str_glue(raw_layout)
-
-  assert_that(
-    is.string(rendered_layout)
-  )
+  rendered_layout <- render_hit_layout(links = document_links, layout = layout)
 
   logger::log_debug("Hit layout rendered for case: {case}")
 
@@ -282,16 +304,24 @@ new_hit_from_case <- function(db, case, hit_type = NULL) {
   document_table <- DBI::Id(schema = "eviction_addresses", table = "document")
   hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
 
-  hit_layout <- render_hit_layout(db, case)
+  hit_layout <- render_hit_layout_for_case(db, case)
   mturk_question <- pyMTurkR::GenerateHTMLQuestion(character = hit_layout)
 
-  pyMTurkR::CreateHITWithHITType(
+  hit <- pyMTurkR::CreateHITWithHITType(
     hit.type = hit_type,
     question = mturk_question,
     expiration = pyMTurkR::seconds(days = 1),
     assignments = "3",
     unique.request.token = uuid::UUIDgenerate(output = "string")
   )
+
+  assert_that(
+    has_names(hit, c("HITId", "Valid")),
+    is.string(hit$HITId),
+    isTRUE(as.logical(hit$Valid))
+  )
+
+  return(hit$HITId)
 }
 
 #' @title Get HIT Status
@@ -527,5 +557,26 @@ dispose_hit <- function(hit = NULL) {
 #' @export
 #'
 new_sample_hit <- function() {
+  links <- c("https://google.com", "https://twitter.com")
 
+  hit_type <- new_hit_type()
+
+  hit_layout <- render_hit_layout(links = links)
+  mturk_question <- pyMTurkR::GenerateHTMLQuestion(character = hit_layout)
+
+  hit <- pyMTurkR::CreateHITWithHITType(
+    hit.type = hit_type,
+    question = mturk_question,
+    expiration = pyMTurkR::seconds(days = 1),
+    assignments = "3",
+    unique.request.token = uuid::UUIDgenerate(output = "string")
+  )
+
+  assert_that(
+    has_names(hit, c("HITId", "Valid")),
+    is.string(hit$HITId),
+    isTRUE(as.logical(hit$Valid))
+  )
+
+  return(hit$HITId)
 }
