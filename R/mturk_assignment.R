@@ -1,3 +1,6 @@
+valid_assignment_statuses <- c("Submitted", "Approved", "Rejected")
+
+
 #' @title Get HIT Assignments
 #'
 #' @param hit The HIT id. A string (character vector length one)
@@ -39,7 +42,7 @@ get_assignment_status <- function(assignment) {
     is.string(assignment)
   )
 
-  assignment_details <- GetAssignment(assignment)
+  assignment_details <- pyMTurkR::GetAssignment(assignment)
   assert_that(
     is.data.frame(assignment_details),
     length(assignment_details) > 0
@@ -173,4 +176,23 @@ compare_hit_assignments <- function(hit) {
 
 
   return(answers)
+}
+
+
+#' @title Review HIT Assignments
+#' 
+#' @param hit The HIT id
+review_hit_assignments <- function(hit) {
+  assignments <- get_hit_assignments(hit)
+
+  for(i in 1:seq_along(assignments)) {
+    res <- review_assignment(assignments[i])
+    if(res) {
+
+    }
+  }
+
+  res <- compare_hit_assignments(hit)
+
+  return()
 }

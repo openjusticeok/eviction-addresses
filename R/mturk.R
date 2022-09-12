@@ -1,10 +1,3 @@
-## These constants define valid statuses according to MTurk documentation
-## They are used in functions that get statuses
-valid_hit_statuses <- c("Assignable", "Unassignable", "Reviewable", "Reviewing", "Disposed")
-valid_hit_review_statuses <- c("NotReviewed", "MarkedForReview", "ReviewedAppropriate", "ReviewedInappropriate")
-valid_assignment_statuses <- c("Submitted", "Approved", "Rejected")
-
-
 #' @title MTurk Authentication
 #'
 #' @param config A file path to a config.yml

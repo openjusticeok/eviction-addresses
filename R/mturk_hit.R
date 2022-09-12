@@ -1,3 +1,7 @@
+valid_hit_statuses <- c("Assignable", "Unassignable", "Reviewable", "Reviewing", "Disposed")
+valid_hit_review_statuses <- c("NotReviewed", "MarkedForReview", "ReviewedAppropriate", "ReviewedInappropriate")
+
+
 #' @title New Sample HIT
 #'
 #' @return The HIT id. A string (character vector length one)
@@ -112,6 +116,10 @@ get_hit_status <- function(hit) {
 #'
 review_hit <- function(hit) {
 
+  hit_status <- get_hit_status(hit)
+  if(hit_status == "reviewable") {
+    res <- review_hit_assignments(hit)
+  }
   return()
 }
 
