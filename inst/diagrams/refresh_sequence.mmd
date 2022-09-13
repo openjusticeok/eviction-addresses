@@ -1,0 +1,8 @@
+sequenceDiagram
+  participant Cloud Scheduler
+  participant API
+  participant Database
+  Cloud Scheduler->>API: /refresh
+  API->>Database: Refresh case table
+  API->>Database: Refresh document table
+  API->>Database: Refresh queue table
