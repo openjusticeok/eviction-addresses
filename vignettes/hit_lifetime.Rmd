@@ -1,0 +1,19 @@
+---
+title: "The Life of a HIT"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{The Life of a HIT}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(evictionAddresses)
+```
