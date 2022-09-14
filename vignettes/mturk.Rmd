@@ -19,7 +19,7 @@ library(evictionAddresses)
 library(nomnoml)
 ```
 
-```{nomnoml}
+```{nomnoml, svg=TRUE}
 #direction: down
 [<start> start] -> [<frame> Initialization |
   [<start> start] -> [<input> config.yml]
