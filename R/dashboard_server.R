@@ -214,12 +214,7 @@ dashboard_server <- function(config) {
     total_cases <- reactive({
       input$case_refresh
 
-      DBI::dbGetQuery(
-        db,
-        dbplyr::sql('SELECT COUNT(*) FROM "eviction_addresses"."queue" WHERE success = FALSE OR success IS NULL;')
-      ) |>
-        dplyr::pull()
-
+      get_queue_length(db)
     })
 
     documents <- reactive({
