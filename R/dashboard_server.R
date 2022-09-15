@@ -214,7 +214,9 @@ dashboard_server <- function(config) {
     total_cases <- reactive({
       input$case_refresh
 
-      get_queue_length(db)
+      queue_length <- get_queue_length(db)
+
+      queue_length
     })
 
     documents <- reactive({

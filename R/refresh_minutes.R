@@ -2,7 +2,6 @@
 #'
 #' @param db A database connection
 #'
-#' @return
 #' @export
 #'
 refresh_minutes <- function(db) {
