@@ -50,3 +50,4 @@ mturk_activity <- "
 
 mturk_activity_diagram <- nomnoml(mturk_activity, png = "mturk_activity_diagram.png", height = 1200, width = 900)
 mturk_activity_diagram
+

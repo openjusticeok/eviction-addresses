@@ -148,3 +148,13 @@ dispose_hit <- function(hit = NULL) {
 
   return()
 }
+
+
+get_reviewable_hits <- function() {
+  reviewable_hits <- pyMTurkR::GetReviewableHITs()
+
+  return(reviewable_hits)
+}
+
+
+
