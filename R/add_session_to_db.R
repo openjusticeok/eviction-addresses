@@ -4,7 +4,6 @@
 #' @param db A database connection Pool
 #'
 #' @return Returns invisibly if successful
-#' @export
 #'
 add_session_to_db <- function(db) {
   f <- function(user, sessionid, conn) {

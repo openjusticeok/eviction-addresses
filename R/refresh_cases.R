@@ -2,8 +2,6 @@
 #'
 #' @param db A database connection
 #'
-#' @export
-#'
 refresh_cases <- function(db) {
   refresh_cases_query <- "REFRESH MATERIALIZED VIEW eviction_addresses.recent_tulsa_evictions;"
 

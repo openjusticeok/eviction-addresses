@@ -3,7 +3,6 @@
 #' @param links A character vector of document links
 #'
 #' @return An HTML string
-#' @export
 #'
 #' @import assertthat
 #'
@@ -54,7 +53,6 @@ render_document_links <- function(links) {
 #' @param layout A file path to a MTurk layout as specified by MTurk documentation
 #'
 #' @return A string (character vector length one)
-#' @export
 #'
 render_hit_layout <- function(links, layout = NULL) {
   assert_that(
@@ -94,7 +92,6 @@ render_hit_layout <- function(links, layout = NULL) {
 #' @param layout A file path to an XML layout
 #'
 #' @return A character string containing an XML layout
-#' @export
 #'
 #' @import assertthat
 #'

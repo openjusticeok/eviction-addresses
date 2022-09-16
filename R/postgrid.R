@@ -112,7 +112,6 @@ format_postgrid_request <- function(
 #' @param geocode A flag (logical vector of length one) indicating whether to geocode the address. Uses another Postgrid unit. Defaults to `TRUE`
 #'
 #' @return A PostGrid response
-#' @export
 #'
 #' @import assertthat
 #'
@@ -163,7 +162,6 @@ send_postgrid_request <- function(config = NULL, address = list(), geocode = T) 
 #' @param res A response from the Postgrid API
 #'
 #' @return A list with values specified according to the PostGrid documentation
-#' @export
 #'
 #' @import assertthat
 #'

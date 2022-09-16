@@ -26,15 +26,17 @@ has_names <- function(x, names) {
   return(F)
 }
 
+
+#' @title Skip If No Config
+#'
 skip_if_no_config <- function() {
   testthat::skip_if_not(
     file.exists("config.yml")
   )
 }
 
+
 #' @title Skip if MTurk cannot authenticate
-#'
-#' @export
 #'
 skip_if_no_mturk <- function() {
   testthat::skip_if_not(

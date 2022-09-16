@@ -4,7 +4,6 @@
 #' @param db A database connection pool created with `pool::dbPool`
 #'
 #' @return A tibble of user info
-#' @export
 #'
 get_users_from_db <- function(db) {
   logger::log_debug("Getting users from db")

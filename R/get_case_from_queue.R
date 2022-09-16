@@ -3,7 +3,6 @@
 #' @param db A database connection pool created with `pool::dbPool`
 #'
 #' @return A case id
-#' @export
 #'
 get_case_from_queue <- function(db) {
 

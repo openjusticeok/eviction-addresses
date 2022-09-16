@@ -3,7 +3,6 @@
 #' @param config A file path to a config.yml
 #'
 #' @return A logical/boolean representing whether we successfully connected to MTurk
-#' @export
 #'
 #' @import assertthat
 #'
@@ -63,7 +62,6 @@ mturk_auth <- function(config = NULL) {
 #' @param ... Additional arguments passed to `pyMTurkR::CreateHITType()`
 #'
 #' @return The HIT Type id
-#' @export
 #'
 #' @import assertthat
 #'
@@ -133,7 +131,6 @@ new_hit_type <- function(
 #' @param db A database connection pool created with `pool::db`
 #'
 #' @return A case id from the queue
-#' @export
 #'
 #' @examples
 #'

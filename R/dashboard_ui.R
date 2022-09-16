@@ -2,7 +2,6 @@
 #' @description The ui function passed to `shinyApp`
 #'
 #' @return A shiny ui function
-#' @export
 #'
 dashboard_ui <- function() {
   shinydashboard::dashboardPage(

@@ -8,7 +8,6 @@
 #'
 #'
 #' @return A 200, if successful
-#' @export
 #'
 handle_hydrate <- function(db) {
 

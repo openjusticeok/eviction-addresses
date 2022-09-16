@@ -6,7 +6,6 @@ valid_assignment_statuses <- c("Submitted", "Approved", "Rejected")
 #' @param hit The HIT id. A string (character vector length one)
 #'
 #' @return A character vector of Assignment ids
-#' @export
 #'
 get_hit_assignments <- function(hit) {
   assert_that(
@@ -35,7 +34,6 @@ get_hit_assignments <- function(hit) {
 #' @param assignment The assignment id. A string (character vector length one).
 #'
 #' @return The assignment status. A string (character vector length one). See `valid_assignment_statuses` for possible values.
-#' @export
 #'
 get_assignment_status <- function(assignment) {
   assert_that(
@@ -63,7 +61,6 @@ get_assignment_status <- function(assignment) {
 #' @param answer A data.frame containing the answer for one HIT assignment
 #'
 #' @return A parsed address ready for validation
-#' @export
 #'
 #' @importFrom rlang .data
 #' @import assertthat
@@ -103,7 +100,6 @@ parse_assignment_answer <- function(answer) {
 #' @param assignment The Assignment id. A string (character vector length one)
 #'
 #' @return The parsed assignment as a ??
-#' @export
 #'
 get_assignment_answer <- function(assignment) {
   assert_that(
@@ -124,7 +120,6 @@ get_assignment_answer <- function(assignment) {
 #' @param assignment The Assignment id. A string (character vector length one)
 #'
 #' @return ??
-#' @export
 #'
 review_assignment <- function(assignment) {
 
@@ -137,7 +132,6 @@ review_assignment <- function(assignment) {
 #' @param hit The HIT id for which to compare all assignments
 #'
 #' @return Nothing
-#' @export
 #'
 #' @import assertthat
 #'
@@ -180,8 +174,9 @@ compare_hit_assignments <- function(hit) {
 
 
 #' @title Review HIT Assignments
-#' 
+#'
 #' @param hit The HIT id
+#'
 review_hit_assignments <- function(hit) {
   assignments <- get_hit_assignments(hit)
 

@@ -5,7 +5,6 @@ valid_hit_review_statuses <- c("NotReviewed", "MarkedForReview", "ReviewedApprop
 #' @title New Sample HIT
 #'
 #' @return The HIT id. A string (character vector length one)
-#' @export
 #'
 new_sample_hit <- function() {
   links <- c("https://google.com", "https://twitter.com")
@@ -39,7 +38,6 @@ new_sample_hit <- function() {
 #' @param hit_type The HIT Type id from which to create a new HIT
 #'
 #' @return A HIT
-#' @export
 #'
 #' @import assertthat
 #'
@@ -83,7 +81,6 @@ new_hit_from_case <- function(db, case, hit_type = NULL) {
 #' @param hit The hit id. A string (character vector of length one)
 #'
 #' @return The HIT status. A string (character vector of length one). See `valid_hit_statuses` for possible values.
-#' @export
 #'
 get_hit_status <- function(hit) {
   assert_that(
@@ -112,7 +109,6 @@ get_hit_status <- function(hit) {
 #' @param hit The HIT id. A string (character vector length one)
 #'
 #' @return ??
-#' @export
 #'
 review_hit <- function(hit) {
 
@@ -129,7 +125,6 @@ review_hit <- function(hit) {
 #' @param hit The HIT id to dispose
 #'
 #' @return Nothing
-#' @export
 #'
 #' @examples
 #'

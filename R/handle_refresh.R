@@ -7,7 +7,6 @@
 #' based on what it finds.
 #'
 #' @return A 200 if successful
-#' @export
 #'
 #' @import logger
 #' @import DBI
@@ -28,7 +27,7 @@ handle_refresh <- function(db) {
     seed = TRUE) |>
       then(
         function() {
-          log_success("Data is up to date")
+          log_success("Everything is refreshed")
           return()
         }
       )

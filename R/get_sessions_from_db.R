@@ -5,7 +5,6 @@
 #' @param cookie_expiry The cookie expiration
 #'
 #' @return A tibble of session info
-#' @export
 #'
 get_sessions_from_db <- function(conn, cookie_expiry = 7) {
   f <- function(expiry = cookie_expiry) {
