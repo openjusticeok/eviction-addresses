@@ -157,4 +157,17 @@ get_reviewable_hits <- function() {
 }
 
 
+# record_new_hit <- function(db, hit) {
+#   assert_that(
+#     is.string(hit)
+#   )
+#
+#   hit_table <- dbplyr::in_schema("eviction_addresses", "hit")
+# }
+#
+# record_hit_state <- function(db, hit) {
+#
+# }
+
+
 
