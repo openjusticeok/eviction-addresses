@@ -52,9 +52,6 @@ new_hit_from_case <- function(db, case, hit_type = NULL) {
     is.string(case)
   )
 
-  document_table <- DBI::Id(schema = "eviction_addresses", table = "document")
-  hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
-
   hit_layout <- render_hit_layout_for_case(db, case)
   mturk_question <- pyMTurkR::GenerateHTMLQuestion(character = hit_layout)
 
@@ -71,6 +68,8 @@ new_hit_from_case <- function(db, case, hit_type = NULL) {
     is.string(hit$HITId),
     isTRUE(as.logical(hit$Valid))
   )
+
+  new_hit_record(db, hit)
 
   return(hit$HITId)
 }
@@ -149,6 +148,7 @@ dispose_hit <- function(hit = NULL) {
   return()
 }
 
+
 #' @title Get Reviewable HITs
 #'
 #' @return A set of reviewable HITs
@@ -159,16 +159,65 @@ get_reviewable_hits <- function() {
   return(reviewable_hits)
 }
 
-#' @title Record New HIT
+
+#' @title New HIT Record
 #'
 #' @return NULL
 #'
-record_new_hit <- function(db, hit) {
+new_hit_record <- function(db, hit) {
   assert_that(
     is.string(hit)
     )
 
-  hit_table <- dbplyr::in_schema("eviction_addresses", "hit")
+  hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
+
+  h <- data.frame(
+    hit_id = hit,
+    state = "assignable",
+    created_at = lubridate::now()
+  )
+
+  res <- DBI::dbAppendTable(
+    conn = db,
+    name = hit_table,
+    value = h
+  )
+
+  assert_that(
+    is.count(res)
+  )
+
+  return()
+}
+
+
+#' @title Update HIT Record
+#'
+#' @param db A database connection
+#' @param hit A HIT id; a string
+#' @param status A HIT Status; a string
+#'
+#' @return
+#'
+update_hit_record <- function(db, hit, status) {
+  assert_that(
+    is.string(hit),
+    is.string(status),
+    stringr::str_to_title(status) %in% valid_hit_statuses
+  )
+
+  hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
+
+  status <- stringr::str_to_lower(status)
+
+  query <- glue::glue_sql('UPDATE eviction_addresses."hit" SET status = {status} WHERE hit_id = {hit};',
+                          .con = db)
+
+  res <- DBI::dbExecute(db, query)
+
+  assert_that(
+    is.count(res)
+  )
 
   return()
 }

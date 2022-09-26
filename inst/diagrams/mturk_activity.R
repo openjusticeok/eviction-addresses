@@ -55,6 +55,7 @@ mturk_activity <- "
 [<frame> Runtime] -> [<end> end]
 "
 
-mturk_activity_diagram <- nomnoml(mturk_activity, png = "mturk_activity_diagram.png", height = 2400, width = 1500)
+mturk_activity_diagram <- nomnoml(mturk_activity, png = "./inst/diagrams/mturk_activity_diagram.png", height = 2400, width = 1500)
 mturk_activity_diagram
-
+# htmlwidgets::saveWidget(mturk_activity_diagram, "./inst/diagrams/mturk_activity_diagram.html")
+# webshot::webshot("./inst/diagrams/mturk_activity_diagram.html", file = "inst/diagrams/mturk_activity_diagram.png")

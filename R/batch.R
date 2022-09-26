@@ -9,8 +9,7 @@
 #'
 new_mturk_batch <- function(db, max_batch_size, hit_type) {
   assert_that(
-    is.number(max_batch_size),
-    is.integer(max_batch_size),
+    is.count(max_batch_size),
     is.string(hit_type)
   )
 
@@ -39,6 +38,11 @@ new_mturk_batch <- function(db, max_batch_size, hit_type) {
 batch_case <- function(db, hit_type) {
   c <- new_case_from_queue(db)
   h <- new_hit_from_case(db = db, case = c, hit_type = hit_type)
+
+  new_hit_record(
+    db = db,
+    hit = h
+  )
 
   return()
 }
