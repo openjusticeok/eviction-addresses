@@ -11,10 +11,17 @@ mturk_activity <- "
   [<transceiver> create_hit_type()] -> [<end> end]
 ]
 [<frame> Runtime |
-  [<start> start] -> [<sender> /mturk/create]
+  [<start> start] -> [<sender> /mturk/batch]
   [<start> start] -> [<sender> /mturk/review]
-  [<sender> /mturk/create] -> [<transceiver> create_hit_from_case()]
-  [<transceiver> create_hit_from_case()] -> [<end> end]
+  [<sender> /mturk/batch] -> [<transceiver> new_mturk_batch()]
+  [<transceiver> new_mturk_batch()] -> [<choice> Cases Ready?]
+  [<choice> Cases Ready?] Yes -> [<frame> batch_case() |
+    [<start> start] -> [<transceiver> new_case_from_queue()]
+    [<transceiver> new_case_from_queue()] -> [<transceiver> new_hit_from_case()]
+    [<transceiver> new_hit_from_case()] -> [<end> end]
+  ]
+  [<choice> Cases Ready?] No -> [<end> end]
+  [<frame> batch_case()] -> [<end> end]
   [<sender> /mturk/review] -> [<transceiver> get_reviewable_hits()]
   [<transceiver> get_reviewable_hits()] -> [<choice> HITs Ready?]
   [<choice> HITs Ready?] Yes -> [<frame> review_hit() |
@@ -48,6 +55,6 @@ mturk_activity <- "
 [<frame> Runtime] -> [<end> end]
 "
 
-mturk_activity_diagram <- nomnoml(mturk_activity, png = "mturk_activity_diagram.png", height = 1200, width = 900)
+mturk_activity_diagram <- nomnoml(mturk_activity, png = "mturk_activity_diagram.png", height = 2400, width = 1500)
 mturk_activity_diagram
 

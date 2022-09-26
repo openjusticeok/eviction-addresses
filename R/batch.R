@@ -27,7 +27,7 @@ new_mturk_batch <- function(db, max_batch_size, hit_type) {
   return()
 }
 
-#' Title
+#' Batch a Case
 #'
 #' @param db
 #' @param hit_type
@@ -35,12 +35,9 @@ new_mturk_batch <- function(db, max_batch_size, hit_type) {
 #' @return
 #' @export
 #'
-#' @examples
 batch_case <- function(db, hit_type) {
   c <- new_case_from_queue(db)
   h <- new_hit_from_case(db = db, case = c, hit_type = hit_type)
+
+  return()
 }
-
-
-
-

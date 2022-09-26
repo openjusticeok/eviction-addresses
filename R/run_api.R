@@ -22,7 +22,7 @@ run_api <- function(config, ..., .background = F) {
       pr_handle("GET", "/dbping", handle_dbping(db)) |>
       pr_handle("GET", "/dbpingfuture", handle_dbpingfuture(db)) |>
       pr_handle("GET", "/refresh", handle_refresh(db)) |>
-      pr_handle("GET", "/mturk", handle_mturk_batch(db))
+      pr_handle("GET", "/mturk/batch", handle_mturk_batch(db))
       pr_handle("GET", "/mturk/review", handle_mturk_review(db))
       pr_handle("POST", "/address/validate", handle_address_validate(db, config)) |>
       pr_run(...)

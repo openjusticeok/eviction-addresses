@@ -149,25 +149,26 @@ dispose_hit <- function(hit = NULL) {
   return()
 }
 
-
+#' @title Get Reviewable HITs
+#'
+#' @return A set of reviewable HITs
+#'
 get_reviewable_hits <- function() {
   reviewable_hits <- pyMTurkR::GetReviewableHITs()
 
   return(reviewable_hits)
 }
 
+#' @title Record New HIT
+#'
+#' @return NULL
+#'
+record_new_hit <- function(db, hit) {
+  assert_that(
+    is.string(hit)
+    )
 
-# record_new_hit <- function(db, hit) {
-#   assert_that(
-#     is.string(hit)
-#   )
-#
-#   hit_table <- dbplyr::in_schema("eviction_addresses", "hit")
-# }
-#
-# record_hit_state <- function(db, hit) {
-#
-# }
+  hit_table <- dbplyr::in_schema("eviction_addresses", "hit")
 
-
-
+  return()
+}
