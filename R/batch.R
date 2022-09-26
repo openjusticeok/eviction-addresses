@@ -10,7 +10,8 @@
 new_mturk_batch <- function(db, max_batch_size, hit_type) {
   assert_that(
     is.number(max_batch_size),
-    is.integer(max_batch_size)
+    is.integer(max_batch_size),
+    is.string(hit_type)
   )
 
   queue_length <- get_queue_length(db)

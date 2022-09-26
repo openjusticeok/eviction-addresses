@@ -8,7 +8,7 @@ handle_mturk_review <- function() {
     for(i in seq_along(reviewable_hits)) {
       tryCatch(
         review_hit(reviewable_hits[i]),
-        finally = function(e) {
+        error = function(err) {
 
         }
       )
