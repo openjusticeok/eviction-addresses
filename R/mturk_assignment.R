@@ -56,6 +56,52 @@ get_assignment_status <- function(assignment) {
 }
 
 
+#' @title Check Assignment Record Exists
+#'
+#' @param db
+#' @param assignment
+#' @param hit
+#'
+#' @return
+#'
+check_assignment_record_exists <- function(db, assignment, hit) {
+  query <- glue::glue_sql(
+    'SELECT exists(select 1 from eviction_addresses.assignment where assignment_id={assignment} and hit={hit}',
+    .con = db
+  )
+
+  res <- DBI::dbExecute(db, query)
+}
+
+
+#' @title New Assignment Record
+#'
+#' @param db
+#' @param assignment
+#' @param worker
+#'
+#' @return
+#'
+new_assignment_record <- function(db, hit, assignment, worker, status) {
+  assignment_table <- DBI::Id(schema = "eviction_addresses", table = "assignment")
+
+  a <- data.frame(
+    assignment_id = assignment,
+    hit = hit,
+    attempts = 0L,
+    created_at = lubridate::now(),
+    worker = worker,
+    status = status
+  )
+
+  res <- dbAppendTable(
+    conn = db,
+    assignment_table,
+    value = a
+  )
+}
+
+
 #' @title Update Assignment Record
 #'
 #' @param db
@@ -63,7 +109,7 @@ get_assignment_status <- function(assignment) {
 #'
 #' @return
 #'
-update_assignment_record <- function(db, assignment, status) {
+update_assignment_record <- function(db, assignment, status, answer = NULL) {
   assert_that(
     is.string(assignment),
     is.string(status),
@@ -74,14 +120,27 @@ update_assignment_record <- function(db, assignment, status) {
 
   status <- stringr::str_to_lower(status)
 
-  query <- glue::glue_sql('UPDATE eviction_addresses."assignment" SET status = {status} WHERE assignment_id = {assignment};',
-                          .con = db)
+  if(is.null(answer)) {
+    query <- glue::glue_sql(
+      'UPDATE eviction_addresses."assignment" SET status = {status} WHERE assignment_id = {assignment};',
+      .con = db
+    )
+  } else {
+    ## Insert answer argument checks
+
+    query <- glue::glue_sql(
+      'UPDATE eviction_addresses."assignment" SET status = {status}, answer = {answer} WHERE assignment_id = {assignment};',
+      .con = db
+    )
+  }
 
   res <- DBI::dbExecute(db, query)
 
   assert_that(
     is.count(res)
   )
+
+  return()
 }
 
 
@@ -111,13 +170,12 @@ parse_assignment_answer <- function(answer) {
     has_names(address, c("line1", "line2", "city", "state", "zip"))
   )
 
-  address <- list(
+  address <- format_postgrid_request(
     line1 = address$line1,
     line2 = address$line2,
     city = address$city,
-    provinceOrState = address$state,
-    zip = address$zip,
-    country = "us"
+    state = address$state,
+    zip = address$zip
   )
 
   return(address)
@@ -148,7 +206,7 @@ get_assignment_answer <- function(assignment) {
 #'
 #' @param assignment The Assignment id. A string (character vector length one)
 #'
-#' @return A logical indicating whether the assignment review was successful
+#' @return If successful, an approved assignment answer. Otherwise, NULL
 #'
 review_assignment <- function(db, config, assignment) {
 
@@ -171,7 +229,8 @@ review_assignment <- function(db, config, assignment) {
     update_assignment_record(
       db = db,
       assignment = assignment,
-      status = "approved"
+      status = "approved",
+      answer = res
     )
 
     return(res)
@@ -231,19 +290,18 @@ compare_hit_assignments <- function(hit) {
 #'
 #' @param hit The HIT id
 #'
-review_hit_assignments <- function(hit) {
+review_hit_assignments <- function(db, config, hit) {
   assignments <- get_hit_assignments(hit)
   reviewed_answers <- list()
 
   for(i in 1:seq_along(assignments)) {
-    res <- review_assignment(assignments[i])
+    res <- review_assignment(db = db, config = config, assignment = assignments[i])
     if(!is.null(res)) {
 
     }
   }
 
-  res <- compare_hit_assignments(hit)
 
-  return()
+  return(reviewed_answers)
 }
 

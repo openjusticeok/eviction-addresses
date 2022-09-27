@@ -1,5 +1,5 @@
 valid_hit_statuses <- c("Assignable", "Unassignable", "Reviewable", "Reviewing", "Disposed")
-valid_hit_review_statuses <- c("NotReviewed", "MarkedForReview", "ReviewedAppropriate", "ReviewedInappropriate")
+#valid_hit_review_statuses <- c("NotReviewed", "MarkedForReview", "ReviewedAppropriate", "ReviewedInappropriate")
 
 
 #' @title New Sample HIT
@@ -120,18 +120,40 @@ get_hit_status <- function(db, hit) {
 }
 
 
+#' @title Set HIT Status
+#'
+#' @param db
+#' @param hit
+#' @param status
+#'
+#' @return
+#'
+set_hit_status <- function(db, hit, status) {
+  assert_that(
+    is.string(hit),
+    stringr::str_to_title(status) %in% valid_hit_statuses
+  )
+
+
+}
+
+
 #' @title Review HIT
 #'
 #' @param hit The HIT id. A string (character vector length one)
 #'
 #' @return ??
 #'
-review_hit <- function(db, hit) {
+review_hit <- function(db, config, hit) {
 
   hit_status <- get_hit_status(db, hit)
-  if(hit_status == "reviewable") {
-    res <- review_hit_assignments(hit)
-  }
+
+  assert_that(
+    hit_status == "reviewable"
+  )
+
+  res <- review_hit_assignments(db = db, config = config, hit = hit)
+
   return()
 }
 
