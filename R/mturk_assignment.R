@@ -150,7 +150,7 @@ get_assignment_answer <- function(assignment) {
 #'
 #' @return A logical indicating whether the assignment review was successful
 #'
-review_assignment <- function(assignment) {
+review_assignment <- function(db, config, assignment) {
 
   assignment_status <- get_assignment_status(assignment = assignment)
   if(assignment_status == "submitted") {
@@ -159,15 +159,25 @@ review_assignment <- function(assignment) {
     res <- tryCatch(
       send_postgrid_request(config = config, address = answer, geocode = T),
       error = function(err) {
-
+        update_assignment_record(
+          db = db,
+          assignment = assignment,
+          status = "rejected"
+        )
+        return(NULL)
       }
-    }
+    )
 
+    update_assignment_record(
+      db = db,
+      assignment = assignment,
+      status = "approved"
+    )
 
-    return(T)
+    return(res)
   }
 
-  return(F)
+  return(NULL)
 }
 
 
@@ -223,10 +233,11 @@ compare_hit_assignments <- function(hit) {
 #'
 review_hit_assignments <- function(hit) {
   assignments <- get_hit_assignments(hit)
+  reviewed_answers <- list()
 
   for(i in 1:seq_along(assignments)) {
     res <- review_assignment(assignments[i])
-    if(res) {
+    if(!is.null(res)) {
 
     }
   }
