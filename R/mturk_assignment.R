@@ -56,6 +56,35 @@ get_assignment_status <- function(assignment) {
 }
 
 
+#' @title Update Assignment Record
+#'
+#' @param db
+#' @param assignment
+#'
+#' @return
+#'
+update_assignment_record <- function(db, assignment, status) {
+  assert_that(
+    is.string(assignment),
+    is.string(status),
+    stringr::str_to_title(status) %in% valid_assignment_statuses
+  )
+
+  assignment_table <- DBI::Id(schema = "eviction_addresses", table = "assignment")
+
+  status <- stringr::str_to_lower(status)
+
+  query <- glue::glue_sql('UPDATE eviction_addresses."assignment" SET status = {status} WHERE assignment_id = {assignment};',
+                          .con = db)
+
+  res <- DBI::dbExecute(db, query)
+
+  assert_that(
+    is.count(res)
+  )
+}
+
+
 #' @title Parse HIT Assignment Answer
 #'
 #' @param answer A data.frame containing the answer for one HIT assignment
@@ -119,11 +148,26 @@ get_assignment_answer <- function(assignment) {
 #'
 #' @param assignment The Assignment id. A string (character vector length one)
 #'
-#' @return ??
+#' @return A logical indicating whether the assignment review was successful
 #'
 review_assignment <- function(assignment) {
 
-  return()
+  assignment_status <- get_assignment_status(assignment = assignment)
+  if(assignment_status == "submitted") {
+
+    answer <- get_assignment_answer(assignment = assignment)
+    res <- tryCatch(
+      send_postgrid_request(config = config, address = answer, geocode = T),
+      error = function(err) {
+
+      }
+    }
+
+
+    return(T)
+  }
+
+  return(F)
 }
 
 
@@ -191,3 +235,4 @@ review_hit_assignments <- function(hit) {
 
   return()
 }
+

@@ -44,3 +44,16 @@ skip_if_no_mturk <- function() {
   )
 }
 
+
+#' @title Expect No Error
+#'
+#' @param object An object passed to `testthat::expect_error()`
+#'
+#' @return
+#'
+expect_no_error <- function(object) {
+  testthat::expect_error(
+    object = object,
+    regexp = NA
+  )
+}

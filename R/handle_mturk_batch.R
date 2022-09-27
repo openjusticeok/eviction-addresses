@@ -11,7 +11,7 @@ handle_mturk_batch <- function(db, max_batch_size) {
   )
 
   f <- function(max_batch_size) {
-    new_mturk_batch(db, max_batch_size)
+    new_mturk_batch(db, max_batch_size, hit_type)
   }
 
   return(f)

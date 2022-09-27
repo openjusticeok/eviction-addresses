@@ -153,7 +153,9 @@ send_postgrid_request <- function(config = NULL, address = list(), geocode = T) 
     encode = "form"
   )
 
-  return(res)
+  parsed_res <- parse_postgrid_response(res)
+
+  return(parsed_res)
 }
 
 

@@ -37,11 +37,11 @@ new_mturk_batch <- function(db, max_batch_size, hit_type) {
 #'
 batch_case <- function(db, hit_type) {
   c <- new_case_from_queue(db)
-  h <- new_hit_from_case(db = db, case = c, hit_type = hit_type)
 
-  new_hit_record(
+  h <- new_hit_from_case(
     db = db,
-    hit = h
+    case = c,
+    hit_type = hit_type
   )
 
   return()

@@ -6,7 +6,7 @@ valid_hit_review_statuses <- c("NotReviewed", "MarkedForReview", "ReviewedApprop
 #'
 #' @return The HIT id. A string (character vector length one)
 #'
-new_sample_hit <- function() {
+new_sample_hit <- function(db) {
   links <- c("https://google.com", "https://twitter.com")
 
   hit_type <- new_hit_type()
@@ -26,6 +26,12 @@ new_sample_hit <- function() {
     has_names(hit, c("HITId", "Valid")),
     is.string(hit$HITId),
     isTRUE(as.logical(hit$Valid))
+  )
+
+  new_hit_record(
+    db = db,
+    hit = hit$HITId,
+    case = ""
   )
 
   return(hit$HITId)
@@ -69,7 +75,11 @@ new_hit_from_case <- function(db, case, hit_type = NULL) {
     isTRUE(as.logical(hit$Valid))
   )
 
-  new_hit_record(db, hit)
+  new_hit_record(
+    db = db,
+    hit = hit$HITId,
+    case = case
+  )
 
   return(hit$HITId)
 }
@@ -77,11 +87,12 @@ new_hit_from_case <- function(db, case, hit_type = NULL) {
 
 #' @title Get HIT Status
 #'
+#' @param db A database connection
 #' @param hit The hit id. A string (character vector of length one)
 #'
 #' @return The HIT status. A string (character vector of length one). See `valid_hit_statuses` for possible values.
 #'
-get_hit_status <- function(hit) {
+get_hit_status <- function(db, hit) {
   assert_that(
     is.string(hit)
   )
@@ -99,6 +110,12 @@ get_hit_status <- function(hit) {
     hit_status %in% valid_hit_statuses
   )
 
+  update_hit_record(
+    db = db,
+    hit = hit,
+    status = tolower(hit_status)
+  )
+
   return(tolower(hit_status))
 }
 
@@ -109,9 +126,9 @@ get_hit_status <- function(hit) {
 #'
 #' @return ??
 #'
-review_hit <- function(hit) {
+review_hit <- function(db, hit) {
 
-  hit_status <- get_hit_status(hit)
+  hit_status <- get_hit_status(db, hit)
   if(hit_status == "reviewable") {
     res <- review_hit_assignments(hit)
   }
@@ -124,12 +141,13 @@ review_hit <- function(hit) {
 #' @param hit The HIT id to dispose
 #'
 #' @return Nothing
+#' @export
 #'
 #' @examples
 #'
-#' dispose_hit(hit = "<insert hit id>")
+#' dispose_hit(db, hit = "<insert hit id>")
 #'
-dispose_hit <- function(hit = NULL) {
+dispose_hit <- function(db, hit = NULL) {
   assert_that(
     is.string(hit)
   )
@@ -139,10 +157,17 @@ dispose_hit <- function(hit = NULL) {
     approve.pending.assignments = F,
     skip.delete.prompt = T
   )
+
   assert_that(
     is.data.frame(res),
     has_names(res, c("HITId", "Valid")),
-    isTRUE(res$Valid)
+    isTRUE(as.logical(res$Valid))
+  )
+
+  update_hit_record(
+    db = db,
+    hit = hit,
+    status = "disposed"
   )
 
   return()
@@ -162,29 +187,30 @@ get_reviewable_hits <- function() {
 
 #' @title New HIT Record
 #'
+#' @param db
+#' @param hit
+#' @param case
+#'
 #' @return NULL
 #'
-new_hit_record <- function(db, hit) {
+new_hit_record <- function(db, hit, case) {
   assert_that(
     is.string(hit)
-    )
+  )
 
   hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
 
   h <- data.frame(
     hit_id = hit,
-    state = "assignable",
+    case = case,
+    status = "assignable",
     created_at = lubridate::now()
   )
 
-  res <- DBI::dbAppendTable(
+  DBI::dbAppendTable(
     conn = db,
     name = hit_table,
     value = h
-  )
-
-  assert_that(
-    is.count(res)
   )
 
   return()
