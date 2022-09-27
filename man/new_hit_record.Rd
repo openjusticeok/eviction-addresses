@@ -4,7 +4,10 @@
 \alias{new_hit_record}
 \title{New HIT Record}
 \usage{
-new_hit_record(db, hit)
+new_hit_record(db, hit, case)
+}
+\arguments{
+\item{case}{}
 }
 \description{
 New HIT Record

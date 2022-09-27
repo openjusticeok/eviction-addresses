@@ -4,7 +4,7 @@
 \alias{handle_mturk_review}
 \title{Handle MTurk Review}
 \usage{
-handle_mturk_review()
+handle_mturk_review(db, config)
 }
 \value{
 A handler function for plumber endpoint /mturk/review

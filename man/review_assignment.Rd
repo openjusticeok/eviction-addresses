@@ -4,13 +4,13 @@
 \alias{review_assignment}
 \title{Review Assignment}
 \usage{
-review_assignment(assignment)
+review_assignment(db, config, assignment)
 }
 \arguments{
 \item{assignment}{The Assignment id. A string (character vector length one)}
 }
 \value{
-??
+If successful, an approved assignment answer. Otherwise, NULL
 }
 \description{
 Review Assignment

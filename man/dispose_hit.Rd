@@ -4,7 +4,7 @@
 \alias{dispose_hit}
 \title{Dispose HIT}
 \usage{
-dispose_hit(hit = NULL)
+dispose_hit(db, hit = NULL)
 }
 \arguments{
 \item{hit}{The HIT id to dispose}
@@ -17,6 +17,6 @@ Dispose HIT
 }
 \examples{
 
-dispose_hit(hit = "<insert hit id>")
+dispose_hit(db, hit = "<insert hit id>")
 
 }

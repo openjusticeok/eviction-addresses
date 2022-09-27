@@ -4,7 +4,7 @@
 \alias{review_hit_assignments}
 \title{Review HIT Assignments}
 \usage{
-review_hit_assignments(hit)
+review_hit_assignments(db, config, hit)
 }
 \arguments{
 \item{hit}{The HIT id}

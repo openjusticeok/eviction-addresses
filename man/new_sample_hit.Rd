@@ -4,7 +4,7 @@
 \alias{new_sample_hit}
 \title{New Sample HIT}
 \usage{
-new_sample_hit()
+new_sample_hit(db)
 }
 \value{
 The HIT id. A string (character vector length one)

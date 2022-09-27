@@ -4,9 +4,11 @@
 \alias{get_hit_status}
 \title{Get HIT Status}
 \usage{
-get_hit_status(hit)
+get_hit_status(db, hit)
 }
 \arguments{
+\item{db}{A database connection}
+
 \item{hit}{The hit id. A string (character vector of length one)}
 }
 \value{

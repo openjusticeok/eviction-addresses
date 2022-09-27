@@ -4,7 +4,7 @@
 \alias{review_hit}
 \title{Review HIT}
 \usage{
-review_hit(hit)
+review_hit(db, config, hit)
 }
 \arguments{
 \item{hit}{The HIT id. A string (character vector length one)}
