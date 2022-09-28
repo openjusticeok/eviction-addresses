@@ -198,6 +198,8 @@ get_assignment_answer <- function(assignment) {
   answer <- assignment_details$Answer |>
     parse_assignment_answer()
 
+
+
   return(answer)
 }
 
@@ -206,7 +208,7 @@ get_assignment_answer <- function(assignment) {
 #'
 #' @param assignment The Assignment id. A string (character vector length one)
 #'
-#' @return If successful, an approved assignment answer. Otherwise, NULL
+#' @return If successful, True
 #'
 review_assignment <- function(db, config, assignment) {
 
@@ -222,7 +224,7 @@ review_assignment <- function(db, config, assignment) {
           assignment = assignment,
           status = "rejected"
         )
-        return(NULL)
+        return(F)
       }
     )
 
@@ -233,10 +235,10 @@ review_assignment <- function(db, config, assignment) {
       answer = res
     )
 
-    return(res)
+    return(T)
   }
 
-  return(NULL)
+  return(F)
 }
 
 
@@ -291,14 +293,29 @@ compare_hit_assignments <- function(hit) {
 #' @param hit The HIT id
 #'
 review_hit_assignments <- function(db, config, hit) {
-  assignments <- get_hit_assignments(hit)
+  assignments <- get_hit_assignments(hit = hit)
+
+  if(length(assignments) < 1) {
+    return(NULL)
+  }
+
   reviewed_answers <- list()
 
   for(i in 1:seq_along(assignments)) {
-    res <- review_assignment(db = db, config = config, assignment = assignments[i])
-    if(!is.null(res)) {
+    status <- get_assignment_status(assignments[i])
+    assert_that(
+      status %in% tolower(valid_assignment_statuses)
+    )
+    if(status == "submitted") {
+      res <- review_assignment(db = db, config = config, assignment = assignments[i])
+      if(!is.null(res)) {
+
+      }
+    } else if(status == "accepted") {
 
     }
+
+    return(NULL)
   }
 
 

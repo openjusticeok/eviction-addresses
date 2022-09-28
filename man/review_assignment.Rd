@@ -10,7 +10,7 @@ review_assignment(db, config, assignment)
 \item{assignment}{The Assignment id. A string (character vector length one)}
 }
 \value{
-If successful, an approved assignment answer. Otherwise, NULL
+If successful, True
 }
 \description{
 Review Assignment

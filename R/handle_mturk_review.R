@@ -9,7 +9,7 @@ handle_mturk_review <- function(db, config) {
       tryCatch(
         review_hit(db = db, config = config, hit = reviewable_hits[i]),
         error = function(err) {
-
+          next
         }
       )
     }

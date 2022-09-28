@@ -43,11 +43,18 @@ test_that("Can get HIT assignments correctly when none are submitted", {
 #
 # })
 #
-#
-# test_that("Correctly reviews an assignment", {
-#
-# })
-#
+
+test_that("Correctly reviews an assignment", {
+  mturk_auth("config.yml")
+  db <- new_db_pool("config.yml")
+  withr::defer(pool::poolClose(db))
+
+  h <- new_sample_hit(db)
+  withr::defer(dispose_hit(db, h))
+
+
+})
+
 #
 # test_that("Can review and compare hit assignments in one go", {
 #

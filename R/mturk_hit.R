@@ -120,24 +120,6 @@ get_hit_status <- function(db, hit) {
 }
 
 
-#' @title Set HIT Status
-#'
-#' @param db
-#' @param hit
-#' @param status
-#'
-#' @return
-#'
-set_hit_status <- function(db, hit, status) {
-  assert_that(
-    is.string(hit),
-    stringr::str_to_title(status) %in% valid_hit_statuses
-  )
-
-
-}
-
-
 #' @title Review HIT
 #'
 #' @param hit The HIT id. A string (character vector length one)
@@ -148,11 +130,11 @@ review_hit <- function(db, config, hit) {
 
   hit_status <- get_hit_status(db, hit)
 
-  assert_that(
-    hit_status == "reviewable"
-  )
+  if(hit_status == "reviewable") {
+    res <- review_hit_assignments(db = db, config = config, hit = hit)
+    return(res)
+  }
 
-  res <- review_hit_assignments(db = db, config = config, hit = hit)
 
   return()
 }
@@ -200,8 +182,13 @@ dispose_hit <- function(db, hit = NULL) {
 #'
 #' @return A set of reviewable HITs
 #'
-get_reviewable_hits <- function() {
-  reviewable_hits <- pyMTurkR::GetReviewableHITs()
+get_reviewable_hits <- function(db) {
+  # reviewable_hits <- pyMTurkR::GetReviewableHITs()
+  hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
+  query <- glue::glue_sql("SELECT hit_id FROM eviction_addresses.hit WHERE status = 'reviewable'", .con = db)
+
+  res <- dbGetQuery(db, query)
+  reviewable_hits <- res$hit_id
 
   return(reviewable_hits)
 }
@@ -261,10 +248,11 @@ update_hit_record <- function(db, hit, status) {
   query <- glue::glue_sql('UPDATE eviction_addresses."hit" SET status = {status} WHERE hit_id = {hit};',
                           .con = db)
 
-  res <- DBI::dbExecute(db, query)
-
-  assert_that(
-    is.count(res)
+  tryCatch(
+    expr = DBI::dbExecute(db, query),
+    error = function(err) {
+      rlang::abort("Could not complete query")
+    }
   )
 
   return()
