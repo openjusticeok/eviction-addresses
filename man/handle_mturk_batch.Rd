@@ -8,6 +8,8 @@ handle_mturk_batch(db, max_batch_size)
 }
 \arguments{
 \item{db}{A database connection}
+
+\item{max_batch_size}{Maximum number of MTurk HITs to create at once}
 }
 \value{
 A handler function for \code{plumber::pr_handle}

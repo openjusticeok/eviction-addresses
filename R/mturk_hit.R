@@ -180,6 +180,8 @@ dispose_hit <- function(db, hit = NULL) {
 
 #' @title Get Reviewable HITs
 #'
+#' @param db A database connection pool
+#'
 #' @return A set of reviewable HITs
 #'
 get_reviewable_hits <- function(db) {

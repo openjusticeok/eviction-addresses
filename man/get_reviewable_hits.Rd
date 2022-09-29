@@ -4,7 +4,10 @@
 \alias{get_reviewable_hits}
 \title{Get Reviewable HITs}
 \usage{
-get_reviewable_hits()
+get_reviewable_hits(db)
+}
+\arguments{
+\item{db}{A database connection pool}
 }
 \value{
 A set of reviewable HITs

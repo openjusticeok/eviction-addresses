@@ -1,10 +1,10 @@
 #' @title New MTurk Batch
 #'
-#' @param db
-#' @param max_batch_size
-#' @param hit_type
+#' @param db A database connection pool
+#' @param max_batch_size The maximum number of HITs to create at once
+#' @param hit_type The HIT Type to use for created HITs
 #'
-#' @return
+#' @return Empty
 #' @export
 #'
 new_mturk_batch <- function(db, max_batch_size, hit_type) {

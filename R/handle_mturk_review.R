@@ -4,15 +4,23 @@
 #'
 handle_mturk_review <- function(db, config) {
   f <- function() {
-    reviewable_hits <- get_reviewable_hits()
+    reviewable_hits <- get_reviewable_hits(db = db)
+    logger::log_debug("{length(reviewable_hits)} reviewable hits found")
     for(i in seq_along(reviewable_hits)) {
-      tryCatch(
+      res <- tryCatch(
         review_hit(db = db, config = config, hit = reviewable_hits[i]),
         error = function(err) {
-          next
+          err
         }
       )
+
+      if(inherits(res, "error")) {
+        log_error(res$message)
+        next()
+      }
+
     }
+
 
     return()
   }
