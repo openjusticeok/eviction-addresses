@@ -7,7 +7,14 @@
 new_mturk_batch(db, max_batch_size, hit_type)
 }
 \arguments{
-\item{hit_type}{}
+\item{db}{A database connection pool}
+
+\item{max_batch_size}{The maximum number of HITs to create at once}
+
+\item{hit_type}{The HIT Type to use for created HITs}
+}
+\value{
+Empty
 }
 \description{
 New MTurk Batch

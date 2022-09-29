@@ -9,9 +9,6 @@ review_hit(db, config, hit)
 \arguments{
 \item{hit}{The HIT id. A string (character vector length one)}
 }
-\value{
-??
-}
 \description{
 Review HIT
 }

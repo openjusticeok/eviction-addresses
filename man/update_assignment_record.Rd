@@ -7,7 +7,13 @@
 update_assignment_record(db, assignment, status, answer = NULL)
 }
 \arguments{
-\item{assignment}{}
+\item{db}{A database connection pool}
+
+\item{assignment}{The ID of the Assignment to create a db record for}
+
+\item{status}{The status to record for the Assignment}
+
+\item{answer}{The Assignment answer to record. Default is \code{NULL}}
 }
 \description{
 Update Assignment Record

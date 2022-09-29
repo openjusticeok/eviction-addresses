@@ -7,7 +7,9 @@
 batch_case(db, hit_type)
 }
 \arguments{
-\item{hit_type}{}
+\item{db}{A database connection pool}
+
+\item{hit_type}{The HIT Type ID to use for this batch}
 }
 \description{
 Batch a Case

@@ -58,11 +58,10 @@ get_assignment_status <- function(assignment) {
 
 #' @title Check Assignment Record Exists
 #'
-#' @param db
-#' @param assignment
-#' @param hit
+#' @param db A database connection pool
+#' @param assignment The Assignment ID
+#' @param hit The HIT ID
 #'
-#' @return
 #'
 check_assignment_record_exists <- function(db, assignment, hit) {
   query <- glue::glue_sql(
@@ -76,11 +75,12 @@ check_assignment_record_exists <- function(db, assignment, hit) {
 
 #' @title New Assignment Record
 #'
-#' @param db
-#' @param assignment
-#' @param worker
+#' @param db A database connection pool
+#' @param hit A HIT ID
+#' @param assignment The Assignment ID
+#' @param worker The Worker ID associated with the Assignment
+#' @param status The status of the Assignment to record
 #'
-#' @return
 #'
 new_assignment_record <- function(db, hit, assignment, worker, status) {
   assignment_table <- DBI::Id(schema = "eviction_addresses", table = "assignment")
@@ -104,10 +104,10 @@ new_assignment_record <- function(db, hit, assignment, worker, status) {
 
 #' @title Update Assignment Record
 #'
-#' @param db
-#' @param assignment
-#'
-#' @return
+#' @param db A database connection pool
+#' @param assignment The ID of the Assignment to create a db record for
+#' @param status The status to record for the Assignment
+#' @param answer The Assignment answer to record. Default is `NULL`
 #'
 update_assignment_record <- function(db, assignment, status, answer = NULL) {
   assert_that(
@@ -202,6 +202,8 @@ get_assignment_answer <- function(assignment) {
 
 #' @title Review Assignment
 #'
+#' @param db A database connection pool
+#' @param config The path to a config file
 #' @param assignment The Assignment id. A string (character vector length one)
 #'
 #' @return If successful, True
@@ -215,26 +217,27 @@ review_assignment <- function(db, config, assignment) {
     res <- tryCatch(
       send_postgrid_request(config = config, address = answer, geocode = T),
       error = function(err) {
-        update_assignment_record(
-          db = db,
-          assignment = assignment,
-          status = "rejected"
-        )
-        return(F)
+        log_error("{err$message}")
       }
     )
 
-    update_assignment_record(
-      db = db,
-      assignment = assignment,
-      status = "approved",
-      answer = res
-    )
-
-    return(T)
+    if(inherits(res, "error")) {
+      update_assignment_record(
+        db = db,
+        assignment = assignment,
+        status = "rejected"
+      )
+    } else {
+      update_assignment_record(
+        db = db,
+        assignment = assignment,
+        status = "approved",
+        answer = res
+      )
+    }
   }
 
-  return(F)
+  return()
 }
 
 
@@ -252,68 +255,60 @@ review_assignment <- function(db, config, assignment) {
 #' compare_hit_assignments(hit = "<insert hit id>")
 #' }
 compare_hit_assignments <- function(hit) {
-  assert_that(
-    is.string(hit)
-  )
+  ## This should:
+    ## collect parsed answers from the db
+    ## make sure there are at least 2
+    ## make sure at least 2 match
 
-  res <- pyMTurkR::GetAssignments(hit = hit, get.answers = T)
-
-  assert_that(
-    has_name(res, "Assignments"),
-    has_name(res, "Answers"),
-    msg = "Could not parse the response from MTurk API: Necessary fields not found"
-  )
-
-  assert_that(
-    is.data.frame(res$Assignments),
-    is.data.frame(res$Answers),
-    msg = "Could not parse the response from MTurk API: Fields not returned as data.frame"
-  )
-
-  assert_that(
-    nrow(res$Assignments) == 3,
-    msg = "{nrow(res$Assignments)} retreived. Need 3 to compare. HIT is not ready for review."
-  )
-
-  assignments <- res$Assignments
-  answers <- res$Answers |>
-    split(~AssignmentId)
-
-
-  return(answers)
+  # assert_that(
+  #   is.string(hit)
+  # )
+  #
+  # res <- pyMTurkR::GetAssignments(hit = hit, get.answers = T)
+  #
+  # assert_that(
+  #   has_name(res, "Assignments"),
+  #   has_name(res, "Answers"),
+  #   msg = "Could not parse the response from MTurk API: Necessary fields not found"
+  # )
+  #
+  # assert_that(
+  #   is.data.frame(res$Assignments),
+  #   is.data.frame(res$Answers),
+  #   msg = "Could not parse the response from MTurk API: Fields not returned as data.frame"
+  # )
+  #
+  # assert_that(
+  #   nrow(res$Assignments) == 3,
+  #   msg = "{nrow(res$Assignments)} retreived. Need 3 to compare. HIT is not ready for review."
+  # )
+  #
+  # assignments <- res$Assignments
+  # answers <- res$Answers |>
+  #   split(~AssignmentId)
+  #
+  #
+  # return(answers)
 }
 
 
 #' @title Review HIT Assignments
 #'
+#' @param db A database connection pool
+#' @param config The path to a config file
 #' @param hit The HIT id
 #'
 review_hit_assignments <- function(db, config, hit) {
   assignments <- get_hit_assignments(hit = hit)
 
-  if(length(assignments) < 1) {
-    return(NULL)
-  }
-
-  reviewed_answers <- list()
-
   for(i in 1:seq_along(assignments)) {
-    status <- get_assignment_status(assignments[i])
-    assert_that(
-      status %in% tolower(valid_assignment_statuses)
-    )
-    if(status == "submitted") {
-      res <- review_assignment(db = db, config = config, assignment = assignments[i])
-      if(!is.null(res)) {
-
+    r <- tryCatch(
+      review_assignment(db = db, config = config, assignment = assignments[i]),
+      error = function(err) {
+        log_debug("{err$message}")
       }
-    } else if(status == "accepted") {
-
-    }
-
-    return(NULL)
+    )
   }
-
 
   return(reviewed_answers)
 }

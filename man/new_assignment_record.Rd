@@ -7,7 +7,15 @@
 new_assignment_record(db, hit, assignment, worker, status)
 }
 \arguments{
-\item{worker}{}
+\item{db}{A database connection pool}
+
+\item{hit}{A HIT ID}
+
+\item{assignment}{The Assignment ID}
+
+\item{worker}{The Worker ID associated with the Assignment}
+
+\item{status}{The status of the Assignment to record}
 }
 \description{
 New Assignment Record

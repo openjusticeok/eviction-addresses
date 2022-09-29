@@ -4,6 +4,8 @@
 #'
 handle_mturk_review <- function(db, config) {
   f <- function() {
+    sync_hits(db)
+
     reviewable_hits <- get_reviewable_hits(db = db)
     logger::log_debug("{length(reviewable_hits)} reviewable hits found")
 
@@ -19,9 +21,7 @@ handle_mturk_review <- function(db, config) {
         log_error(res$message)
         next()
       }
-
     }
-
 
     return()
   }

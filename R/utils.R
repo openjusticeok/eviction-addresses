@@ -40,7 +40,31 @@ skip_if_no_config <- function() {
 #'
 skip_if_no_mturk <- function() {
   testthat::skip_if_not(
-    mturk_auth()
+    mturk_auth(config = "config.yml")
+  )
+}
+
+
+#' @title Skip if no database access
+#'
+skip_if_no_db <- function() {
+  skip_if_no_config()
+
+  tryCatch(
+    db <- new_db_pool(),
+    error = function(err) {
+      err
+    }
+  )
+
+  if(inherits(db, "error")) {
+    skip()
+  }
+
+  withr::defer(pool::poolClose(db))
+
+  skip_if_not(
+    pool::dbIsValid(db)
   )
 }
 
@@ -48,8 +72,6 @@ skip_if_no_mturk <- function() {
 #' @title Expect No Error
 #'
 #' @param object An object passed to `testthat::expect_error()`
-#'
-#' @return
 #'
 expect_no_error <- function(object) {
   testthat::expect_error(

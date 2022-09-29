@@ -32,10 +32,9 @@ new_mturk_batch <- function(db, max_batch_size, hit_type) {
 
 #' Batch a Case
 #'
-#' @param db
-#' @param hit_type
+#' @param db A database connection pool
+#' @param hit_type The HIT Type ID to use for this batch
 #'
-#' @return
 #' @export
 #'
 batch_case <- function(db, hit_type) {

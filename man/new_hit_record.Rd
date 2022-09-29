@@ -7,7 +7,11 @@
 new_hit_record(db, hit, case)
 }
 \arguments{
-\item{case}{}
+\item{db}{A database connection pool}
+
+\item{hit}{The HIT ID to record}
+
+\item{case}{The case id associated with the HIT}
 }
 \description{
 New HIT Record

@@ -7,6 +7,10 @@
 review_hit_assignments(db, config, hit)
 }
 \arguments{
+\item{db}{A database connection pool}
+
+\item{config}{The path to a config file}
+
 \item{hit}{The HIT id}
 }
 \description{

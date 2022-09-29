@@ -7,7 +7,11 @@
 check_assignment_record_exists(db, assignment, hit)
 }
 \arguments{
-\item{hit}{}
+\item{db}{A database connection pool}
+
+\item{assignment}{The Assignment ID}
+
+\item{hit}{The HIT ID}
 }
 \description{
 Check Assignment Record Exists

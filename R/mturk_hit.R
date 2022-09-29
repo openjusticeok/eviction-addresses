@@ -124,7 +124,6 @@ get_hit_status <- function(db, hit) {
 #'
 #' @param hit The HIT id. A string (character vector length one)
 #'
-#' @return ??
 #'
 review_hit <- function(db, config, hit) {
 
@@ -198,9 +197,9 @@ get_reviewable_hits <- function(db) {
 
 #' @title New HIT Record
 #'
-#' @param db
-#' @param hit
-#' @param case
+#' @param db A database connection pool
+#' @param hit The HIT ID to record
+#' @param case The case id associated with the HIT
 #'
 #' @return NULL
 #'
@@ -234,7 +233,6 @@ new_hit_record <- function(db, hit, case) {
 #' @param hit A HIT id; a string
 #' @param status A HIT Status; a string
 #'
-#' @return
 #'
 update_hit_record <- function(db, hit, status) {
   assert_that(
@@ -259,3 +257,33 @@ update_hit_record <- function(db, hit, status) {
 
   return()
 }
+
+#' @title Sync HITs in database with MTurk
+#'
+#' @param db A database connection pool
+#'
+sync_hits <- function(db) {
+  hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
+  h <- dplyr::tbl(db, hit_table) |>
+    dplyr::filter(status != "disposed") |>
+    dplyr::pull(hit_id)
+
+  if(length(h) == 0) {
+    return()
+  }
+
+  for(i in seq_along(h)) {
+    tryCatch(
+      {
+        s <- get_hit_status(db, h[i])
+        update_hit_record(db, h[i], s)
+      },
+      error = function(err) {
+        log_error("Could not synchronize HIT {h[i]}: {err}")
+      }
+    )
+  }
+}
+
+
+

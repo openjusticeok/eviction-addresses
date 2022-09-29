@@ -7,6 +7,10 @@
 review_assignment(db, config, assignment)
 }
 \arguments{
+\item{db}{A database connection pool}
+
+\item{config}{The path to a config file}
+
 \item{assignment}{The Assignment id. A string (character vector length one)}
 }
 \value{
