@@ -42,7 +42,7 @@ mturk_auth <- function(config = NULL) {
   )
 
   if(check_auth) {
-    logger::log_success("pyMTurkR found auth keys")
+    logger::log_debug("pyMTurkR found auth keys")
     return(invisible(T))
   }
 

@@ -11,6 +11,12 @@
 #' @import plumber
 run_api <- function(config, ..., .background = F) {
 
+  logger::log_threshold(logger::TRACE)
+  options(
+    pyMTurkR.sandbox = TRUE,
+    pyMTurkR.verbose = TRUE
+  )
+
   db <- new_db_pool(config)
   withr::defer(pool::poolClose(db))
 
