@@ -12,6 +12,9 @@
 run_api <- function(config, ..., .background = F) {
 
   db <- new_db_pool(config)
+  withr::defer(pool::poolClose(db))
+
+  mturk_auth(config)
 
   if(.background) {
     future::plan(future.callr::callr)
@@ -22,9 +25,11 @@ run_api <- function(config, ..., .background = F) {
       pr_handle("GET", "/dbping", handle_dbping(db)) |>
       pr_handle("GET", "/dbpingfuture", handle_dbpingfuture(db)) |>
       pr_handle("GET", "/refresh", handle_refresh(db)) |>
-      pr_handle("GET", "/mturk/batch", handle_mturk_batch(db))
-      pr_handle("GET", "/mturk/review", handle_mturk_review(db, config))
+      pr_handle("GET", "/mturk/batch", handle_mturk_batch(db, max_batch_size = 1)) |>
+      pr_handle("GET", "/mturk/review", handle_mturk_review(db, config)) |>
       pr_handle("POST", "/address/validate", handle_address_validate(db, config)) |>
       pr_run(...)
   }
+
+  return()
 }

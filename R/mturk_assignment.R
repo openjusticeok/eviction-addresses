@@ -136,10 +136,6 @@ update_assignment_record <- function(db, assignment, status, answer = NULL) {
 
   res <- DBI::dbExecute(db, query)
 
-  assert_that(
-    is.count(res)
-  )
-
   return()
 }
 

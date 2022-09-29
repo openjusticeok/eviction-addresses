@@ -16,12 +16,15 @@ new_mturk_batch <- function(db, max_batch_size, hit_type) {
   queue_length <- get_queue_length(db)
   if(queue_length > 0) {
     up_limit <- min(queue_length, max_batch_size)
-    purrr::walk(
-      seq_len(up_limit),
-      purrr::safely(
-        batch_case(db, hit_type)
+    for(i in seq_len(up_limit)) {
+      tryCatch(
+        batch_case(db, hit_type),
+        error = function(err) {
+          ## insert error handling
+          log_error(err)
+        }
       )
-    )
+    }
   }
 
   return()
