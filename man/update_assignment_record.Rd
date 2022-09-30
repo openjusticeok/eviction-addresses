@@ -4,7 +4,7 @@
 \alias{update_assignment_record}
 \title{Update Assignment Record}
 \usage{
-update_assignment_record(db, assignment, status, answer = NULL)
+update_assignment_record(db, assignment, status, answer = NULL, attempt = F)
 }
 \arguments{
 \item{db}{A database connection pool}

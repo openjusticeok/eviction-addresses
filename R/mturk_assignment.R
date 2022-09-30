@@ -3,11 +3,12 @@ valid_assignment_statuses <- c("Submitted", "Approved", "Rejected")
 
 #' @title Get HIT Assignments
 #'
+#' @param db A database connection pool
 #' @param hit The HIT id. A string (character vector length one)
 #'
 #' @return A character vector of Assignment ids
 #'
-get_hit_assignments <- function(hit) {
+get_hit_assignments <- function(db, hit) {
   assert_that(
     is.string(hit)
   )
@@ -24,6 +25,18 @@ get_hit_assignments <- function(hit) {
     length(assignments) >= 0,
     noNA(assignments)
   )
+
+  for(i in seq_along(assignments)) {
+    if(!assignment_record_exists(db, assignments[i])) {
+      new_assignment_record(
+        db = db,
+        hit = hit,
+        assignment = assignments[i],
+        status = get_assignment_status(assignments[i]),
+        worker = NA_character_
+      )
+    }
+  }
 
   return(assignments)
 }
@@ -56,20 +69,23 @@ get_assignment_status <- function(assignment) {
 }
 
 
-#' @title Check Assignment Record Exists
+#' @title Assignment Record Exists
 #'
 #' @param db A database connection pool
 #' @param assignment The Assignment ID
-#' @param hit The HIT ID
 #'
-#'
-check_assignment_record_exists <- function(db, assignment, hit) {
+assignment_record_exists <- function(db, assignment) {
   query <- glue::glue_sql(
-    'SELECT exists(select 1 from eviction_addresses.assignment where assignment_id={assignment} and hit={hit}',
+    'SELECT exists(select TRUE from eviction_addresses."assignment" where assignment_id={assignment})::int',
     .con = db
   )
 
-  res <- DBI::dbExecute(db, query)
+  res <- DBI::dbGetQuery(db, query) |>
+    dplyr::pull(exists)
+
+  res <- as.logical(res)
+
+  return(res)
 }
 
 
@@ -109,7 +125,7 @@ new_assignment_record <- function(db, hit, assignment, worker, status) {
 #' @param status The status to record for the Assignment
 #' @param answer The Assignment answer to record. Default is `NULL`
 #'
-update_assignment_record <- function(db, assignment, status, answer = NULL) {
+update_assignment_record <- function(db, assignment, status, answer = NULL, attempt = F) {
   assert_that(
     is.string(assignment),
     is.string(status),
@@ -120,19 +136,25 @@ update_assignment_record <- function(db, assignment, status, answer = NULL) {
 
   status <- stringr::str_to_lower(status)
 
-  if(is.null(answer)) {
-    query <- glue::glue_sql(
-      'UPDATE eviction_addresses."assignment" SET status = {status} WHERE assignment_id = {assignment};',
-      .con = db
-    )
-  } else {
-    ## Insert answer argument checks
+  q <- 'UPDATE eviction_addresses."assignment" SET status = {status}'
 
-    query <- glue::glue_sql(
-      'UPDATE eviction_addresses."assignment" SET status = {status}, answer = {answer} WHERE assignment_id = {assignment};',
-      .con = db
-    )
+  if(isTRUE(attempt)) {
+    q <- stringr::str_c(q, 'attempts = attempts + 1', sep = ", ")
   }
+
+  if(!is.null(answer)) {
+    ## Insert answer argument checks
+    json_answer <- jsonlite::toJSON(answer)
+
+    q <- stringr::str_c(q, 'answer = {json_answer}', sep = ", ")
+  }
+
+  q <- stringr:: str_c(q, 'WHERE assignment_id = {assignment};', sep = " ")
+
+  query <- glue::glue_sql(
+    q,
+    .con = db
+  )
 
   res <- DBI::dbExecute(db, query)
 
@@ -220,7 +242,7 @@ review_assignment <- function(db, config, assignment) {
     res <- tryCatch(
       send_postgrid_request(config = config, address = answer, geocode = T),
       error = function(err) {
-        log_error("{err$message}")
+        log_error("{Failed Postgres response: err$message}")
       }
     )
 
@@ -228,20 +250,21 @@ review_assignment <- function(db, config, assignment) {
       update_assignment_record(
         db = db,
         assignment = assignment,
-        status = "rejected"
+        status = "rejected",
+        attempt = T
       )
     } else {
-      log_debug("{res}")
+      log_debug("Successful Postgrid response: {res}")
       update_assignment_record(
         db = db,
         assignment = assignment,
         status = "approved",
-        answer = res
+        answer = res,
+        attempt = T
       )
     }
   }
 
-  return()
 }
 
 
@@ -303,9 +326,13 @@ compare_hit_assignments <- function(hit) {
 #' @param hit The HIT id
 #'
 review_hit_assignments <- function(db, config, hit) {
-  assignments <- get_hit_assignments(hit = hit)
+  assignments <- get_hit_assignments(db = db, hit = hit)
 
   for(i in 1:seq_along(assignments)) {
+    if(!assignment_record_exists(db, assignments[i])) {
+      new_assignment_record(db = db, hit = hit, assignment = assignments[1], worker = NA, status = get_assignment_status(assignments[1]))
+    }
+
     r <- tryCatch(
       review_assignment(db = db, config = config, assignment = assignments[i]),
       error = function(err) {

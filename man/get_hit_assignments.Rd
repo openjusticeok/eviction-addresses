@@ -4,9 +4,11 @@
 \alias{get_hit_assignments}
 \title{Get HIT Assignments}
 \usage{
-get_hit_assignments(hit)
+get_hit_assignments(db, hit)
 }
 \arguments{
+\item{db}{A database connection pool}
+
 \item{hit}{The HIT id. A string (character vector length one)}
 }
 \value{
