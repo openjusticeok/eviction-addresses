@@ -79,3 +79,12 @@ expect_no_error <- function(object) {
     regexp = NA
   )
 }
+
+#' @title Launch Worker Sandbox
+#'
+launch_worker_sandbox <- function() {
+  url <- "https://workersandbox.mturk.com/requesters/A1IQJE205A4RN2/projects"
+  browseURL(url)
+
+  invisible(url)
+}

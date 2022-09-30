@@ -163,8 +163,12 @@ parse_assignment_answer <- function(answer) {
 
   assert_that(
     is.list(address),
-    has_names(address, c("line1", "line2", "city", "state", "zip"))
+    has_names(address, c("line1", "city", "state", "zip"))
   )
+
+  if(!has_names(address, "line2")) {
+    address$line2 <- ""
+  }
 
   address <- format_postgrid_request(
     line1 = address$line1,
@@ -191,10 +195,8 @@ get_assignment_answer <- function(assignment) {
 
   assignment_details <- pyMTurkR::GetAssignment(assignment = assignment, get.answers = T)
 
-  answer <- assignment_details$Answer |>
+  answer <- assignment_details$Answers |>
     parse_assignment_answer()
-
-
 
   return(answer)
 }
@@ -214,6 +216,7 @@ review_assignment <- function(db, config, assignment) {
   if(assignment_status == "submitted") {
 
     answer <- get_assignment_answer(assignment = assignment)
+    log_debug("Answer: {answer}")
     res <- tryCatch(
       send_postgrid_request(config = config, address = answer, geocode = T),
       error = function(err) {
@@ -228,6 +231,7 @@ review_assignment <- function(db, config, assignment) {
         status = "rejected"
       )
     } else {
+      log_debug("{res}")
       update_assignment_record(
         db = db,
         assignment = assignment,
@@ -310,6 +314,13 @@ review_hit_assignments <- function(db, config, hit) {
     )
   }
 
-  return(reviewed_answers)
 }
 
+
+#' @title Sync Assignments
+#'
+sync_assignments <- function(db) {
+  assignment_tabls <- DBI::Id(schema = "eviction_addresses", table = "assignment")
+
+
+}
