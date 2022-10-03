@@ -20,4 +20,5 @@ Compare HIT Assignments
 \dontrun{
 compare_hit_assignments(hit = "<insert hit id>")
 }
+
 }

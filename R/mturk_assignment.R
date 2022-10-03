@@ -253,6 +253,8 @@ review_assignment <- function(db, config, assignment) {
         status = "rejected",
         attempt = T
       )
+
+      pyMTurkR::RejectAssignment(assignments = assignment)
     } else {
       log_debug("Successful Postgrid response: {res}")
       update_assignment_record(
@@ -262,6 +264,8 @@ review_assignment <- function(db, config, assignment) {
         answer = res,
         attempt = T
       )
+
+      pyMTurkR::ApproveAssignment(assignments = assignment)
     }
   }
 
@@ -281,6 +285,7 @@ review_assignment <- function(db, config, assignment) {
 #' \dontrun{
 #' compare_hit_assignments(hit = "<insert hit id>")
 #' }
+#'
 compare_hit_assignments <- function(hit) {
   ## This should:
     ## collect parsed answers from the db
