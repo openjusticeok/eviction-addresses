@@ -14,6 +14,8 @@ update_assignment_record(db, assignment, status, answer = NULL, attempt = F)
 \item{status}{The status to record for the Assignment}
 
 \item{answer}{The Assignment answer to record. Default is \code{NULL}}
+
+\item{attempt}{A logical indicating whether this update is the result of a review attempt}
 }
 \description{
 Update Assignment Record

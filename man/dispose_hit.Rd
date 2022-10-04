@@ -7,6 +7,8 @@
 dispose_hit(db, hit = NULL)
 }
 \arguments{
+\item{db}{A database connection pool}
+
 \item{hit}{The HIT id to dispose}
 }
 \value{

@@ -124,6 +124,7 @@ new_assignment_record <- function(db, hit, assignment, worker, status) {
 #' @param assignment The ID of the Assignment to create a db record for
 #' @param status The status to record for the Assignment
 #' @param answer The Assignment answer to record. Default is `NULL`
+#' @param attempt A logical indicating whether this update is the result of a review attempt
 #'
 update_assignment_record <- function(db, assignment, status, answer = NULL, attempt = F) {
   assert_that(
@@ -274,6 +275,7 @@ review_assignment <- function(db, config, assignment) {
 
 #' @title Compare HIT Assignments
 #'
+#' @param db A database connection pool
 #' @param hit The HIT id for which to compare all assignments
 #'
 #' @return Nothing
@@ -286,11 +288,13 @@ review_assignment <- function(db, config, assignment) {
 #' compare_hit_assignments(hit = "<insert hit id>")
 #' }
 #'
-compare_hit_assignments <- function(hit) {
+compare_hit_assignments <- function(db, hit) {
   ## This should:
     ## collect parsed answers from the db
     ## make sure there are at least 2
     ## make sure at least 2 match
+
+  query <- 'SELECT * FROM "eviction_addresses"."assignment'
 
   # assert_that(
   #   is.string(hit)
@@ -349,10 +353,10 @@ review_hit_assignments <- function(db, config, hit) {
 }
 
 
-#' @title Sync Assignments
-#'
-sync_assignments <- function(db) {
-  assignment_tabls <- DBI::Id(schema = "eviction_addresses", table = "assignment")
-
-
-}
+# #' @title Sync Assignments
+# #'
+# sync_assignments <- function(db) {
+#   assignment_table <- DBI::Id(schema = "eviction_addresses", table = "assignment")
+#
+#
+# }

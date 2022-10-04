@@ -7,6 +7,10 @@
 review_hit(db, config, hit)
 }
 \arguments{
+\item{db}{A database connection pool}
+
+\item{config}{A configuration file}
+
 \item{hit}{The HIT id. A string (character vector length one)}
 }
 \description{

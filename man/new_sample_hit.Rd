@@ -6,6 +6,9 @@
 \usage{
 new_sample_hit(db)
 }
+\arguments{
+\item{db}{A database connection pool}
+}
 \value{
 The HIT id. A string (character vector length one)
 }

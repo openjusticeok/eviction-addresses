@@ -7,6 +7,8 @@
 new_hit_from_case(db, case, hit_type = NULL)
 }
 \arguments{
+\item{db}{A database connection pool}
+
 \item{case}{The case id from which to create a new HIT}
 
 \item{hit_type}{The HIT Type id from which to create a new HIT}

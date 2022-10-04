@@ -4,9 +4,11 @@
 \alias{compare_hit_assignments}
 \title{Compare HIT Assignments}
 \usage{
-compare_hit_assignments(hit)
+compare_hit_assignments(db, hit)
 }
 \arguments{
+\item{db}{A database connection pool}
+
 \item{hit}{The HIT id for which to compare all assignments}
 }
 \value{

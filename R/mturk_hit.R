@@ -4,6 +4,8 @@ valid_hit_statuses <- c("Assignable", "Unassignable", "Reviewable", "Reviewing",
 
 #' @title New Sample HIT
 #'
+#' @param db A database connection pool
+#'
 #' @return The HIT id. A string (character vector length one)
 #'
 new_sample_hit <- function(db) {
@@ -40,6 +42,7 @@ new_sample_hit <- function(db) {
 
 #' @title New Hit from Case
 #'
+#' @param db A database connection pool
 #' @param case The case id from which to create a new HIT
 #' @param hit_type The HIT Type id from which to create a new HIT
 #'
@@ -122,18 +125,29 @@ get_hit_status <- function(db, hit) {
 
 #' @title Review HIT
 #'
+#' @param db A database connection pool
+#' @param config A configuration file
 #' @param hit The HIT id. A string (character vector length one)
-#'
 #'
 review_hit <- function(db, config, hit) {
 
   hit_status <- get_hit_status(db, hit)
 
   if(hit_status == "reviewable") {
-    res <- review_hit_assignments(db = db, config = config, hit = hit)
-    return(res)
-  }
+    res <- tryCatch(
+      review_hit_assignments(db = db, config = config, hit = hit),
+      error = function(err) {
+        logger::log_error(err)
+      }
+    )
 
+    res <- tryCatch(
+      compare_hit_assignments(db = db, hit = hit),
+      error = function(err) {
+        logger::log_error(err)
+      }
+    )
+  }
 
   return()
 }
@@ -141,6 +155,7 @@ review_hit <- function(db, config, hit) {
 
 #' @title Dispose HIT
 #'
+#' @param db A database connection pool
 #' @param hit The HIT id to dispose
 #'
 #' @return Nothing
