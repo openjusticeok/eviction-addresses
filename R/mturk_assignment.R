@@ -26,8 +26,8 @@ get_hit_assignments <- function(db, hit) {
     noNA(assignments)
   )
 
-  for(i in seq_along(assignments)) {
-    if(!assignment_record_exists(db, assignments[i])) {
+  for (i in seq_along(assignments)) {
+    if (!assignment_record_exists(db, assignments[i])) {
       new_assignment_record(
         db = db,
         hit = hit,
@@ -139,18 +139,18 @@ update_assignment_record <- function(db, assignment, status, answer = NULL, atte
 
   q <- 'UPDATE eviction_addresses."assignment" SET status = {status}'
 
-  if(isTRUE(attempt)) {
-    q <- stringr::str_c(q, 'attempts = attempts + 1', sep = ", ")
+  if (isTRUE(attempt)) {
+    q <- stringr::str_c(q, "attempts = attempts + 1", sep = ", ")
   }
 
-  if(!is.null(answer)) {
+  if (!is.null(answer)) {
     ## Insert answer argument checks
     json_answer <- jsonlite::toJSON(answer)
 
-    q <- stringr::str_c(q, 'answer = {json_answer}', sep = ", ")
+    q <- stringr::str_c(q, "answer = {json_answer}", sep = ", ")
   }
 
-  q <- stringr:: str_c(q, 'WHERE assignment_id = {assignment};', sep = " ")
+  q <- stringr::str_c(q, "WHERE assignment_id = {assignment};", sep = " ")
 
   query <- glue::glue_sql(
     q,
@@ -189,7 +189,7 @@ parse_assignment_answer <- function(answer) {
     has_names(address, c("line1", "city", "state", "zip"))
   )
 
-  if(!has_names(address, "line2")) {
+  if (!has_names(address, "line2")) {
     address$line2 <- ""
   }
 
@@ -234,10 +234,8 @@ get_assignment_answer <- function(assignment) {
 #' @return If successful, True
 #'
 review_assignment <- function(db, config, assignment) {
-
   assignment_status <- get_assignment_status(assignment = assignment)
-  if(assignment_status == "submitted") {
-
+  if (assignment_status == "submitted") {
     answer <- get_assignment_answer(assignment = assignment)
     log_debug("Answer: {answer}")
     res <- tryCatch(
@@ -247,7 +245,7 @@ review_assignment <- function(db, config, assignment) {
       }
     )
 
-    if(inherits(res, "error")) {
+    if (inherits(res, "error")) {
       update_assignment_record(
         db = db,
         assignment = assignment,
@@ -269,7 +267,6 @@ review_assignment <- function(db, config, assignment) {
       pyMTurkR::ApproveAssignment(assignments = assignment)
     }
   }
-
 }
 
 
@@ -283,48 +280,32 @@ review_assignment <- function(db, config, assignment) {
 #' @import assertthat
 #'
 #' @examples
-#'
 #' \dontrun{
 #' compare_hit_assignments(hit = "<insert hit id>")
 #' }
 #'
 compare_hit_assignments <- function(db, hit) {
-  ## This should:
-    ## collect parsed answers from the db
-    ## make sure there are at least 2
-    ## make sure at least 2 match
 
-  query <- 'SELECT * FROM "eviction_addresses"."assignment'
+  query <- glue::glue_sql(
+    'SELECT "answer" FROM "eviction_addresses"."assignment" WHERE "hit"={hit};',
+    .con = db
+  )
 
-  # assert_that(
-  #   is.string(hit)
-  # )
-  #
-  # res <- pyMTurkR::GetAssignments(hit = hit, get.answers = T)
-  #
-  # assert_that(
-  #   has_name(res, "Assignments"),
-  #   has_name(res, "Answers"),
-  #   msg = "Could not parse the response from MTurk API: Necessary fields not found"
-  # )
-  #
-  # assert_that(
-  #   is.data.frame(res$Assignments),
-  #   is.data.frame(res$Answers),
-  #   msg = "Could not parse the response from MTurk API: Fields not returned as data.frame"
-  # )
-  #
-  # assert_that(
-  #   nrow(res$Assignments) == 3,
-  #   msg = "{nrow(res$Assignments)} retreived. Need 3 to compare. HIT is not ready for review."
-  # )
-  #
-  # assignments <- res$Assignments
-  # answers <- res$Answers |>
-  #   split(~AssignmentId)
-  #
-  #
-  # return(answers)
+  res <- DBI::dbGetQuery(db, query)
+
+  assert_that(
+    is.data.frame(res)
+    !is.na(nrow(res))
+  )
+
+  if (nrow(res) >= 2) {
+    log_debug("{nrow(res)} reviewed answers found. Comparing answers for HIT: {hit}")
+  } else {
+    log_debug("Only {nrow(res)} reviewed answers found for HIT: {hit}")
+    return()
+  }
+
+
 }
 
 
@@ -337,9 +318,15 @@ compare_hit_assignments <- function(db, hit) {
 review_hit_assignments <- function(db, config, hit) {
   assignments <- get_hit_assignments(db = db, hit = hit)
 
-  for(i in 1:seq_along(assignments)) {
-    if(!assignment_record_exists(db, assignments[i])) {
-      new_assignment_record(db = db, hit = hit, assignment = assignments[1], worker = NA, status = get_assignment_status(assignments[1]))
+  for (i in 1:seq_along(assignments)) {
+    if (!assignment_record_exists(db, assignments[i])) {
+      new_assignment_record(
+        db = db,
+        hit = hit,
+        assignment = assignments[1],
+        worker = NA,
+        status = get_assignment_status(assignments[1])
+      )
     }
 
     r <- tryCatch(
@@ -349,7 +336,6 @@ review_hit_assignments <- function(db, config, hit) {
       }
     )
   }
-
 }
 
 
