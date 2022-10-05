@@ -88,3 +88,48 @@ launch_worker_sandbox <- function() {
 
   invisible(url)
 }
+
+
+#' @title Has Lat/Lon Match
+#'
+#' @param .data A tibble with columns `lat` and `lon`
+#' @param tolerance A numeric >= 0
+#'
+#' @return A boolean
+#'
+has_latlon_match <- function(.data, tolerance = 0.0002) {
+  assert_that(
+    has_names(.data, c("lat", "lon"))
+  )
+  # Need to check whether there are at least two similar enough lat/lons
+  lats <- .data[["lat"]]
+  lons <- .data[["lon"]]
+
+  assert_that(
+    length(lats) == length(lons),
+    noNA(lats),
+    noNA(lons)
+  )
+
+  m <- matrix(data = FALSE, nrow = length(lats), ncol = length(lats))
+
+  for (i in seq_along(lats)) {
+    for (j in seq_along(lats)[-i]) {
+      m[i,j] <- ifelse(
+        isTRUE(all.equal(lats[i], lats[j], tolerance = tolerance, scale = 1)),
+        TRUE,
+        FALSE
+      )
+    }
+  }
+
+  if(any(m)) {
+    inds <- which(m, arr.ind = T)[1,] |> as.list()
+
+    res <- all.equal(lons[inds$row], lons[inds$col], tolerance = tolerance, scale = 1)
+    return(isTRUE(res))
+  }
+
+  return(F)
+}
+

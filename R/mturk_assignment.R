@@ -294,17 +294,41 @@ compare_hit_assignments <- function(db, hit) {
   res <- DBI::dbGetQuery(db, query)
 
   assert_that(
-    is.data.frame(res)
+    is.data.frame(res),
     !is.na(nrow(res))
   )
 
-  if (nrow(res) >= 2) {
+  n_rows <- nrow(res)
+
+  if (n_rows >= 2) {
     log_debug("{nrow(res)} reviewed answers found. Comparing answers for HIT: {hit}")
+
+    ans <- res |>
+      dplyr::pull("answer")
+
+    coords <- data.frame(
+      lat = rep(NA_real_, length(ans)),
+      lon = rep(NA_real_, length(ans))
+    )
+
+    for (i in seq_along(ans)) {
+      js <- jsonlite::fromJSON(ans[i])
+
+      assert_that(
+        has_names(js, c("lat", "lon"))
+      )
+
+      coords[i, "lat"] <- js$lat
+      coords[i, "lon"] <- js$lon
+    }
+
+    res <- has_latlon_match(coords)
+    return(res)
+
   } else {
     log_debug("Only {nrow(res)} reviewed answers found for HIT: {hit}")
     return()
   }
-
 
 }
 

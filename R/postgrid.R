@@ -121,7 +121,7 @@ send_postgrid_request <- function(config = NULL, address = list(), geocode = T) 
     is.readable(config)
   )
 
-  postgrid_args <- config::get(value = "postgrid", config = config)
+  postgrid_args <- config::get(value = "postgrid", file = config)
 
   assert_that(
     is.list(address),
