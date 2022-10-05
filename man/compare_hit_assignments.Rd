@@ -18,7 +18,6 @@ Nothing
 Compare HIT Assignments
 }
 \examples{
-
 \dontrun{
 compare_hit_assignments(hit = "<insert hit id>")
 }
