@@ -9,9 +9,12 @@ RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
 	odbc-postgresql \
 	libudunits2-dev \
 	libproj-dev \
-	libgdal-dev
+	libgdal-dev \
+	libmagick++-dev \
+	libharfbuzz-dev \
+	libfribidi-dev
 ENV R_CONFIG_ACTIVE=default
 RUN ["install2.r", "renv"]
 WORKDIR ["/workspace/"]
 COPY ["./", "./"]
-RUN R -s --vanilla -e 'renv::restore();'
+RUN R -s --vanilla -e "renv::restore();"
