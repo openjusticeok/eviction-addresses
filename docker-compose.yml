@@ -2,4 +2,4 @@ services:
     plumber:
         build: .
         ports:
-            - "3838:3838"
+            - "127.0.0.1:3838:3838"

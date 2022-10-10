@@ -21,5 +21,4 @@ RUN ["installGithub.r", "openjusticeok/eviction-addresses@dev"]
 RUN R -s --vanilla -e "evictionAddresses::install_boto3()"
 WORKDIR ["/workspace/"]
 COPY ["./", "./"]
-EXPOSE 3838
 CMD ["R", "-e", "evictionAddresses::run_api('config.yml', port = 3838)"]
