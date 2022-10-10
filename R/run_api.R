@@ -22,8 +22,6 @@ run_api <- function(config, ..., .background = F) {
 
   mturk_auth(config)
 
-  plumber_args <- rlang::list2(...)
-
   if(.background) {
     future::plan(future.callr::callr)
 
@@ -36,7 +34,7 @@ run_api <- function(config, ..., .background = F) {
       pr_handle("GET", "/mturk/batch", handle_mturk_batch(db, max_batch_size = 1)) |>
       pr_handle("GET", "/mturk/review", handle_mturk_review(db, config)) |>
       pr_handle("POST", "/address/validate", handle_address_validate(db, config)) |>
-      pr_run(plumber_args)
+      pr_run(...)
   }
 
   return()
