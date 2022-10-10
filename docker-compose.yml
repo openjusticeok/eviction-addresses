@@ -1,5 +1,5 @@
 services:
-    dashboard:
+    plumber:
         build: .
         ports:
             - "3838:3838"
