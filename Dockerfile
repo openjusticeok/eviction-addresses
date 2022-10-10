@@ -1,4 +1,4 @@
-FROM rstudio/plumber
+FROM rocker/r-ver:4.2.1
 LABEL maintainer="brancengregory"
 RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
   && apt-get install -y git-core \
@@ -16,11 +16,10 @@ RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
 	python3-dev \
 	python3-venv
 ENV R_CONFIG_ACTIVE=docker
-RUN ["install2.r", "renv"]
+RUN ["install2.r", "remotes"]
 RUN ["installGithub.r", "openjusticeok/eviction-addresses@dev"]
 RUN R -s --vanilla -e "evictionAddresses::install_boto3()"
 WORKDIR ["/workspace/"]
 COPY ["./", "./"]
 EXPOSE 3838
-RUN ["install2.r", "plumber"]
 CMD ["R", "-e", "evictionAddresses::run_api('config.yml', port = 3838)"]
