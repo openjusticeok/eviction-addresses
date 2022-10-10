@@ -46,5 +46,5 @@ batch_case <- function(db, hit_type) {
     hit_type = hit_type
   )
 
-  return()
+  return(h)
 }

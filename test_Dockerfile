@@ -12,12 +12,9 @@ RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
 	libgdal-dev \
 	libmagick++-dev \
 	libharfbuzz-dev \
-	libfribidi-dev \
-	python3.8-venv
-ENV R_CONFIG_ACTIVE=docker
+	libfribidi-dev
+ENV R_CONFIG_ACTIVE=default
 RUN ["install2.r", "renv"]
-RUN ["installGithub.r", "openjusticeok/eviction-addresses@dev"]
 WORKDIR ["/workspace/"]
 COPY ["./", "./"]
-RUN R -s --vanilla -e "evictionAddresses::install_boto3()"
-RUN R -s --vanilla -e "evictionAddresses::run_api('config.yml')"
+RUN R -s --vanilla -e "renv::restore();"
