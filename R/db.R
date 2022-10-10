@@ -15,7 +15,7 @@ new_db_pool <- function(config = "config.yml") {
 
   }
 
-  connection_args <- config::get("database", config = config)
+  connection_args <- config::get("database", file = config)
   if(is.null(connection_args)) {
 
   }
@@ -59,7 +59,7 @@ new_db_connection <- function(config = "config.yml") {
 
   }
 
-  connection_args <- config::get("database", config = config)
+  connection_args <- config::get("database", file = config)
   if(is.null(connection_args)) {
 
   }
