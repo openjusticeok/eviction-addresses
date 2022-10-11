@@ -38,7 +38,7 @@ eviction_addresses_api_yaml <- cr_build_yaml(
     cr_buildstep_bash("chmod 0600 shiny-apps-certs/client-key.pem"),
     cr_buildstep_docker(
       image = "eviction-addresses-api-test",
-      dir = "api",
+      dir = "inst/cloudbuild",
       kaniko_cache = T
     ),
     cr_buildstep_run(
@@ -62,7 +62,7 @@ eviction_addresses_api_build <- cr_build_make(
 
 eviction_addresses_api_trigger <- cr_buildtrigger_repo(
   repo_name = "openjusticeok/eviction-addresses",
-  branch = "dev"
+  branch = "test"
 )
 
 cr_buildtrigger_delete("eviction-addresses-api-test-trigger")
