@@ -10,32 +10,33 @@ library(googleCloudRunner)
 
 eviction_addresses_api_yaml <- cr_build_yaml(
   steps = c(
+    cr_buildstep_bash("mkdir -p /workspace/"),
     cr_buildstep_secret(
       secret = "eviction-addresses-service-account",
-      decrypted = "eviction-addresses-service-account.json"
+      decrypted = "/workspace/eviction-addresses-service-account.json"
     ),
     cr_buildstep_secret(
       secret = "eviction-addresses-api-config",
-      decrypted = "config.yml"
+      decrypted = "/workspace/config.yml"
     ),
     cr_buildstep_secret(
       secret = "eviction-addresses-api-renviron",
-      decrypted = ".Renviron"
+      decrypted = "/workspace/.Renviron"
     ),
-    cr_buildstep_bash("mkdir -p shiny-apps-certs/"),
+    cr_buildstep_bash("mkdir -p /workspace/shiny-apps-certs/"),
     cr_buildstep_secret(
       secret = "eviction-addresses-ssl-cert",
-      decrypted = "shiny-apps-certs/client-cert.pem"
+      decrypted = "/workspace/shiny-apps-certs/client-cert.pem"
     ),
     cr_buildstep_secret(
       secret = "eviction-addresses-ssl-key",
-      decrypted = "shiny-apps-certs/client-key.pem"
+      decrypted = "/workspace/shiny-apps-certs/client-key.pem"
     ),
     cr_buildstep_secret(
       secret = "eviction-addresses-ssl-ca",
-      decrypted = "shiny-apps-certs/server-ca.pem"
+      decrypted = "/workspace/shiny-apps-certs/server-ca.pem"
     ),
-    cr_buildstep_bash("chmod 0600 shiny-apps-certs/client-key.pem"),
+    cr_buildstep_bash("chmod 0600 /workspace/shiny-apps-certs/client-key.pem"),
     cr_buildstep_docker(
       image = "eviction-addresses-api-test",
       dir = "inst/cloudbuild",
