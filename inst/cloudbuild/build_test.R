@@ -10,7 +10,6 @@ library(googleCloudRunner)
 
 eviction_addresses_api_yaml <- cr_build_yaml(
   steps = c(
-    cr_buildstep_bash("mkdir -p /workspace/"),
     cr_buildstep_secret(
       secret = "eviction-addresses-service-account",
       decrypted = "/workspace/eviction-addresses-service-account.json"
