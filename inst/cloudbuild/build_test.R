@@ -38,6 +38,7 @@ eviction_addresses_api_yaml <- cr_build_yaml(
     cr_buildstep_bash("chmod 0600 /workspace/shiny-apps-certs/client-key.pem"),
     cr_buildstep_docker(
       image = "eviction-addresses-api-test",
+      dir = ".",
       location = "inst/cloudbuild",
       kaniko_cache = F
     ),
