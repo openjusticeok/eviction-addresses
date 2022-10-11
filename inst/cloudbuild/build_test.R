@@ -76,8 +76,6 @@ cr_buildtrigger(
 )
 
 
-
-
 # dashboard_dockerfile <- containerit::dockerfile(
 #   image = "rocker/shiny",
 #   from = "dashboard/server.R",
