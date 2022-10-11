@@ -39,7 +39,7 @@ eviction_addresses_api_yaml <- cr_build_yaml(
     cr_buildstep_docker(
       image = "eviction-addresses-api-test",
       location = "inst/cloudbuild",
-      kaniko_cache = T
+      kaniko_cache = F
     ),
     cr_buildstep_run(
       name = "eviction-addresses-api-test",
