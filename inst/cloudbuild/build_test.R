@@ -18,6 +18,7 @@ eviction_addresses_api_yaml <- cr_build_yaml(
       secret = "eviction-addresses-api-config",
       decrypted = "/workspace/config.yml"
     ),
+    cr_buildstep_bash("pwd; ls -al; stat /workspace/config.yml;"),
     cr_buildstep_secret(
       secret = "eviction-addresses-api-renviron",
       decrypted = "/workspace/.Renviron"
