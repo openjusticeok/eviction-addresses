@@ -19,6 +19,5 @@ LABEL maintainer="brancengregory"
 #RUN ["install2.r", "remotes"]
 #RUN ["installGithub.r", "openjusticeok/eviction-addresses@dev"]
 #RUN R -s --vanilla -e "evictionAddresses::install_boto3()"
-COPY config.yml .
-COPY /workspace/config.yml .
-#CMD ["R", "-e", "getwd(); list.files(); list.files('/'); list.files('/workspace/'); evictionAddresses::run_api('config.yml', host = '0.0.0.0', port = as.numeric(Sys.getenv('PORT')))"]
+#COPY config.yml .
+CMD ["R", "-e", "getwd(); list.files(); list.files('/'); list.files('/workspace/'); evictionAddresses::run_api('config.yml', host = '0.0.0.0', port = as.numeric(Sys.getenv('PORT')))"]
