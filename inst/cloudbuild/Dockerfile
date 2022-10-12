@@ -23,5 +23,7 @@ WORKDIR /workspace/
 #RUN R -s --vanilla -e "evictionAddresses::install_boto3()"
 #RUN R -s --vanilla -e "reticulate::py_config(); reticulate::py_install('boto3')"
 RUN pip install boto3
-COPY config.yml shiny-apps-certs/ .
+COPY config.yml .
+RUN mkdir shiny-apps-certs/
+COPY shiny-apps-certs/ ./shiny-apps-certs
 CMD ["R", "-e", "getwd(); list.files();reticulate::py_config(); evictionAddresses::run_api('config.yml', host = '0.0.0.0', port = as.numeric(Sys.getenv('PORT')))"]
