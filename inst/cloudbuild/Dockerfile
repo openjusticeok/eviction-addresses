@@ -14,7 +14,8 @@ RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
 	libharfbuzz-dev \
 	libfribidi-dev \
 	python3-dev \
-	python3-venv
+	python3-venv \
+	python3-pip
 ENV R_CONFIG_ACTIVE=docker
 RUN ["install2.r", "remotes"]
 RUN ["installGithub.r", "openjusticeok/eviction-addresses@test"]
