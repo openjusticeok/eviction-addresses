@@ -1,6 +1,6 @@
 library(googleCloudRunner)
-#library(containerit)
 
+#library(containerit)
 #
 # api_dockerfile <- containerit::dockerfile(from = "api/plumber.R",
 #                                           filter_baseimage_pkgs = T)
@@ -36,10 +36,10 @@ eviction_addresses_api_yaml <- cr_build_yaml(
       decrypted = "/workspace/shiny-apps-certs/server-ca.pem"
     ),
     cr_buildstep_bash("chmod 0600 /workspace/shiny-apps-certs/client-key.pem"),
-    cr_buildstep_bash("cp inst/cloudbuild/Dockerfile ."),
+    cr_buildstep_bash("cp inst/cloudbuild/test_Dockerfile ./Dockerfile"),
     cr_buildstep_docker(
       image = "eviction-addresses-api-test",
-      kaniko_cache = T,
+      kaniko_cache = T
     ),
     cr_buildstep_run(
       name = "eviction-addresses-api-test",
