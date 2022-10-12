@@ -21,4 +21,4 @@ RUN ["installGithub.r", "openjusticeok/eviction-addresses@test"]
 WORKDIR /workspace/
 RUN R -s --vanilla -e "evictionAddresses::install_boto3()"
 COPY config.yml shiny-apps-certs .
-CMD ["R", "-e", "reticulate::use_virtualenv('reticulate-env'); evictionAddresses::run_api('config.yml', host = '0.0.0.0', port = as.numeric(Sys.getenv('PORT')))"]
+CMD ["R", "-e", "reticulate::virtualenv_list();reticulate::use_virtualenv('reticulate-env'); evictionAddresses::run_api('config.yml', host = '0.0.0.0', port = as.numeric(Sys.getenv('PORT')))"]
