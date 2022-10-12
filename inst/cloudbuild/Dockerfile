@@ -17,7 +17,7 @@ RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
 	python3-venv
 ENV R_CONFIG_ACTIVE=docker
 RUN ["install2.r", "remotes"]
-RUN ["installGithub.r", "openjusticeok/eviction-addresses@dev"]
+RUN ["installGithub.r", "openjusticeok/eviction-addresses@test"]
 WORKDIR /workspace/
 RUN R -s --vanilla -e "evictionAddresses::install_boto3()"
 COPY * .
