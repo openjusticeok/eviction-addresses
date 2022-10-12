@@ -18,7 +18,7 @@ RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
 ENV R_CONFIG_ACTIVE=docker
 RUN ["install2.r", "remotes"]
 RUN ["installGithub.r", "openjusticeok/eviction-addresses@dev"]
-RUN R -s --vanilla -e "evictionAddresses::install_boto3()"
 WORKDIR /workspace/
+RUN R -s --vanilla -e "evictionAddresses::install_boto3()"
 COPY * .
-CMD ["R", "-e", "evictionAddresses::run_api('config.yml', host = '0.0.0.0', port = as.numeric(Sys.getenv('PORT')))"]
+CMD ["R", "-e", "reticulate::use_virtualenv('./reticulate-env'); evictionAddresses::run_api('config.yml', host = '0.0.0.0', port = as.numeric(Sys.getenv('PORT')))"]
