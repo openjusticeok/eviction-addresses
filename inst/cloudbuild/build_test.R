@@ -167,7 +167,7 @@ cr_buildtrigger(
 # library(httr)
 # library(stringr)
 # res <- cr_jwt_with_httr(
-#   GET(str_c(url, "/hydrate")),
+#   GET(str_c(url, "/ping")),
 #   token
 # )
 # content(res)
