@@ -8,6 +8,8 @@ valid_hit_statuses <- c("Assignable", "Unassignable", "Reviewable", "Reviewing",
 #'
 #' @return The HIT id. A string (character vector length one)
 #'
+#' @import assertthat
+#'
 new_sample_hit <- function(db) {
   links <- c("https://google.com", "https://twitter.com")
 
@@ -93,7 +95,10 @@ new_hit_from_case <- function(db, case, hit_type = NULL) {
 #' @param db A database connection
 #' @param hit The hit id. A string (character vector of length one)
 #'
-#' @return The HIT status. A string (character vector of length one). See `valid_hit_statuses` for possible values.
+#' @return The HIT status. A string (character vector of length one).
+#' See `valid_hit_statuses` for possible values.
+#'
+#' @import assertthat
 #'
 get_hit_status <- function(db, hit) {
   assert_that(
@@ -134,14 +139,14 @@ review_hit <- function(db, config, hit) {
   hit_status <- get_hit_status(db, hit)
 
   if(hit_status == "reviewable") {
-    res <- tryCatch(
+    tryCatch(
       review_hit_assignments(db = db, config = config, hit = hit),
       error = function(err) {
         logger::log_error(err)
       }
     )
 
-    res <- tryCatch(
+    tryCatch(
       compare_hit_assignments(db = db, hit = hit),
       error = function(err) {
         logger::log_error(err)
@@ -159,7 +164,8 @@ review_hit <- function(db, config, hit) {
 #' @param hit The HIT id to dispose
 #'
 #' @return Nothing
-#' @export
+#'
+#' @import assertthat
 #'
 #' @examples
 #'
@@ -198,12 +204,12 @@ dispose_hit <- function(db, hit = NULL) {
 #'
 #' @return A set of reviewable HITs
 #'
+#' @import assertthat
+#'
 get_reviewable_hits <- function(db) {
-  # reviewable_hits <- pyMTurkR::GetReviewableHITs()
-  hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
   query <- glue::glue_sql("SELECT hit_id FROM eviction_addresses.hit WHERE status = 'reviewable'", .con = db)
 
-  res <- dbGetQuery(db, query)
+  res <- DBI::dbGetQuery(db, query)
   reviewable_hits <- res$hit_id
 
   return(reviewable_hits)
@@ -217,6 +223,8 @@ get_reviewable_hits <- function(db) {
 #' @param case The case id associated with the HIT
 #'
 #' @return NULL
+#'
+#' @import assertthat
 #'
 new_hit_record <- function(db, hit, case) {
   assert_that(
@@ -248,6 +256,7 @@ new_hit_record <- function(db, hit, case) {
 #' @param hit A HIT id; a string
 #' @param status A HIT Status; a string
 #'
+#' @import assertthat
 #'
 update_hit_record <- function(db, hit, status) {
   assert_that(
@@ -256,12 +265,12 @@ update_hit_record <- function(db, hit, status) {
     stringr::str_to_title(status) %in% valid_hit_statuses
   )
 
-  hit_table <- DBI::Id(schema = "eviction_addresses", table = "hit")
-
   status <- stringr::str_to_lower(status)
 
-  query <- glue::glue_sql('UPDATE eviction_addresses."hit" SET status = {status} WHERE hit_id = {hit};',
-                          .con = db)
+  query <- glue::glue_sql(
+    'UPDATE eviction_addresses."hit" SET status = {status} WHERE hit_id = {hit};',
+    .con = db
+  )
 
   tryCatch(
     expr = DBI::dbExecute(db, query),
@@ -294,11 +303,8 @@ sync_hits <- function(db) {
         update_hit_record(db, h[i], s)
       },
       error = function(err) {
-        log_error("Could not synchronize HIT {h[i]}: {err}")
+        logger::log_error("Could not synchronize HIT {h[i]}: {err}")
       }
     )
   }
 }
-
-
-

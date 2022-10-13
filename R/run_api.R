@@ -9,6 +9,7 @@
 #' @export
 #'
 #' @import plumber
+#'
 run_api <- function(config, ..., .background = F) {
 
   logger::log_threshold(logger::TRACE)
@@ -39,4 +40,3 @@ run_api <- function(config, ..., .background = F) {
 
   return()
 }
-

@@ -5,7 +5,8 @@
 #' @param hit_type The HIT Type to use for created HITs
 #'
 #' @return Empty
-#' @export
+#'
+#' @import assertthat
 #'
 new_mturk_batch <- function(db, max_batch_size, hit_type) {
   assert_that(
@@ -21,7 +22,7 @@ new_mturk_batch <- function(db, max_batch_size, hit_type) {
         batch_case(db, hit_type),
         error = function(err) {
           ## insert error handling
-          log_error(err)
+          logger::log_error(err)
         }
       )
     }
@@ -34,8 +35,6 @@ new_mturk_batch <- function(db, max_batch_size, hit_type) {
 #'
 #' @param db A database connection pool
 #' @param hit_type The HIT Type ID to use for this batch
-#'
-#' @export
 #'
 batch_case <- function(db, hit_type) {
   c <- new_case_from_queue(db)

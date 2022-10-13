@@ -48,7 +48,6 @@ new_db_pool <- function(config = "config.yml") {
 #' @param config The path to a `config.yml` file to be read by the {config} package using `config::get()`
 #'
 #' @return A database connection pool created with `DBI::dbConnect`
-#' @export
 #'
 new_db_connection <- function(config = "config.yml") {
   if(is.null(config)) {

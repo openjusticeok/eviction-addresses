@@ -20,7 +20,7 @@ mturk_auth <- function(config = NULL) {
     aws_config <- config::get("aws", file = config)
     if(is.null(aws_config)) {
       logger::log_error("A config file path was supplied but no aws section found")
-      return(invisible(F))
+      return(invisible(FALSE))
     }
 
     env_set <- Sys.setenv(
@@ -30,7 +30,7 @@ mturk_auth <- function(config = NULL) {
 
     if(!all(env_set)) {
       logger::log_error("Failed to set environment variables")
-      return(invisible(F))
+      return(invisible(FALSE))
     }
   } else {
     logger::log_debug("No config file supplied; using env variables")
@@ -43,11 +43,11 @@ mturk_auth <- function(config = NULL) {
 
   if(check_auth) {
     logger::log_debug("pyMTurkR found auth keys")
-    return(invisible(T))
+    return(invisible(TRUE))
   }
 
   logger::log_error("pyMTurkR didn't find auth keys")
-  return(invisible(F))
+  return(invisible(FALSE))
 }
 
 

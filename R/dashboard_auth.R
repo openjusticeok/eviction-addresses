@@ -36,15 +36,17 @@ add_session_to_db <- function(db) {
       sessionid = sessionid,
       login_time = as.character(lubridate::now(tzone = "America/Chicago")))
     logger::log_trace("{values}")
-    res <- DBI::dbWriteTable(
+    DBI::dbWriteTable(
       conn = db,
       name = DBI::Id(schema = "eviction_addresses", table = "session"),
       value = values,
       append = TRUE,
-      row.names = F
+      row.names = FALSE
     )
     logger::log_debug("Wrote session to database table 'session'")
   }
+
+  return(f)
 }
 
 
@@ -63,6 +65,3 @@ get_users_from_db <- function(db) {
   ) |>
     tibble::as_tibble()
 }
-
-
-

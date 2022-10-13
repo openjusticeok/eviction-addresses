@@ -4,6 +4,8 @@
 #'
 #' @return The length of the queue. An integer.
 #'
+#' @import assertthat
+#'
 get_queue_length <- function(db, status = "available") {
   queue_table <- dbplyr::in_schema(schema = "eviction_addresses", table = "queue")
   queue <- dplyr::tbl(db, queue_table)
@@ -45,7 +47,7 @@ clean_queue <- function(db) {
 
   query <- dbplyr::sql("DELETE FROM eviction_addresses.queue WHERE success IS TRUE AND created_at < current_timestamp - interval '14 days';")
   num_deleted_queue_rows <- DBI::dbExecute(db, query)
-  log_info("{num_deleted_queue_rows} rows deleted")
+  logger::log_info("{num_deleted_queue_rows} rows deleted")
 
   return()
 }
@@ -63,19 +65,19 @@ update_queue <- function(db) {
   ## Get any cases in case table without an address
   ## and having at least one document, are not in queue
   query <- dbplyr::sql(r"(SELECT DISTINCT(d."case"), NULL::bool AS success, NULL::bool AS working, 0::int4 AS attempts, NULL::timestamp AS started_at, NULL::timestamp AS stopped_at, current_timestamp AS created_at FROM eviction_addresses."document" d LEFT JOIN eviction_addresses.queue q ON d."case" = q."case" WHERE internal_link IS NOT NULL AND q."case" IS NULL;)")
-  new_jobs <- dbGetQuery(db, query)
+  new_jobs <- DBI::dbGetQuery(db, query)
 
   num_new_jobs <- nrow(new_jobs)
 
   if(num_new_jobs >= 1) {
-    dbAppendTable(
+    DBI::dbAppendTable(
       conn = db,
-      name = Id(schema = "eviction_addresses", table = "queue"),
+      name = DBI::Id(schema = "eviction_addresses", table = "queue"),
       value = new_jobs
     )
-    log_success("Inserted {num_new_jobs} new jobs to table eviction_addresses.queue")
+    logger::log_success("Inserted {num_new_jobs} new jobs to table eviction_addresses.queue")
   } else {
-    log_info("No new jobs to add")
+    logger::log_info("No new jobs to add")
   }
 
   return()
@@ -108,7 +110,10 @@ get_case_from_queue <- function(db) {
       conn,
       dbplyr::sql('SELECT q."case" FROM eviction_addresses.queue q LEFT JOIN eviction_addresses."case" c ON q."case" = c."id" LEFT JOIN public."case" pc ON q."case" = pc.id WHERE "success" IS NOT TRUE AND "working" IS NOT TRUE ORDER BY attempts ASC, pc.status DESC, c.date_filed DESC LIMIT 1 FOR UPDATE OF q SKIP LOCKED;')
     )
-    query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET working = TRUE WHERE "case" = {case}', .con = conn)
+    query <- glue::glue_sql(
+      'UPDATE "eviction_addresses"."queue" SET working = TRUE WHERE "case" = {case}',
+      .con = conn
+    )
     res <- DBI::dbExecute(conn, query)
 
     case_id <- case$case[1]
@@ -117,4 +122,3 @@ get_case_from_queue <- function(db) {
   })
 
 }
-

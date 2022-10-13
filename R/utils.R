@@ -4,7 +4,8 @@
 #' @param names A character vector of names to check `x` for
 #'
 #' @return A boolean (logical vector of length 1)
-#' @export
+#'
+#' @import assertthat
 #'
 has_names <- function(x, names) {
   assert_that(
@@ -12,18 +13,18 @@ has_names <- function(x, names) {
     length(names) >= 1
   )
 
-  name_checks <- rep(F, length.out = length(names))
-  for(i in 1:length(names)) {
+  name_checks <- rep(FALSE, length.out = length(names))
+  for(i in seq_along(names)) {
     if(assertthat::has_name(x, names[i])) {
-      name_checks[i] <- T
+      name_checks[i] <- TRUE
     }
   }
 
   if(all(name_checks)) {
-    return(T)
+    return(TRUE)
   }
 
-  return(F)
+  return(FALSE)
 }
 
 
@@ -58,12 +59,12 @@ skip_if_no_db <- function() {
   )
 
   if(inherits(db, "error")) {
-    skip()
+    testthat::skip()
   }
 
   withr::defer(pool::poolClose(db))
 
-  skip_if_not(
+  testthat::skip_if_not(
     pool::dbIsValid(db)
   )
 }
@@ -97,6 +98,8 @@ launch_worker_sandbox <- function() {
 #'
 #' @return A boolean
 #'
+#' @import assertthat
+#'
 has_latlon_match <- function(.data, tolerance = 0.0002) {
   assert_that(
     has_names(.data, c("lat", "lon"))
@@ -124,12 +127,11 @@ has_latlon_match <- function(.data, tolerance = 0.0002) {
   }
 
   if(any(m)) {
-    inds <- which(m, arr.ind = T)[1,] |> as.list()
+    inds <- which(m, arr.ind = TRUE)[1, ] |> as.list()
 
     res <- all.equal(lons[inds$row], lons[inds$col], tolerance = tolerance, scale = 1)
     return(isTRUE(res))
   }
 
-  return(F)
+  return(FALSE)
 }
-

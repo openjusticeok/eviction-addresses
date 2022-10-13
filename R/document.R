@@ -5,7 +5,7 @@
 refresh_documents <- function(db) {
   ua <- httr::user_agent(agent = "1ecbd577-793f-4a38-b82f-e361ed335168")
 
-  logger::log_appender(appender_tee("test.log"))
+  logger::log_appender(logger::appender_tee("test.log"))
 
   googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
 
@@ -27,21 +27,27 @@ refresh_documents <- function(db) {
       next()
     }
     logger::log_success("Got pdf content {i}")
-    upload <- googleCloudStorageR::gcs_upload(document,
-                                              name = links[i, "id"],
-                                              bucket = "eviction-addresses",
-                                              type = "application/pdf",
-                                              object_function = function(input, output) {
-                                                readr::write_file(input, output)
-                                              },
-                                              predefinedAcl = "bucketLevel")
+    upload <- googleCloudStorageR::gcs_upload(
+      document,
+      name = links[i, "id"],
+      bucket = "eviction-addresses",
+      type = "application/pdf",
+      object_function = function(input, output) {
+        readr::write_file(input, output)
+      },
+      predefinedAcl = "bucketLevel"
+    )
     logger::log_success("Uploaded pdf {i}")
-    internal_link <- googleCloudStorageR::gcs_download_url(links[i, "id"],
-                                                           bucket = "eviction-addresses",
-                                                           public = T)
+    internal_link <- googleCloudStorageR::gcs_download_url(
+      links[i, "id"],
+      bucket = "eviction-addresses",
+      public = TRUE
+    )
     logger::log_success("Got public link {i}")
-    query <- glue::glue_sql('UPDATE eviction_addresses."document" SET internal_link = {internal_link}, updated_at = current_timestamp WHERE id = {links[i, "id"]};',
-                            .con = db)
+    query <- glue::glue_sql(
+      'UPDATE eviction_addresses."document" SET internal_link = {internal_link}, updated_at = current_timestamp WHERE id = {links[i, "id"]};',
+      .con = db
+    )
     DBI::dbExecute(db, query)
 
     logger::log_success("Completed link {i}/{nrow(links)}")

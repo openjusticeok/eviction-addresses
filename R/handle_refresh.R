@@ -8,14 +8,10 @@
 #'
 #' @return A 200 if successful
 #'
-#' @import logger
-#' @import DBI
-#' @import promises
-#'
 handle_refresh <- function(db) {
   f <- function(res) {
-    future_promise({
-      log_appender(appender_tee("test.log"))
+    promises::future_promise({
+      logger::log_appender(logger::appender_tee("test.log"))
 
       refresh_cases(db)
       refresh_minutes(db)
@@ -25,9 +21,9 @@ handle_refresh <- function(db) {
       return()
     },
     seed = TRUE) |>
-      then(
+      promises::then(
         function() {
-          log_success("Everything is refreshed")
+          logger::log_success("Everything is refreshed")
           return()
         }
       )

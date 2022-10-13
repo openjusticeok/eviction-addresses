@@ -176,17 +176,17 @@ parse_postgrid_response <- function(res) {
 
   body <- httr::content(res, as = "parsed", type = "application/json")
   if(body$status != "success") {
-    log_error("[PostGrid]: {body$status}")
+    logger::log_error("[PostGrid]: {body$status}")
     rlang::abort()
   }
 
-  log_info("[PostGrid]: {body$message}")
-  log_info("[PostGrid]: {body$data$status}")
+  logger::log_info("[PostGrid]: {body$message}")
+  logger::log_info("[PostGrid]: {body$data$status}")
 
   num_parsing_errors <- length(body$data$errors)
   if(num_parsing_errors != 0) {
-    log_error("[PostGrid]: {num_parsing_errors} error(s)")
-    log_error("[Postgrid]: {body$data$errors |> unlist()}")
+    logger::log_error("[PostGrid]: {num_parsing_errors} error(s)")
+    logger::log_error("[Postgrid]: {body$data$errors |> unlist()}")
   }
 
   parsed_address <- list(

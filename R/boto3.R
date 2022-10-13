@@ -7,5 +7,4 @@
 #'
 install_boto3 <- function(method = "auto", conda = "auto") {
   reticulate::virtualenv_create(envname = "./reticulate-env", packages = "boto3")
-# reticulate::py_install(packages = "boto3", method = method, conda = conda)
 }

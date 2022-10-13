@@ -26,7 +26,7 @@ render_document_links <- function(links) {
 
   html_string <- c()
 
-  for(i in 1:length(links)) {
+  for(i in seq_along(links)) {
     stringr::str_c(html_string, "test", sep = "\n")
 
     html_string[i] <- stringr::str_glue_data(
@@ -53,6 +53,8 @@ render_document_links <- function(links) {
 #' @param layout A file path to a MTurk layout as specified by MTurk documentation
 #'
 #' @return A string (character vector length one)
+#'
+#' @import assertthat
 #'
 render_hit_layout <- function(links, layout = NULL) {
   assert_that(

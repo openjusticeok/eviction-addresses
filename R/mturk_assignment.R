@@ -8,6 +8,8 @@ valid_assignment_statuses <- c("Submitted", "Approved", "Rejected")
 #'
 #' @return A character vector of Assignment ids
 #'
+#' @import assertthat
+#'
 get_hit_assignments <- function(db, hit) {
   assert_that(
     is.string(hit)
@@ -47,6 +49,8 @@ get_hit_assignments <- function(db, hit) {
 #' @param assignment The assignment id. A string (character vector length one).
 #'
 #' @return The assignment status. A string (character vector length one). See `valid_assignment_statuses` for possible values.
+#'
+#' @import assertthat
 #'
 get_assignment_status <- function(assignment) {
   assert_that(
@@ -110,7 +114,7 @@ new_assignment_record <- function(db, hit, assignment, worker, status) {
     status = status
   )
 
-  res <- dbAppendTable(
+  res <- DBI::dbAppendTable(
     conn = db,
     assignment_table,
     value = a
@@ -125,6 +129,8 @@ new_assignment_record <- function(db, hit, assignment, worker, status) {
 #' @param status The status to record for the Assignment
 #' @param answer The Assignment answer to record. Default is `NULL`
 #' @param attempt A logical indicating whether this update is the result of a review attempt
+#' 
+#' @import assertthat
 #'
 update_assignment_record <- function(db, assignment, status, answer = NULL, attempt = F) {
   assert_that(
@@ -210,6 +216,8 @@ parse_assignment_answer <- function(answer) {
 #' @param assignment The Assignment id. A string (character vector length one)
 #'
 #' @return The parsed assignment as a ??
+#' 
+#' @import assertthat
 #'
 get_assignment_answer <- function(assignment) {
   assert_that(
@@ -237,11 +245,11 @@ review_assignment <- function(db, config, assignment) {
   assignment_status <- get_assignment_status(assignment = assignment)
   if (assignment_status == "submitted") {
     answer <- get_assignment_answer(assignment = assignment)
-    log_debug("Answer: {answer}")
+    logger::log_debug("Answer: {answer}")
     res <- tryCatch(
       send_postgrid_request(config = config, address = answer, geocode = T),
       error = function(err) {
-        log_error("{Failed Postgres response: err$message}")
+        logger::log_error("{Failed Postgres response: err$message}")
       }
     )
 
@@ -255,7 +263,7 @@ review_assignment <- function(db, config, assignment) {
 
       pyMTurkR::RejectAssignment(assignments = assignment)
     } else {
-      log_debug("Successful Postgrid response: {res}")
+      logger::log_debug("Successful Postgrid response: {res}")
       update_assignment_record(
         db = db,
         assignment = assignment,
@@ -301,7 +309,7 @@ compare_hit_assignments <- function(db, hit) {
   n_rows <- nrow(res)
 
   if (n_rows >= 2) {
-    log_debug("{nrow(res)} reviewed answers found. Comparing answers for HIT: {hit}")
+    logger::log_debug("{nrow(res)} reviewed answers found. Comparing answers for HIT: {hit}")
 
     ans <- res |>
       dplyr::pull("answer")
@@ -326,7 +334,7 @@ compare_hit_assignments <- function(db, hit) {
     return(res)
 
   } else {
-    log_debug("Only {nrow(res)} reviewed answers found for HIT: {hit}")
+    logger::log_debug("Only {nrow(res)} reviewed answers found for HIT: {hit}")
     return()
   }
 
@@ -356,17 +364,8 @@ review_hit_assignments <- function(db, config, hit) {
     r <- tryCatch(
       review_assignment(db = db, config = config, assignment = assignments[i]),
       error = function(err) {
-        log_debug("{err$message}")
+        logger::log_debug("{err$message}")
       }
     )
   }
 }
-
-
-# #' @title Sync Assignments
-# #'
-# sync_assignments <- function(db) {
-#   assignment_table <- DBI::Id(schema = "eviction_addresses", table = "assignment")
-#
-#
-# }
