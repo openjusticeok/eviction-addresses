@@ -39,7 +39,7 @@ handle_dbping <- function(db) {
 #' @return Empty
 #'
 handle_dbpingfuture <- function(config) {
-  f <- function() {
+  f <- function(res) {
     promises::future_promise({
       db <- new_db_pool(config)
       withr::defer(pool::poolClose(db))
