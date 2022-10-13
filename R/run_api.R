@@ -18,6 +18,8 @@ run_api <- function(config, ..., .background = FALSE) {
     pyMTurkR.verbose = TRUE
   )
 
+  future::plan(future.callr::callr)
+
   db <- new_db_pool(config)
   withr::defer(pool::poolClose(db))
 
@@ -30,8 +32,8 @@ run_api <- function(config, ..., .background = FALSE) {
     pr() |>
       pr_handle("GET", "/ping", handle_ping()) |>
       pr_handle("GET", "/dbping", handle_dbping(db)) |>
-      pr_handle("GET", "/dbpingfuture", handle_dbpingfuture(db)) |>
-      pr_handle("GET", "/refresh", handle_refresh(db)) |>
+      pr_handle("GET", "/dbpingfuture", handle_dbpingfuture(config)) |>
+      pr_handle("GET", "/refresh", handle_refresh(config)) |>
       pr_handle("GET", "/mturk/batch", handle_mturk_batch(db, max_batch_size = 25)) |>
       pr_handle("GET", "/mturk/review", handle_mturk_review(db, config)) |>
       pr_handle("POST", "/address/validate", handle_address_validate(db, config)) |>

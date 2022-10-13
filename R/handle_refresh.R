@@ -8,9 +8,12 @@
 #'
 #' @return A 200 if successful
 #'
-handle_refresh <- function(db) {
+handle_refresh <- function(config) {
   f <- function(res) {
     promises::future_promise({
+      db <- new_db_pool(config)
+      withr::defer(pool::poolClose(db))
+
       logger::log_appender(logger::appender_tee("test.log"))
 
       refresh_cases(db)
@@ -22,14 +25,18 @@ handle_refresh <- function(db) {
     },
     seed = TRUE) |>
       promises::then(
-        function() {
+        onFulfilled = function(v) {
           logger::log_success("Everything is refreshed")
+          return()
+        },
+        onRejected = function(error) {
+          logger::log_error("Failed to complete refresh: {error}")
           return()
         }
       )
 
     msg <- "The request has been queued."
-    res$status <- 200
+    res$status <- 202
     return(list(success = msg))
   }
 

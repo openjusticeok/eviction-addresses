@@ -38,9 +38,12 @@ handle_dbping <- function(db) {
 #'
 #' @return Empty
 #'
-handle_dbpingfuture <- function(db) {
+handle_dbpingfuture <- function(config) {
   f <- function() {
     promises::future_promise({
+      db <- new_db_pool(config)
+      withr::defer(pool::poolClose(db))
+
       logger::log_appender(appender_tee("test.log"))
 
       test <- DBI::dbGetQuery(db, "SELECT NULL as n")
@@ -49,12 +52,20 @@ handle_dbpingfuture <- function(db) {
       return()
     },
     seed = TRUE) |>
-      then(
-        function() {
+      promises::then(
+        onFulfilled = function(v) {
           logger::log_success("long db pong")
           return()
+        },
+        onRejected = function(error) {
+          logger::log_error("where pong?? no pong >(: {error}")
         }
       )
+
+    msg <- "The request has been queued."
+    res$status <- 202
+
+    return(list(success = msg))
   }
 
   return(f)
