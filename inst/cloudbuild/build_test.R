@@ -39,7 +39,7 @@ eviction_addresses_api_yaml <- cr_build_yaml(
     cr_buildstep_bash("cp inst/cloudbuild/test_Dockerfile ./Dockerfile"),
     cr_buildstep_docker(
       image = "eviction-addresses-api-test",
-      kaniko_cache = T
+      kaniko_cache = FALSE
     ),
     cr_buildstep_run(
       name = "eviction-addresses-api-test",
@@ -49,7 +49,7 @@ eviction_addresses_api_yaml <- cr_build_yaml(
       cpu = 1,
       max_instances = 1,
       concurrency = 80,
-      allowUnauthenticated = F,
+      allowUnauthenticated = FALSE,
       gcloud_args = c("--timeout=3600")
     )
   ),
@@ -159,17 +159,15 @@ cr_buildtrigger(
 #
 # ###### Test JWT generation ##########
 #
-# cr <- cr_run_get("eviction-addresses-api-test")
-# url <- cr$status$url
-# jwt <- cr_jwt_create(url)
-# token <- cr_jwt_token(jwt, url)
-#
-# library(httr)
-# library(stringr)
-# res <- cr_jwt_with_httr(
-#   GET(str_c(url, "/ping")),
-#   token
-# )
-# content(res)
+ cr <- cr_run_get("eviction-addresses-api-test")
+ url <- cr$status$url
+ jwt <- cr_jwt_create(url)
+ token <- cr_jwt_token(jwt, url)
 
-
+ library(httr)
+ library(stringr)
+ res <- cr_jwt_with_httr(
+   GET(str_c(url, "/ping")),
+   token
+ )
+ content(res)
