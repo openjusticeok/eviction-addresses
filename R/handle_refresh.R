@@ -14,7 +14,7 @@ handle_refresh <- function(config) {
       db <- new_db_pool(config)
       withr::defer(pool::poolClose(db))
 
-      logger::log_appender(logger::appender_tee("test.log"))
+      logger::log_appender(logger::appender_stdout())
 
       refresh_cases(db)
       refresh_minutes(db)

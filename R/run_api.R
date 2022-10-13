@@ -18,7 +18,7 @@ run_api <- function(config, ..., .background = FALSE) {
     pyMTurkR.verbose = TRUE
   )
 
-  future::plan(future.callr::callr)
+  #future::plan(future.callr::callr)
 
   db <- new_db_pool(config)
   withr::defer(pool::poolClose(db))
