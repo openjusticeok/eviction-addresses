@@ -22,5 +22,6 @@ RUN ["installGithub.r", "openjusticeok/eviction-addresses"]
 WORKDIR /workspace/
 RUN pip install boto3
 COPY config.yml .
+COPY eviction-addresses-service-account.json .
 COPY shiny-apps-certs/ ./shiny-apps-certs
 CMD ["R", "-e", "evictionAddresses::run_api('config.yml', host = '0.0.0.0', port = as.numeric(Sys.getenv('PORT')))"]
