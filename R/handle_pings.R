@@ -44,7 +44,7 @@ handle_dbpingfuture <- function(config) {
       db <- new_db_pool(config)
       withr::defer(pool::poolClose(db))
 
-      logger::log_appender(logger::appender_stdout())
+      logger::log_appender(logger::appender_stdout)
 
       test <- DBI::dbGetQuery(db, "SELECT NULL as n")
       logger::log_info("Going to sleep now")
