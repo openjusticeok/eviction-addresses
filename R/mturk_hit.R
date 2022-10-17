@@ -142,14 +142,14 @@ review_hit <- function(db, config, hit) {
     tryCatch(
       review_hit_assignments(db = db, config = config, hit = hit),
       error = function(err) {
-        logger::log_error(err)
+        logger::log_error(err$message)
       }
     )
 
     tryCatch(
       compare_hit_assignments(db = db, hit = hit),
       error = function(err) {
-        logger::log_error(err)
+        logger::log_error(err$message)
       }
     )
   }
@@ -303,7 +303,7 @@ sync_hits <- function(db) {
         update_hit_record(db, h[i], s)
       },
       error = function(err) {
-        logger::log_error("Could not synchronize HIT {h[i]}: {err}")
+        logger::log_error("Could not synchronize HIT {h[i]}: {err$message}")
       }
     )
   }
