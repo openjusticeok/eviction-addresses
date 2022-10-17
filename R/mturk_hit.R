@@ -142,14 +142,14 @@ review_hit <- function(db, config, hit) {
     tryCatch(
       review_hit_assignments(db = db, config = config, hit = hit),
       error = function(err) {
-        logger::log_error(err$message)
+        logger::log_error("{err$message}")
       }
     )
 
     tryCatch(
       compare_hit_assignments(db = db, hit = hit),
       error = function(err) {
-        logger::log_error(err$message)
+        logger::log_error("{err$message}")
       }
     )
   }

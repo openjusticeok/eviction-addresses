@@ -22,7 +22,7 @@ new_mturk_batch <- function(db, max_batch_size, hit_type) {
         batch_case(db, hit_type),
         error = function(err) {
           ## insert error handling
-          logger::log_error(err$message)
+          logger::log_error("{err$message}")
         }
       )
     }
