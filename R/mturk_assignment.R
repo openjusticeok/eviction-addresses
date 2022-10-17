@@ -247,9 +247,9 @@ review_assignment <- function(db, config, assignment) {
     answer <- get_assignment_answer(assignment = assignment)
     logger::log_debug("Answer: {answer}")
     res <- tryCatch(
-      send_postgrid_request(config = config, address = answer, geocode = T),
+      send_postgrid_request(config = config, address = answer, geocode = TRUE),
       error = function(err) {
-        logger::log_error("{Failed Postgres response: err$message}")
+        logger::log_error("Failed Postgres response: {err$message}")
       }
     )
 
@@ -258,7 +258,7 @@ review_assignment <- function(db, config, assignment) {
         db = db,
         assignment = assignment,
         status = "rejected",
-        attempt = T
+        attempt = TRUE
       )
 
       pyMTurkR::RejectAssignment(assignments = assignment)
@@ -269,7 +269,7 @@ review_assignment <- function(db, config, assignment) {
         assignment = assignment,
         status = "approved",
         answer = res,
-        attempt = T
+        attempt = TRUE
       )
 
       pyMTurkR::ApproveAssignment(assignments = assignment)
@@ -350,7 +350,7 @@ compare_hit_assignments <- function(db, hit) {
 review_hit_assignments <- function(db, config, hit) {
   assignments <- get_hit_assignments(db = db, hit = hit)
 
-  for (i in 1:seq_along(assignments)) {
+  for (i in seq_along(assignments)) {
     if (!assignment_record_exists(db, assignments[i])) {
       new_assignment_record(
         db = db,
