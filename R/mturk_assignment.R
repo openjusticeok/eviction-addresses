@@ -129,7 +129,7 @@ new_assignment_record <- function(db, hit, assignment, worker, status) {
 #' @param status The status to record for the Assignment
 #' @param answer The Assignment answer to record. Default is `NULL`
 #' @param attempt A logical indicating whether this update is the result of a review attempt
-#' 
+#'
 #' @import assertthat
 #'
 update_assignment_record <- function(db, assignment, status, answer = NULL, attempt = F) {
@@ -138,8 +138,6 @@ update_assignment_record <- function(db, assignment, status, answer = NULL, atte
     is.string(status),
     stringr::str_to_title(status) %in% valid_assignment_statuses
   )
-
-  assignment_table <- DBI::Id(schema = "eviction_addresses", table = "assignment")
 
   status <- stringr::str_to_lower(status)
 
@@ -309,7 +307,7 @@ compare_hit_assignments <- function(db, hit) {
   n_rows <- nrow(res)
 
   if (n_rows >= 2) {
-    logger::log_debug("{nrow(res)} reviewed answers found. Comparing answers for HIT: {hit}")
+    logger::log_debug("{n_rows} reviewed answers found. Comparing answers for HIT: {hit}")
 
     ans <- res |>
       dplyr::pull("answer")
@@ -334,7 +332,7 @@ compare_hit_assignments <- function(db, hit) {
     return(res)
 
   } else {
-    logger::log_debug("Only {nrow(res)} reviewed answers found for HIT: {hit}")
+    logger::log_debug("Only {n_rows} reviewed answers found for HIT: {hit}")
     return()
   }
 
