@@ -248,6 +248,7 @@ review_assignment <- function(db, config, assignment) {
       send_postgrid_request(config = config, address = answer, geocode = TRUE),
       error = function(err) {
         logger::log_error("Failed Postgres response: {err$message}")
+        return(err)
       }
     )
 
