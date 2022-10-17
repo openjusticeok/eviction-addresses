@@ -162,10 +162,10 @@ cr_buildtrigger(
  cr <- cr_run_get("eviction-addresses-api")
  url <- cr$status$url
  jwt <- cr_jwt_create(url)
- token <- cr_jwt_token(jwt, url)
 
  library(httr)
  library(stringr)
+ token <- cr_jwt_token(jwt, url)
  res <- cr_jwt_with_httr(
    GET(str_c(url, "/mturk/review")),
    token
