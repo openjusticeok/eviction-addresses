@@ -34,7 +34,7 @@ run_api <- function(config, ..., .background = FALSE) {
       pr_handle("GET", "/dbping", handle_dbping(db)) |>
       pr_handle("GET", "/dbpingfuture", handle_dbpingfuture(config)) |>
       pr_handle("GET", "/refresh", handle_refresh(config)) |>
-      pr_handle("GET", "/mturk/batch", handle_mturk_batch(db, max_batch_size = 25)) |>
+      pr_handle("GET", "/mturk/batch", handle_mturk_batch(db, max_batch_size = 10)) |>
       pr_handle("GET", "/mturk/review", handle_mturk_review(db, config)) |>
       pr_handle("GET", "/mturk/sync", handle_mturk_sync(db)) |>
       pr_handle("POST", "/address/validate", handle_address_validate(db, config)) |>
