@@ -159,6 +159,7 @@ cr_buildtrigger(
 #
 # ###### Test JWT generation ##########
 #
+
  cr <- cr_run_get("eviction-addresses-api")
  url <- cr$status$url
  jwt <- cr_jwt_create(url)

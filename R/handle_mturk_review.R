@@ -18,7 +18,7 @@ handle_mturk_review <- function(db, config) {
       )
 
       if(inherits(res, "error")) {
-        logger::log_error(res$message)
+        logger::log_error("{res$message}")
         next()
       }
     }

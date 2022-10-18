@@ -54,7 +54,7 @@ skip_if_no_db <- function() {
   tryCatch(
     db <- new_db_pool(),
     error = function(err) {
-      err
+      return(err)
     }
   )
 
