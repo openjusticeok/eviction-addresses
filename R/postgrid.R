@@ -217,3 +217,16 @@ parse_postgrid_response <- function(res) {
 
   return(parsed_address)
 }
+
+
+#' @title Validate PostGrid Response
+#'
+#' @param res A parsed response from the Postgrid API
+#'
+#' @return A list with values specified according to the PostGrid documentation
+#'
+#' @import assertthat
+#'
+validate_postgrid_response <- function(res) {
+
+}

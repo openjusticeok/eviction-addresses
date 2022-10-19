@@ -190,20 +190,41 @@ parse_assignment_answer <- function(answer) {
 
   assert_that(
     is.list(address),
-    has_names(address, c("line1", "city", "state", "zip"))
+    has_names(address, c("website-found.on", "line1", "city", "state", "zip"))
   )
+
+  na_address_flag <- as.logical(address$`website-found.on`)
+
+  if (na_address_flag) {
+    address$line1 <- NA_character_
+    address$line2 <- NA_character_
+    address$city <- NA_character_
+    address$state <- NA_character_
+    address$zip <- NA_character_
+  }
 
   if (!has_names(address, "line2")) {
     address$line2 <- ""
   }
 
-  address <- format_postgrid_request(
-    line1 = address$line1,
-    line2 = address$line2,
-    city = address$city,
-    state = address$state,
-    zip = address$zip
+  address <- tryCatch(
+    {
+      format_postgrid_request(
+        line1 = address$line1,
+        line2 = address$line2,
+        city = address$city,
+        state = address$state,
+        zip = address$zip
+      )
+    },
+    error = function(err) {
+      logger::log_error("Couldn't format for postgrid: {err$message}")
+    }
   )
+
+  if(inherits(address, "error")) {
+    rlang::abort("Couldn")
+  }
 
   return(address)
 }
@@ -214,7 +235,7 @@ parse_assignment_answer <- function(answer) {
 #' @param assignment The Assignment id. A string (character vector length one)
 #'
 #' @return The parsed assignment as a ??
-#' 
+#'
 #' @import assertthat
 #'
 get_assignment_answer <- function(assignment) {
@@ -261,6 +282,9 @@ review_assignment <- function(db, config, assignment) {
       )
 
       pyMTurkR::RejectAssignment(assignments = assignment)
+
+      return()
+
     } else {
       logger::log_debug("Successful Postgrid response: {res}")
       update_assignment_record(

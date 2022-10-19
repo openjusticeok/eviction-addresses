@@ -43,4 +43,3 @@ test_that("Lat/Lon match test works", {
     has_latlon_match(d)
   )
 })
-
