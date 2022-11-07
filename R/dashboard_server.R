@@ -23,12 +23,12 @@ dashboard_server <- function(config) {
       file = config
     )
 
-    db <- new_db_pool()
+    db <- new_db_pool(config = config)
     shiny::onStop(function() {
-      pool::poolClose(db)
+      pool::poolClose(pool = db)
     })
 
-    user_base <- get_users_from_db(db)
+    user_base <- get_users_from_db(db = db)
 
     # call login module supplying data frame, user and password cols and reactive trigger
     credentials <- shinyauthr::loginServer(
@@ -39,8 +39,8 @@ dashboard_server <- function(config) {
       sodium_hashed = TRUE,
       cookie_logins = TRUE,
       sessionid_col = "sessionid",
-      cookie_getter = get_sessions_from_db(db),
-      cookie_setter = add_session_to_db(db),
+      cookie_getter = get_sessions_from_db(db = db),
+      cookie_setter = add_session_to_db(db = db),
       log_out = shiny::reactive(logout_init())
     )
 
@@ -205,7 +205,7 @@ dashboard_server <- function(config) {
     current_case <- reactive({
       input$case_refresh
 
-      case <- get_case_from_queue()
+      case <- get_case_from_queue(db = db)
 
       case
     })
@@ -213,7 +213,7 @@ dashboard_server <- function(config) {
     total_cases <- reactive({
       input$case_refresh
 
-      queue_length <- get_queue_length(db)
+      queue_length <- get_queue_length(db = db)
 
       queue_length
     })
@@ -221,7 +221,7 @@ dashboard_server <- function(config) {
     documents <- reactive({
       current_case <- current_case()
 
-      res <- get_documents_by_case(current_case)
+      res <- get_documents_by_case(db = db, id = current_case)
 
       res
     })
@@ -262,7 +262,7 @@ dashboard_server <- function(config) {
     })
 
     output$current_case_ui <- renderUI({
-      current_case <- jsonlite::fromJSON(current_case() |> dplyr::pull())
+      current_case <- jsonlite::fromJSON(current_case())
       queue <- total_cases()
       div(
         h4(glue::glue("Current case: {current_case$case_number}")),
@@ -273,8 +273,6 @@ dashboard_server <- function(config) {
     output$current_document_ui <- renderText({
       return(glue::glue('<iframe style="height:600px; width:100%" src="', '{current_document()}', '"></iframe>'))
     })
-
-
 
     output$total_documents_ui <- renderText(stringr::str_c("Total Documents: ", total_documents()))
 
