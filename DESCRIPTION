@@ -30,9 +30,7 @@ Imports:
     pool,
     promises,
     purrr,
-    pyMTurkR,
     readr,
-    reticulate,
     rlang,
     shiny,
     shinyauthr,
@@ -58,10 +56,4 @@ Suggests:
     dittodb
 VignetteBuilder: knitr
 URL: https://openjusticeok.github.io/eviction-addresses/
-Config/reticulate:
-  list(
-    packages = list(
-      list(package = "boto3", version = "1.24.68", pip = TRUE)
-    )
-  )
 Config/testthat/edition: 3

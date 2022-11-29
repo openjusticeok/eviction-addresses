@@ -37,15 +37,6 @@ skip_if_no_config <- function() {
 }
 
 
-#' @title Skip if MTurk cannot authenticate
-#'
-skip_if_no_mturk <- function() {
-  testthat::skip_if_not(
-    mturk_auth(config = "config.yml")
-  )
-}
-
-
 #' @title Skip if no database access
 #'
 skip_if_no_db <- function() {
@@ -79,15 +70,6 @@ expect_no_error <- function(object) {
     object = object,
     regexp = NA
   )
-}
-
-#' @title Launch Worker Sandbox
-#'
-launch_worker_sandbox <- function() {
-  url <- "https://workersandbox.mturk.com/requesters/A1IQJE205A4RN2/projects"
-  browseURL(url)
-
-  invisible(url)
 }
 
 

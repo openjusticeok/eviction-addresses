@@ -4,7 +4,7 @@
 \alias{run_api}
 \title{Run API}
 \usage{
-run_api(config, ..., .background = F)
+run_api(config, ..., .background = FALSE)
 }
 \arguments{
 \item{config}{The path to a configuration file ingested by \code{{config}}}

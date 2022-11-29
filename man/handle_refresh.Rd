@@ -4,7 +4,7 @@
 \alias{handle_refresh}
 \title{Handle API Refresh}
 \usage{
-handle_refresh(db)
+handle_refresh(config)
 }
 \value{
 A 200 if successful

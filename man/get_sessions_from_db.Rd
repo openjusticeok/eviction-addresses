@@ -4,10 +4,10 @@
 \alias{get_sessions_from_db}
 \title{Get Sessions from DB}
 \usage{
-get_sessions_from_db(conn, cookie_expiry = 7)
+get_sessions_from_db(db, cookie_expiry = 7)
 }
 \arguments{
-\item{conn}{The database connection}
+\item{db}{The database connection}
 
 \item{cookie_expiry}{The cookie expiration}
 }

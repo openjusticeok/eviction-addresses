@@ -13,17 +13,11 @@
 run_api <- function(config, ..., .background = FALSE) {
 
   logger::log_threshold(logger::TRACE)
-  options(
-    pyMTurkR.sandbox = FALSE,
-    pyMTurkR.verbose = TRUE
-  )
 
   #future::plan(future.callr::callr)
 
   db <- new_db_pool(config)
   withr::defer(pool::poolClose(db))
-
-  mturk_auth(config)
 
   if(.background) {
     future::plan(future.callr::callr)
@@ -34,9 +28,6 @@ run_api <- function(config, ..., .background = FALSE) {
       pr_handle("GET", "/dbping", handle_dbping(db)) |>
       pr_handle("GET", "/dbpingfuture", handle_dbpingfuture(config)) |>
       pr_handle("GET", "/refresh", handle_refresh(config)) |>
-      pr_handle("GET", "/mturk/batch", handle_mturk_batch(db, max_batch_size = 10)) |>
-      pr_handle("GET", "/mturk/review", handle_mturk_review(db, config)) |>
-      pr_handle("GET", "/mturk/sync", handle_mturk_sync(db)) |>
       pr_handle("POST", "/address/validate", handle_address_validate(db, config)) |>
       pr_run(...)
   }
