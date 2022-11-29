@@ -1,6 +1,6 @@
 Tests and Coverage
 ================
-28 November, 2022 23:45:21
+28 November, 2022 23:58:16
 
 - <a href="#coverage" id="toc-coverage">Coverage</a>
 - <a href="#unit-tests" id="toc-unit-tests">Unit Tests</a>
@@ -42,8 +42,8 @@ Unit Test summary is created using the
 
 | file                                        |   n |  time | error | failed | skipped | warning |
 |:--------------------------------------------|----:|------:|------:|-------:|--------:|--------:|
-| [test-postgrid.R](testthat/test-postgrid.R) |   4 | 0.329 |     0 |      0 |       0 |       0 |
-| [test-utils.R](testthat/test-utils.R)       |   6 | 0.147 |     0 |      0 |       0 |       0 |
+| [test-postgrid.R](testthat/test-postgrid.R) |   4 | 0.238 |     0 |      0 |       0 |       0 |
+| [test-utils.R](testthat/test-utils.R)       |   6 | 0.071 |     0 |      0 |       0 |       0 |
 
 <details closed>
 <summary>
@@ -52,13 +52,13 @@ Show Detailed Test Results
 
 | file                                                | context  | test                                                | status |   n |  time |
 |:----------------------------------------------------|:---------|:----------------------------------------------------|:-------|----:|------:|
-| [test-postgrid.R](testthat/test-postgrid.R#L38)     | postgrid | postgrid formatting succeeds with line vars         | PASS   |   1 | 0.195 |
-| [test-postgrid.R](testthat/test-postgrid.R#L65)     | postgrid | postgrid formatting succeeds with street vars       | PASS   |   1 | 0.024 |
-| [test-postgrid.R](testthat/test-postgrid.R#L69_L78) | postgrid | postgrid formatting fails with line and street vars | PASS   |   1 | 0.070 |
-| [test-postgrid.R](testthat/test-postgrid.R#L82_L88) | postgrid | postgrid formatting errors with neither vars        | PASS   |   1 | 0.040 |
-| [test-utils.R](testthat/test-utils.R#L8)            | utils    | Has names works as expected                         | PASS   |   1 | 0.004 |
-| [test-utils.R](testthat/test-utils.R#L13)           | utils    | Has names fails as expected                         | PASS   |   1 | 0.003 |
-| [test-utils.R](testthat/test-utils.R#L23)           | utils    | Lat/Lon match test works                            | PASS   |   4 | 0.140 |
+| [test-postgrid.R](testthat/test-postgrid.R#L38)     | postgrid | postgrid formatting succeeds with line vars         | PASS   |   1 | 0.087 |
+| [test-postgrid.R](testthat/test-postgrid.R#L65)     | postgrid | postgrid formatting succeeds with street vars       | PASS   |   1 | 0.021 |
+| [test-postgrid.R](testthat/test-postgrid.R#L69_L78) | postgrid | postgrid formatting fails with line and street vars | PASS   |   1 | 0.094 |
+| [test-postgrid.R](testthat/test-postgrid.R#L82_L88) | postgrid | postgrid formatting errors with neither vars        | PASS   |   1 | 0.036 |
+| [test-utils.R](testthat/test-utils.R#L8)            | utils    | Has names works as expected                         | PASS   |   1 | 0.005 |
+| [test-utils.R](testthat/test-utils.R#L13)           | utils    | Has names fails as expected                         | PASS   |   1 | 0.011 |
+| [test-utils.R](testthat/test-utils.R#L23)           | utils    | Lat/Lon match test works                            | PASS   |   4 | 0.055 |
 
 </details>
 <details>
@@ -76,7 +76,7 @@ Session Info
 
 | Package  | Version |
 |:---------|:--------|
-| testthat | 3.1.4   |
+| testthat | 3.1.5   |
 | covr     | 3.6.1   |
 | covrpage | 0.1     |
 
