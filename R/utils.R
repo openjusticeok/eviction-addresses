@@ -3,7 +3,7 @@
 #' @param x The object to check for names
 #' @param names A character vector of names to check `x` for
 #'
-#' @return A boolean (logical vector of length 1)
+#' @returns A boolean (logical vector of length 1)
 #'
 #' @import assertthat
 #'
@@ -78,7 +78,7 @@ expect_no_error <- function(object) {
 #' @param .data A tibble with columns `lat` and `lon`
 #' @param tolerance A numeric >= 0
 #'
-#' @return A boolean
+#' @returns A boolean
 #'
 #' @import assertthat
 #'

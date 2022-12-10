@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.2.1",
+    "Version": "4.2.2",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -116,16 +116,6 @@
       "Repository": "CRAN",
       "Hash": "e9c08b94391e9f3f97355841229124f2",
       "Requirements": []
-    },
-    "RcppTOML": {
-      "Package": "RcppTOML",
-      "Version": "0.1.7",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "f8a578aa91321ecec1292f1e2ffadeda",
-      "Requirements": [
-        "Rcpp"
-      ]
     },
     "XML": {
       "Package": "XML",
@@ -1084,16 +1074,6 @@
         "vctrs"
       ]
     },
-    "here": {
-      "Package": "here",
-      "Version": "1.0.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "24b224366f9c2e7534d2344d10d59211",
-      "Requirements": [
-        "rprojroot"
-      ]
-    },
     "highr": {
       "Package": "highr",
       "Version": "0.9",
@@ -1964,23 +1944,6 @@
         "rlang",
         "rmarkdown",
         "rstudioapi",
-        "withr"
-      ]
-    },
-    "reticulate": {
-      "Package": "reticulate",
-      "Version": "1.26",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "91c176c84a2e3558572d2cbaddc08bd4",
-      "Requirements": [
-        "Matrix",
-        "Rcpp",
-        "RcppTOML",
-        "here",
-        "jsonlite",
-        "png",
-        "rappdirs",
         "withr"
       ]
     },

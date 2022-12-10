@@ -6,7 +6,7 @@
 #' documents into the eviction_addresses schema. It then updates the work queue
 #' based on what it finds.
 #'
-#' @return A 200 if successful
+#' @returns A 200 if successful
 #'
 handle_refresh <- function(config) {
   f <- function(res) {

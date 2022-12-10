@@ -1,8 +1,9 @@
 #' @title Get Queue Length
 #'
 #' @param db A database connection pool
+#' @param status A character string indicating whether to count all cases in the queue or only those that are available for processing. Defaults to "available".
 #'
-#' @return The length of the queue. An integer.
+#' @returns The length of the queue. An integer.
 #'
 #' @import assertthat
 #'
@@ -101,7 +102,7 @@ refresh_queue <- function(db) {
 #'
 #' @param db A database connection pool created with `pool::dbPool`
 #'
-#' @return A case id
+#' @returns A case id
 #'
 get_case_from_queue <- function(db) {
 

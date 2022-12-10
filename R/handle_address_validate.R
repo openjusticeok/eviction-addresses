@@ -3,7 +3,7 @@
 #' @param db A database connection pool created by `pool::dbPool()`
 #' @param config The path to a `config.yml` file to be ingested by `{config}`
 #'
-#' @return A handler function for route /address/validate
+#' @returns A handler function for route /address/validate
 #'
 handle_address_validate <- function(db, config) {
   f <- function(address) {

@@ -8,6 +8,8 @@ get_queue_length(db, status = "available")
 }
 \arguments{
 \item{db}{A database connection pool}
+
+\item{status}{A character string indicating whether to count all cases in the queue or only those that are available for processing. Defaults to "available".}
 }
 \value{
 The length of the queue. An integer.

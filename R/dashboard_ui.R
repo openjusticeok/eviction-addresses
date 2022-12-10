@@ -1,7 +1,7 @@
 #' @title Eviction Addresses Dashboard UI
 #' @description The ui function passed to `shinyApp`
 #'
-#' @return A shiny ui function
+#' @returns A shiny ui function
 #'
 dashboard_ui <- function() {
   shinydashboard::dashboardPage(

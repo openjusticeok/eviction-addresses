@@ -5,7 +5,7 @@
 #' @param ... Additional arguments passed to `plumber::pr_run`, e.g. port = 8080
 #' @param .background Whether to start the API in a background process
 #'
-#' @return Nothing
+#' @returns Nothing
 #' @export
 #'
 #' @import plumber

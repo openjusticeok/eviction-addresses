@@ -1,7 +1,7 @@
 #' @title Handle Ping
 #' @description A plumber handler for a simple ping of the api
 #'
-#' @return Empty
+#' @returns Empty
 #'
 handle_ping <- function() {
   f <- function() {
@@ -18,7 +18,7 @@ handle_ping <- function() {
 #'
 #' @param db A database connection pool created with `pool::dbPool`
 #'
-#' @return Empty
+#' @returns Empty
 #'
 handle_dbping <- function(db) {
   f <- function() {
@@ -36,7 +36,7 @@ handle_dbping <- function(db) {
 #' @title Handle Future DB Ping
 #' @description A plumber handler that pings the database in a background process, returning before returning a response
 #'
-#' @return Empty
+#' @returns Empty
 #'
 handle_dbpingfuture <- function(config) {
   f <- function(res) {

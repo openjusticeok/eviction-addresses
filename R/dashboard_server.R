@@ -3,7 +3,7 @@
 #'
 #' @param config The path to a config file
 #'
-#' @return A Shiny server function
+#' @returns A Shiny server function
 #'
 #' @import shiny shinydashboard
 #'

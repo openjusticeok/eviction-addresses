@@ -4,7 +4,7 @@
 #' @param db The database connection
 #' @param cookie_expiry The cookie expiration
 #'
-#' @return A tibble of session info
+#' @returns A tibble of session info
 #'
 get_sessions_from_db <- function(db, cookie_expiry = 7) {
   f <- function(expiry = cookie_expiry) {
@@ -26,7 +26,7 @@ get_sessions_from_db <- function(db, cookie_expiry = 7) {
 #'
 #' @param db A database connection Pool
 #'
-#' @return Returns invisibly if successful
+#' @returns Returns invisibly if successful
 #'
 add_session_to_db <- function(db) {
   f <- function(user, sessionid) {
@@ -55,7 +55,7 @@ add_session_to_db <- function(db) {
 #'
 #' @param db A database connection pool created with `pool::dbPool`
 #'
-#' @return A tibble of user info
+#' @returns A tibble of user info
 #'
 get_users_from_db <- function(db) {
   logger::log_debug("Getting users from db")
