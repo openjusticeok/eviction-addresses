@@ -10,8 +10,11 @@ handle_dbping(db)
 \item{db}{A database connection pool created with \code{pool::dbPool}}
 }
 \value{
-Empty
+A plumber handler that returns a 200 status code and a message that the database is connected
 }
 \description{
 A plumber handler that pings the database
+}
+\details{
+This endpoint returns a simple "db pong" message after pinging the database
 }

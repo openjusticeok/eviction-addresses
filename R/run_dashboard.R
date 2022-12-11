@@ -2,7 +2,6 @@
 #' @description Runs the eviction address entry dashboard
 #'
 #' @param config The path to a config.yml file
-#' @param db A database connection pool created with `pool::dbPool`
 #' @param ... Additional arguments passed to `shiny::shinyApp`
 #'
 #' @export

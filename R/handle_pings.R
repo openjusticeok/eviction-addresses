@@ -1,7 +1,10 @@
 #' @title Handle Ping
 #' @description A plumber handler for a simple ping of the api
 #'
-#' @returns Empty
+#' @details
+#' This endpoint returns a simple "pong" message 
+#'
+#' @returns A plumber handler that returns a 200 status code and a message that the api is connected
 #'
 handle_ping <- function() {
   f <- function() {
@@ -15,16 +18,19 @@ handle_ping <- function() {
 
 #' @title Handle DB Ping
 #' @description A plumber handler that pings the database
+#' 
+#' @details
+#' This endpoint returns a simple "db pong" message after pinging the database
 #'
 #' @param db A database connection pool created with `pool::dbPool`
 #'
-#' @returns Empty
+#' @returns A plumber handler that returns a 200 status code and a message that the database is connected
 #'
 handle_dbping <- function(db) {
   f <- function() {
     test <- DBI::dbGetQuery(db, "SELECT NULL as n")
 
-    log_success("db pong")
+    logger::log_success("db pong")
 
     return("db pong")
   }
@@ -36,8 +42,10 @@ handle_dbping <- function(db) {
 #' @title Handle Future DB Ping
 #' @description A plumber handler that pings the database in a background process, returning before returning a response
 #'
-#' @returns Empty
-#'
+#' @param config The path to a configuration file ingested by `{config}`
+#' 
+#' @returns A plumber handler that returns a 202 status code and a message that the request has been queued
+#' 
 handle_dbpingfuture <- function(config) {
   f <- function(res) {
     promises::future_promise({

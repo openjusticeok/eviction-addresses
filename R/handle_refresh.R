@@ -5,6 +5,8 @@
 #' This endpoint refreshes materialized views and inserts new cases and
 #' documents into the eviction_addresses schema. It then updates the work queue
 #' based on what it finds.
+#' 
+#' @param config The path to a configuration file ingested by `{config}`
 #'
 #' @returns A 200 if successful
 #'

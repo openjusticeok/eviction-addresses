@@ -6,6 +6,9 @@
 \usage{
 handle_refresh(config)
 }
+\arguments{
+\item{config}{The path to a configuration file ingested by \code{{config}}}
+}
 \value{
 A 200 if successful
 }

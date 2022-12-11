@@ -11,13 +11,6 @@ dashboard_server <- function(config) {
 
   function(input, output, session) {
 
-    gcp_config <- config::get(
-      value = "gcp",
-      file = config
-    )
-
-    api_url <- gcp_config$service_url
-
     connection_args <- config::get(
       value = "database",
       file = config
@@ -58,11 +51,6 @@ dashboard_server <- function(config) {
       }
     })
 
-    jwt <- reactive({
-      invalidateLater(2700000)
-      googleCloudRunner::cr_jwt_create(api_url)
-    })
-
     user_info <- reactive({
       credentials()$info
     })
@@ -77,7 +65,7 @@ dashboard_server <- function(config) {
       }
     })
 
-    addressEntryServer("address-entry")
+    addressEntryServer("address-entry", config, db)
     entryDetailServer("entry-detail", current_case, total_cases)
     currentDocumentsServer("current-documents", current_case, db)
 

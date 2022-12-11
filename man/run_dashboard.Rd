@@ -10,8 +10,6 @@ run_dashboard(config, ...)
 \item{config}{The path to a config.yml file}
 
 \item{...}{Additional arguments passed to \code{shiny::shinyApp}}
-
-\item{db}{A database connection pool created with \code{pool::dbPool}}
 }
 \description{
 Runs the eviction address entry dashboard

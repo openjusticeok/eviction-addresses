@@ -7,8 +7,11 @@
 handle_ping()
 }
 \value{
-Empty
+A plumber handler that returns a 200 status code and a message that the api is connected
 }
 \description{
 A plumber handler for a simple ping of the api
+}
+\details{
+This endpoint returns a simple "pong" message
 }

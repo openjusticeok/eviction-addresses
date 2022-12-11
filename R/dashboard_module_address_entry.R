@@ -1,3 +1,11 @@
+#' @title Address Entry Module UI
+#' 
+#' @description UI for the address entry module
+#' 
+#' @param id The module ID
+#' 
+#' @returns The UI for the address entry module
+#' 
 addressEntryUI <- function(id) {
   ns <- NS(id)
   div(
@@ -52,7 +60,27 @@ addressEntryUI <- function(id) {
   )
 }
 
-addressEntryServer <- function(id) {
+#' @title Address Entry Module Server
+#' 
+#' @description Server for the address entry module
+#' 
+#' @param id The module ID
+#' @param config The path to a config file ingested by `{config}`
+#' @param db The database connection pool
+#' 
+#' @returns The server for the address entry module
+#' 
+addressEntryServer <- function(id, config, db) {
+  api_url <- config::get(
+    value = "gcp",
+    file = config
+  )$service_url
+
+  jwt <- reactive({
+    invalidateLater(2700000)
+    googleCloudRunner::cr_jwt_create(api_url)
+  })
+
   moduleServer(id, function(input, output, session) {
     address_entered <- NULL
     address_validated <- NULL

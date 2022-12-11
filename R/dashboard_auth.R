@@ -13,9 +13,9 @@ get_sessions_from_db <- function(db, cookie_expiry = 7) {
       conn = db,
       dbplyr::sql('SELECT * FROM "eviction_addresses"."session"')
     ) |>
-      dplyr::mutate(login_time = lubridate::ymd_hms(.data$login_time)) |>
+      dplyr::mutate(login_time = lubridate::ymd_hms(rlang::.data$login_time)) |>
       tibble::as_tibble() |>
-      dplyr::filter(.data$login_time > lubridate::now(tzone = "America/Chicago") - lubridate::days(cookie_expiry))
+      dplyr::filter(rlang::.data$login_time > lubridate::now(tzone = "America/Chicago") - lubridate::days(cookie_expiry))
   }
   return(f)
 }
