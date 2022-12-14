@@ -7,6 +7,8 @@
 #' @export
 #'
 run_dashboard <- function(config, ...) {
+  logger::log_threshold(logger::TRACE)
+  
   shiny::shinyApp(
     ui = dashboard_ui,
     server = dashboard_server(config = config),

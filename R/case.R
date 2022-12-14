@@ -1,5 +1,7 @@
 #' @title Refresh Cases
-#'
+#' 
+#' @description Refreshes the cases table with new cases from the recent_tulsa_evictions view
+#' 
 #' @param db A database connection
 #'
 refresh_cases <- function(db) {

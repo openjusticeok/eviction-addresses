@@ -10,5 +10,5 @@ refresh_cases(db)
 \item{db}{A database connection}
 }
 \description{
-Refresh Cases
+Refreshes the cases table with new cases from the recent_tulsa_evictions view
 }

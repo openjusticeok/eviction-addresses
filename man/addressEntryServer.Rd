@@ -4,7 +4,7 @@
 \alias{addressEntryServer}
 \title{Address Entry Module Server}
 \usage{
-addressEntryServer(id, config, db)
+addressEntryServer(id, config, db, current_case)
 }
 \arguments{
 \item{id}{The module ID}
@@ -12,6 +12,8 @@ addressEntryServer(id, config, db)
 \item{config}{The path to a config file ingested by \code{{config}}}
 
 \item{db}{The database connection pool}
+
+\item{current_case}{The reactive value for the current case}
 }
 \value{
 The server for the address entry module

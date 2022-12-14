@@ -1,11 +1,11 @@
 #' @title Address Entry Module UI
-#' 
+#'
 #' @description UI for the address entry module
-#' 
+#'
 #' @param id The module ID
-#' 
+#'
 #' @returns The UI for the address entry module
-#' 
+#'
 addressEntryUI <- function(id) {
   ns <- NS(id)
   div(
@@ -61,20 +61,22 @@ addressEntryUI <- function(id) {
 }
 
 #' @title Address Entry Module Server
-#' 
+#'
 #' @description Server for the address entry module
-#' 
+#'
 #' @param id The module ID
 #' @param config The path to a config file ingested by `{config}`
 #' @param db The database connection pool
-#' 
+#' @param current_case The reactive value for the current case
+#'
 #' @returns The server for the address entry module
-#' 
-addressEntryServer <- function(id, config, db) {
+#'
+addressEntryServer <- function(id, config, db, current_case) {
   api_url <- config::get(
     value = "gcp",
     file = config
   )$service_url
+  logger::log_debug("API URL: {api_url}")
 
   jwt <- reactive({
     invalidateLater(2700000)
@@ -86,6 +88,7 @@ addressEntryServer <- function(id, config, db) {
     address_validated <- NULL
 
     observeEvent(input$address_validate, {
+      logger::log_debug("Address validate button pressed")
 
       address_entered <<- list(
         street_num = isolate(input$address_street_number),
@@ -97,6 +100,7 @@ addressEntryServer <- function(id, config, db) {
         state = isolate(input$address_state),
         zip = isolate(input$address_zip)
       )
+      logger::log_debug("Address entered: {address_entered}")
 
       address_entered_string <- stringr::str_c(address_entered$street_num,
                                                " ",
@@ -113,9 +117,13 @@ addressEntryServer <- function(id, config, db) {
                                                address_entered$state,
                                                " ",
                                                address_entered$zip)
+      logger::log_debug("Address entered string: {address_entered_string}")
 
       token <- googleCloudRunner::cr_jwt_token(jwt(), api_url)
+      logger::log_debug("Token: {token}")
+
       url <- stringr::str_c(api_url, "/address/validate")
+      logger::log_debug("URL: {url}")
 
       res <- googleCloudRunner::cr_jwt_with_httr(
         httr::POST(
@@ -125,10 +133,14 @@ addressEntryServer <- function(id, config, db) {
         ),
         token
       )
+      logger::log_debug("Response: {res}")
 
-      modal_content <- div()
+      modal_content <- shiny::div()
+      logger::log_debug("Modal content: {modal_content}")
 
       if(res$status_code == 200){
+        logger::log_debug("Response status code: {res$status_code}")
+
         response_content <- httr::content(res, as = "parsed", encoding = "UTF-8")
         logger::log_debug("Response content: {response_content}")
 
@@ -171,31 +183,37 @@ addressEntryServer <- function(id, config, db) {
           modal_content <- "Could not validate address."
 
           query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
+          logger::log_debug("Query: {query}")
 
           DBI::dbExecute(
             conn = db,
             statement = query
           )
+          logger::log_debug("Query executed")
         }
       } else {
         modal_content <- "Bad response from validation server"
 
-        query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
+        query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case()};', .con = db)
+        logger::log_debug("Query: {query}")
 
         DBI::dbExecute(
           conn = db,
           statement = query
         )
+        logger::log_debug("Query executed")
       }
 
       showModal(modalDialog(
         title = "Address Validation",
         modal_content
       ))
+      logger::log_debug("Modal shown")
 
     })
 
     observeEvent(input$address_submit, {
+      logger::log_debug("Address submit button pressed")
 
       current_case <- current_case()
 

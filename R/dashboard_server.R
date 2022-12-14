@@ -5,23 +5,27 @@
 #'
 #' @returns A Shiny server function
 #'
-#' @import shiny shinydashboard
+#' @import shiny shinydashboard logger
 #'
 dashboard_server <- function(config) {
 
   function(input, output, session) {
+    logger::log_debug("dashboard_server")
 
     connection_args <- config::get(
       value = "database",
       file = config
     )
+    logger::log_debug("Connection args: {connection_args}")
 
     db <- new_db_pool(config = config)
     shiny::onStop(function() {
       pool::poolClose(pool = db)
     })
+    logger::log_debug("Database connection pool created")
 
     user_base <- get_users_from_db(db = db)
+    logger::log_debug("User base created")
 
     # call login module supplying data frame, user and password cols and reactive trigger
     credentials <- shinyauthr::loginServer(
@@ -32,16 +36,18 @@ dashboard_server <- function(config) {
       sodium_hashed = TRUE,
       cookie_logins = TRUE,
       sessionid_col = "sessionid",
-      cookie_getter = get_sessions_from_db(db = db),
+      cookie_getter = get_sessions_from_db(db = db, cookie_expiry = 7),
       cookie_setter = add_session_to_db(db = db),
       log_out = shiny::reactive(logout_init())
     )
+    logger::log_debug("Login module created")
 
     # call the logout module with reactive trigger to hide/show
     logout_init <- shinyauthr::logoutServer(
       id = "logout",
       active = reactive(credentials()$user_auth)
     )
+    logger::log_debug("Logout module created")
 
     observe({
       if (credentials()$user_auth) {
@@ -50,24 +56,32 @@ dashboard_server <- function(config) {
         shinyjs::addClass(selector = "body", class = "sidebar-collapse")
       }
     })
+    logger::log_debug("Sidebar collapse class added")
 
     user_info <- reactive({
       credentials()$info
     })
+    logger::log_debug("User info reactive created")
 
     user_data <- reactive({
       req(credentials()$user_auth)
 
-      if (user_info()$permissions == "admin") {
+      if (user_info()$role == "admin") {
         logger::log_debug("User has admin priveleges")
-      } else if (user_info()$permissions == "standard") {
-        logger::log_debug("User has standard permissions")
+      } else if (user_info()$role == "user") {
+        logger::log_debug("User has standard role")
       }
     })
+    logger::log_debug("User data reactive created")
 
-    addressEntryServer("address-entry", config, db)
+    addressEntryServer("address-entry", config, db, current_case)
+    logger::log_debug("Address entry module created")
+
     entryDetailServer("entry-detail", current_case, total_cases)
+    logger::log_debug("Entry detail module created")
+
     currentDocumentsServer("current-documents", current_case, db)
+    logger::log_debug("Current documents module created")
 
     output$sidebar_menu <- shinydashboard::renderMenu({
       req(credentials()$user_auth)
@@ -85,6 +99,7 @@ dashboard_server <- function(config) {
         )
       )
     })
+    logger::log_debug("Sidebar menu created")
 
     output$entry_ui <- renderUI({
       req(credentials()$user_auth)
@@ -117,10 +132,12 @@ dashboard_server <- function(config) {
         )
       )
     })
+    logger::log_debug("Entry UI created")
 
     output$metrics_ui <- renderUI({
       req(credentials()$user_auth)
     })
+    logger::log_debug("Metrics UI created")
 
     current_case <- reactive({
       input$case_refresh
@@ -129,6 +146,7 @@ dashboard_server <- function(config) {
 
       case
     })
+    logger::log_debug("Current case reactive created")
 
     total_cases <- reactive({
       input$case_refresh
@@ -137,6 +155,7 @@ dashboard_server <- function(config) {
 
       queue_length
     })
+    logger::log_debug("Total cases reactive created")
 
     documents <- reactive({
       current_case <- current_case()
@@ -145,11 +164,13 @@ dashboard_server <- function(config) {
 
       res
     })
+    logger::log_debug("Documents reactive created")
 
     total_documents <- reactive({
       documents <- documents()
       return(nrow(documents))
     })
+    logger::log_debug("Total documents reactive created")
 
     current_document_num <- reactiveVal(0)
     observeEvent(
@@ -180,17 +201,20 @@ dashboard_server <- function(config) {
       link <- documents[current_document_num(), "internal_link"]
       return(link)
     })
-
+    logger::log_debug("Current document reactive created")
 
     output$current_document_ui <- renderText({
       return(glue::glue('<iframe style="height:600px; width:100%" src="', '{current_document()}', '"></iframe>'))
     })
+    logger::log_debug("Current document UI created")
 
     output$total_documents_ui <- renderText(stringr::str_c("Total Documents: ", total_documents()))
+    logger::log_debug("Total documents UI created")
 
     output$current_document_num_ui <- renderText(stringr::str_c("Current Document: ", current_document_num()))
+    logger::log_debug("Current document number UI created")
 
     output$document_selector_ui <- renderText(stringr::str_c(current_document_num(), " / ", total_documents()))
-
+    logger::log_debug("Document selector UI created")
   }
 }

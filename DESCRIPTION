@@ -36,23 +36,25 @@ Imports:
     shinyauthr,
     shinydashboard,
     shinyjs,
+    sodium,
     stringr,
     tibble
 Suggests: 
+    callr,
     covr,
     covrpage,
-    mockery,
-    testthat (>= 3.0.0),
+    dittodb,
+    figpatch,
     knitr,
-    rmarkdown,
+    languageserver,
+    mockery,
+    patchwork,
     pkgdown,
+    rmarkdown,
+    testthat (>= 3.0.0),
     vcr (>= 0.6.0),
     webmockr,
-    callr,
-    withr,
-    patchwork,
-    figpatch,
-    dittodb
+    withr
 VignetteBuilder: knitr
 URL: https://openjusticeok.github.io/eviction-addresses/
 Config/testthat/edition: 3

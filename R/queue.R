@@ -6,6 +6,7 @@
 #' @returns The length of the queue. An integer.
 #'
 #' @import assertthat
+#' @importFrom rlang .data
 #'
 get_queue_length <- function(db, status = "available") {
   queue_table <- dbplyr::in_schema(schema = "eviction_addresses", table = "queue")
@@ -15,8 +16,8 @@ get_queue_length <- function(db, status = "available") {
   if(status == "available") {
     queue <- queue |>
       dplyr::filter(
-        is.na(rlang::.data$success),
-        is.na(rlang::.data$working)
+        is.na(.data$success),
+        is.na(.data$working)
       )
   }
 
