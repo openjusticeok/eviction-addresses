@@ -71,42 +71,42 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
   steps = c(
     cr_buildstep_secret(
       secret = "eviction-addresses-client-id",
-      decrypted = "dashboard/client-id.json"
+      decrypted = "/workspace/client-id.json"
     ),
     cr_buildstep_secret(
       secret = "eviction-addresses-dashboard-renviron",
-      decrypted = "dashboard/.Renviron"
+      decrypted = "/workspace/.Renviron"
     ),
     # cr_buildstep_secret(
     #   secret = "eviction-addresses-dashboard-service-account",
-    #   decrypted = "dashboard/eviction-addresses-dashboard-service-account.json"
+    #   decrypted = "/workspace/eviction-addresses-dashboard-service-account.json"
     # ),
     cr_buildstep_secret(
       secret = "eviction-addresses-service-account",
-      decrypted = "dashboard/eviction-addresses-service-account.json"
+      decrypted = "/workspace/eviction-addresses-service-account.json"
     ),
     cr_buildstep_secret(
       secret = "eviction-addresses-api-config",
-      decrypted = "dashboard/config.yml"
+      decrypted = "/workspace/config.yml"
     ),
-    cr_buildstep_bash("mkdir -p dashboard/shiny-apps-certs/"),
+    cr_buildstep_bash("mkdir -p /workspace/shiny-apps-certs/"),
     cr_buildstep_secret(
       secret = "eviction-addresses-ssl-cert",
-      decrypted = "dashboard/shiny-apps-certs/client-cert.pem"
+      decrypted = "/workspace/shiny-apps-certs/client-cert.pem"
     ),
     cr_buildstep_secret(
       secret = "eviction-addresses-ssl-key",
-      decrypted = "dashboard/shiny-apps-certs/client-key.pem"
+      decrypted = "/workspace/shiny-apps-certs/client-key.pem"
     ),
     cr_buildstep_secret(
       secret = "eviction-addresses-ssl-ca",
-      decrypted = "dashboard/shiny-apps-certs/server-ca.pem"
+      decrypted = "/workspace/shiny-apps-certs/server-ca.pem"
     ),
-    cr_buildstep_bash("chmod 0600 dashboard/shiny-apps-certs/client-key.pem"),
+    cr_buildstep_bash("chmod 0600 /workspace/shiny-apps-certs/client-key.pem"),
+    cr_buildstep_bash("cp inst/cloudbuild/shiny_Dockerfile ./Dockerfile"),
     cr_buildstep_docker(
       image = "eviction-addresses-dashboard-test",
-      dir = "dashboard",
-      kaniko_cache = T
+      kaniko_cache = FALSE
     ),
     cr_buildstep_run(
       name = "eviction-addresses-dashboard-test",

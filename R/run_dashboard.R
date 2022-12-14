@@ -12,6 +12,6 @@ run_dashboard <- function(config, ...) {
   shiny::shinyApp(
     ui = dashboard_ui,
     server = dashboard_server(config = config),
-    ...
+    options = list(...)
   )
 }
