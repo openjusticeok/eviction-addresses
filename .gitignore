@@ -44,3 +44,4 @@ inst/doc
 docs
 build.R
 build_test.R
+.vscode
