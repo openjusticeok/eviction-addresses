@@ -12,7 +12,8 @@ RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
 	libgdal-dev \
 	libmagick++-dev \
 	libharfbuzz-dev \
-	libfribidi-dev
+	libfribidi-dev \
+	libsodium-dev
 ENV R_CONFIG_ACTIVE=docker
 RUN ["install2.r", "remotes"]
 RUN ["installGithub.r", "openjusticeok/eviction-addresses@test"]
