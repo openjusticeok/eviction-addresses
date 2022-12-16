@@ -8,6 +8,8 @@ isolate_address_entered(input)
 }
 \arguments{
 \item{input}{The input object}
+
+\item{id}{The module ID}
 }
 \description{
 This function isolates the address entered by the user.

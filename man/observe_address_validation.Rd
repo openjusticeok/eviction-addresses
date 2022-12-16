@@ -6,6 +6,7 @@
 \usage{
 observe_address_validation(
   input,
+  db,
   current_case,
   jwt,
   api_url,
@@ -15,6 +16,8 @@ observe_address_validation(
 }
 \arguments{
 \item{input}{The input object from the Shiny app}
+
+\item{db}{The database connection pool}
 
 \item{current_case}{The reactive value for the current case}
 

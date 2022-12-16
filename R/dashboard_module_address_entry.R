@@ -12,44 +12,44 @@ addressEntryUI <- function(id) {
     div(
       style = "display: flex; gap: 10px; justify-content: flex-start; flex-wrap: wrap;",
       textInput(
-        inputId = ns("address_street_number"),
+        inputId = ns("street_number"),
         label = "Street Number"
       ),
       textInput(
-        inputId = ns("address_street_direction"),
+        inputId = ns("street_direction"),
         label = "Street Direction"
       ),
       textInput(
-        inputId = ns("address_street_name"),
+        inputId = ns("street_name"),
         label = "Street Name"
       ),
       textInput(
-        inputId = ns("address_street_type"),
+        inputId = ns("street_type"),
         label = "Street Type"
       )
     ),
     div(
       style = "display: flex; gap: 10px; justify-content: flex-start; flex-wrap: wrap;",
       textInput(
-        inputId = ns("address_street_unit"),
+        inputId = ns("street_unit"),
         label = "APT/SUITE/UNIT..."
       )
     ),
     div(
       style = "display: flex; gap: 10px; justify-content: flex-start; flex-wrap: wrap;",
       textInput(
-        inputId = ns("address_city"),
+        inputId = ns("city"),
         label = "City"
       ),
       selectInput(
         width = "80px",
-        inputId = ns("address_state"),
+        inputId = ns("state"),
         label = "State",
         choices = c("AR", "OK", "TX"),
         selected = "OK"
       ),
       textInput(
-        inputId = ns("address_zip"),
+        inputId = ns("zip"),
         label = "Zip Code"
       )
     ),
@@ -88,11 +88,11 @@ addressEntryServer <- function(id, config, db, current_case) {
       object = NULL,
       string = NULL
     )
+
     address_validated <- reactiveValues(
       object = NULL,
       string = NULL
     )
-    logger::log_debug("Address Number Input: {input$street_number}")
 
     observe_address_validation(
       input,
@@ -103,6 +103,7 @@ addressEntryServer <- function(id, config, db, current_case) {
       address_entered,
       address_validated
     )
+
     observe_address_submission(
       input,
       db,
@@ -231,6 +232,7 @@ observe_address_validation <- function(input, db, current_case, jwt, api_url, ad
 #' @description This function isolates the address entered by the user.
 #' 
 #' @param input The input object
+#' @param id The module ID
 #' 
 isolate_address_entered <- function(input) {
   address_entered <- list(
@@ -238,6 +240,7 @@ isolate_address_entered <- function(input) {
     street_direction = input$street_direction,
     street_name = input$street_name,
     street_type = input$street_type,
+    unit = input$unit,
     city = input$city,
     state = input$state,
     zip = input$zip
@@ -258,7 +261,7 @@ isolate_address_entered <- function(input) {
 #' 
 stringify_address_entered <- function(address_entered) {
   address_entered_string <- stringr::str_c(
-    address_entered$street_num,
+    address_entered$street_number,
     " ",
     address_entered$street_direction,
     " ",
