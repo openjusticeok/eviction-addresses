@@ -1,0 +1,38 @@
+{
+    "name": "Demo Environment",
+	"build": {
+		"dockerfile": "Dockerfile",
+		// Update VARIANT to pick a specific R version: 4, 4.1, 4.0
+		"args": { "VARIANT": "4.2" }
+	},
+    // Set *default* container specific settings.json values on container create.
+	"settings": {
+		"r.rterm.linux": "/usr/local/bin/radian",
+		"r.bracketedPaste": true,
+		"r.plot.useHttpgd": true,
+		"[r]": {
+			"editor.wordSeparators": "`~!@#%$^&*()-=+[{]}\\|;:'\",<>/?"
+		}
+	},
+    // Add the IDs of extensions you want installed when the container is created.
+	"extensions": [
+		// Add Jupyter, R and Python vscode extensions
+		"REditorSupport.r",
+		"rdebugger.r-debugger",
+		"GitHub.copilot"
+	],
+    "features": {
+        "ghcr.io/rocker-org/devcontainer-features/r-rig:1": {
+            "version": "4.2",
+            "vscodeRSupport": "true",
+            "installDevTools": "true",
+            "installREnv": "true",
+            "installRMarkdown": "true",
+            "installRadian": "true",
+            "installVscDebugger": "true"
+        }
+    },
+    "remoteEnv": {
+        "PKG_SYSREQS": "true"
+    }
+}
