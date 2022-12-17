@@ -32,6 +32,21 @@
             "installVscDebugger": "true"
         }
     },
+	// Forward Jupyter and RStudio ports
+	"forwardPorts": [8787],
+	"portsAttributes": {
+		"8787": {
+			"label": "Rstudio",
+			"requireLocalPort": true,
+			"onAutoForward": "ignore"
+		}
+	},
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "sudo rstudio-server start",
+	// "postCreateCommand": "pip3 install -r requirements.txt",
+
+	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "rstudio",
     "remoteEnv": {
         "PKG_SYSREQS": "true"
     }
