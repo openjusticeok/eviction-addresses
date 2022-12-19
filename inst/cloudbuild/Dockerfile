@@ -1,4 +1,4 @@
-FROM rocker/r-ver:4.2.1
+FROM rocker/r-ver:4.2.2
 LABEL maintainer="brancengregory"
 RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
   && apt-get install -y git-core \
@@ -13,14 +13,11 @@ RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
 	libmagick++-dev \
 	libharfbuzz-dev \
 	libfribidi-dev \
-	python3-dev \
-	python3-venv \
-	python3-pip
+	libsodium-dev
 ENV R_CONFIG_ACTIVE=docker
 RUN ["install2.r", "remotes"]
 RUN ["installGithub.r", "openjusticeok/eviction-addresses"]
 WORKDIR /workspace/
-RUN pip install boto3
 COPY config.yml .
 COPY eviction-addresses-service-account.json .
 COPY shiny-apps-certs/ ./shiny-apps-certs

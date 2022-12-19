@@ -106,7 +106,7 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
     cr_buildstep_docker(
       image = "eviction-addresses-dashboard",
       dir = "dashboard",
-      kaniko_cache = T
+      kaniko_cache = FALSE
     ),
     cr_buildstep_run(
       name = "eviction-addresses-dashboard",
