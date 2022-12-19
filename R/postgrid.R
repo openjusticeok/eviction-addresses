@@ -12,6 +12,7 @@
 #' @param street_type The type of the address's street (e.g. street/avenue/place)
 #' @param unit The unit type and value of an address (e.g. APT 13, UNIT C)
 #'
+#' @export
 #' @returns A list with fields suitable for a PostGrid request
 #'
 #' @import assertthat
@@ -111,6 +112,7 @@ format_postgrid_request <- function(
 #' @param address A list with elements `line1`, `line2`, `city`, `provinceOrState`, and `country`
 #' @param geocode A flag (logical vector of length one) indicating whether to geocode the address. Uses another Postgrid unit. Defaults to `TRUE`
 #'
+#' @export
 #' @returns A PostGrid response
 #'
 #' @import assertthat
@@ -163,6 +165,7 @@ send_postgrid_request <- function(config = NULL, address = list(), geocode = T) 
 #'
 #' @param res A response from the Postgrid API
 #'
+#' @export
 #' @returns A list with values specified according to the PostGrid documentation
 #'
 #' @import assertthat

@@ -137,7 +137,7 @@ observe_address_validation <- function(input, db, current_case, jwt, api_url, ad
     address_entered$object <- isolate_address_entered(input)
     address_entered$string <- stringify_address_entered(address_entered$object)
 
-    token <- googleCloudRunner::cr_jwt_token(jwt, api_url)
+    token <- googleCloudRunner::cr_jwt_token(jwt(), api_url)
     logger::log_debug("Token: {token}")
 
     url <- stringr::str_c(api_url, "/address/validate")
@@ -195,11 +195,11 @@ observe_address_validation <- function(input, db, current_case, jwt, api_url, ad
         query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case()};', .con = db)
         logger::log_debug("Query: {query}")
 
-      DBI::dbExecute(
-          conn = db,
-          statement = query
-      )
-      logger::log_debug("Query executed")
+        DBI::dbExecute(
+            conn = db,
+            statement = query
+        )
+        logger::log_debug("Query executed")
       }
     } else {
       modal_content <- "Bad response from validation server"
