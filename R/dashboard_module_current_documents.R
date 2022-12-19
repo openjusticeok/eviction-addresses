@@ -7,7 +7,7 @@ currentDocumentsUI <- function(id) {
     textOutput(ns("document_selector_ui")),
     actionButton(inputId = ns("next_document"), label = "Next")
   )
-  textOuput(ns("current_document_ui"))
+  textOutput(ns("current_document_ui"))
 }
 
 currentDocumentsServer <- function(id, current_case, db) {
@@ -28,7 +28,7 @@ currentDocumentsServer <- function(id, current_case, db) {
 
     current_document_num <- reactiveVal(0)
     logger::log_debug("Current document number: {current_document_num()}")
-    
+
     observeEvent(
       total_documents(),
       {if(total_documents() >= 1) {
