@@ -116,10 +116,10 @@ addressEntryServer <- function(id, config, db, current_case) {
 
 
 #' @title Observe Address Validation
-#' 
+#'
 #' @description This function observes the address validation button and
 #'  validates the address.
-#' 
+#'
 #' @param input The input object from the Shiny app
 #' @param db The database connection pool
 #' @param current_case The reactive value for the current case
@@ -127,7 +127,7 @@ addressEntryServer <- function(id, config, db, current_case) {
 #' @param api_url The URL for the API
 #' @param address_entered The reactive values for the address entered
 #' @param address_validated The reactive values for the address validated
-#' 
+#'
 #' @returns A Shiny observeEvent object
 #'
 observe_address_validation <- function(input, db, current_case, jwt, api_url, address_entered, address_validated) {
@@ -164,7 +164,7 @@ observe_address_validation <- function(input, db, current_case, jwt, api_url, ad
 
       response_content <- httr::content(res, as = "parsed", encoding = "UTF-8")
       logger::log_debug("Response content: {response_content}")
-      
+
       address_validated$object <- response_content |>
         purrr::map(purrr::as_vector) |>
         purrr::map(~ifelse(purrr::is_empty(.x), NA_character_, .x))
@@ -191,8 +191,8 @@ observe_address_validation <- function(input, db, current_case, jwt, api_url, ad
         )
       } else {
         modal_content <- "Could not validate address."
-        
-        query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
+
+        query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case()};', .con = db)
         logger::log_debug("Query: {query}")
 
       DBI::dbExecute(
@@ -228,12 +228,12 @@ observe_address_validation <- function(input, db, current_case, jwt, api_url, ad
 }
 
 #' @title Isolate Address Entered
-#' 
+#'
 #' @description This function isolates the address entered by the user.
-#' 
+#'
 #' @param input The input object
 #' @param id The module ID
-#' 
+#'
 isolate_address_entered <- function(input) {
   address_entered <- list(
     street_number = input$street_number,
@@ -252,13 +252,13 @@ isolate_address_entered <- function(input) {
 
 
 #' @title Stringify Address Entered
-#' 
+#'
 #' @description This function prints the address entered by the user.
-#' 
+#'
 #' @param address_entered The address entered by the user
-#' 
+#'
 #' @returns The address entered by the user formatted as a string
-#' 
+#'
 stringify_address_entered <- function(address_entered) {
   address_entered_string <- stringr::str_c(
     address_entered$street_number,
@@ -277,19 +277,19 @@ stringify_address_entered <- function(address_entered) {
     " ",
     address_entered$zip
   )
-  logger::log_debug("Address entered string: {address_entered_string}")  
+  logger::log_debug("Address entered string: {address_entered_string}")
 
   return(address_entered_string)
 }
 
 #' @title Stringify Address Validated
-#' 
+#'
 #' @description This function prints the address validated by the API.
-#' 
+#'
 #' @param address_validated The address validated by the API
-#' 
+#'
 #' @returns The address validated by the API formatted as a string
-#' 
+#'
 stringify_address_validated <- function(address_validated) {
   address_validated_string <- stringr::str_c(
     stringr::str_replace_na(address_validated$line1, ""),
@@ -308,17 +308,17 @@ stringify_address_validated <- function(address_validated) {
 }
 
 #' @title Observe Address Submission
-#' 
+#'
 #' @description This function observes the address submission button.
-#' 
+#'
 #' @param input The input object
 #' @param db The database connection
 #' @param current_case The current case
 #' @param address_entered The address entered by the user
 #' @param address_validated The address validated by the API
-#' 
+#'
 #' @returns A Shiny observer object
-#' 
+#'
 observe_address_submission <- function(input, db, current_case, address_entered, address_validated) {
   observeEvent(input$address_submit, {
     logger::log_debug("Address submit button pressed")
@@ -375,7 +375,7 @@ observe_address_submission <- function(input, db, current_case, address_entered,
     if(write_status == TRUE) {
       logger::log_debug("Wrote new record in 'address' table")
 
-      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET success = TRUE, working = FALSE WHERE "case" = {current_case};', .con = db)
+      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET success = TRUE, working = FALSE WHERE "case" = {current_case()};', .con = db)
 
       DBI::dbExecute(
         conn = db,
@@ -389,7 +389,7 @@ observe_address_submission <- function(input, db, current_case, address_entered,
     } else {
       logger::log_error("Failed to write the new record to table 'address'")
 
-      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case};', .con = db)
+      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case()};', .con = db)
 
       update_res <- DBI::dbExecute(
         conn = db,
