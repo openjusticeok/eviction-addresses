@@ -22,6 +22,4 @@ for (i in seq_along(docs)) {
   }
 
   readr::write_file(x = res$content, file = file, append = FALSE)
-
-
 }

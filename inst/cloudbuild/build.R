@@ -140,23 +140,23 @@ cr_buildtrigger(
 )
 
 ###### Test JWT generation ##########
-# cr <- cr_run_get("eviction-addresses-api")
-# url <- cr$status$url
-# jwt <- cr_jwt_create(url)
-# token <- cr_jwt_token(jwt, url)
-#
-# library(httr)
-# library(stringr)
-# res <- cr_jwt_with_httr(
-#   GET(str_c(url, "/dbpingfuture")),
-#   token
-# )
-# content(res)
-#
-# b <- format_postgrid_request(
-#   line1 = "13243 S 68 E AVE",
-#   city = "Bixby",
-#   state = "OK",
-#   zip = "74008"
-# )
-# res <- send_postgrid_request("config.yml", b, geocode = TRUE)
+cr <- cr_run_get("eviction-addresses-api")
+url <- cr$status$url
+jwt <- cr_jwt_create(url)
+token <- cr_jwt_token(jwt, url)
+
+library(httr)
+library(stringr)
+res <- cr_jwt_with_httr(
+  GET(str_c(url, "/dbpingfuture")),
+  token
+)
+content(res)
+
+b <- format_postgrid_request(
+  line1 = "13243 S 68 E AVE",
+  city = "Bixby",
+  state = "OK",
+  zip = "74008"
+)
+res <- send_postgrid_request("config.yml", b, geocode = TRUE)
