@@ -15,6 +15,7 @@ ENV R_CONFIG_ACTIVE=docker
 RUN ["install2.r", "remotes", "here"]
 RUN ["installGithub.r", "openjusticeok/eviction-addresses"]
 WORKDIR /workspace/
+COPY .Renviron .
 COPY config.yml .
 COPY client-id.json .
 COPY eviction-addresses-service-account.json .
