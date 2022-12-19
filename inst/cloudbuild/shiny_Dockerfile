@@ -13,7 +13,7 @@ RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
 	libgdal-dev
 ENV R_CONFIG_ACTIVE=docker
 RUN ["install2.r", "remotes"]
-RUN ["installGithub.r", "openjusticeok/eviction-addresses@test"]
+RUN ["installGithub.r", "openjusticeok/eviction-addresses"]
 WORKDIR /workspace/
 COPY config.yml .
 COPY eviction-addresses-service-account.json .
