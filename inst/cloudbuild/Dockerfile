@@ -15,7 +15,7 @@ RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
 	libfribidi-dev \
 	libsodium-dev
 ENV R_CONFIG_ACTIVE=docker
-RUN ["install2.r", "remotes"]
+RUN ["install2.r", "remotes", "here"]
 RUN ["installGithub.r", "openjusticeok/eviction-addresses"]
 WORKDIR /workspace/
 COPY config.yml .
