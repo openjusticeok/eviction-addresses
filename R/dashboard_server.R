@@ -74,6 +74,33 @@ dashboard_server <- function(config) {
     })
     logger::log_debug("User data reactive created")
 
+    current_case <- reactive({
+      input$case_refresh
+
+      case <- get_case_from_queue(db = db)
+
+      case
+    })
+    logger::log_debug("Current case reactive created")
+
+    total_cases <- reactive({
+      input$case_refresh
+
+      queue_length <- get_queue_length(db = db)
+
+      queue_length
+    })
+    logger::log_debug("Total cases reactive created")
+
+    documents <- reactive({
+      current_case <- current_case()
+
+      res <- get_documents_by_case(db = db, id = current_case)
+
+      res
+    })
+    logger::log_debug("Documents reactive created")
+
     addressEntryServer("address-entry", config, db, current_case)
     logger::log_debug("Address entry module created")
 
@@ -138,83 +165,5 @@ dashboard_server <- function(config) {
       req(credentials()$user_auth)
     })
     logger::log_debug("Metrics UI created")
-
-    current_case <- reactive({
-      input$case_refresh
-
-      case <- get_case_from_queue(db = db)
-
-      case
-    })
-    logger::log_debug("Current case reactive created")
-
-    total_cases <- reactive({
-      input$case_refresh
-
-      queue_length <- get_queue_length(db = db)
-
-      queue_length
-    })
-    logger::log_debug("Total cases reactive created")
-
-    documents <- reactive({
-      current_case <- current_case()
-
-      res <- get_documents_by_case(db = db, id = current_case)
-
-      res
-    })
-    logger::log_debug("Documents reactive created")
-
-    total_documents <- reactive({
-      documents <- documents()
-      return(nrow(documents))
-    })
-    logger::log_debug("Total documents reactive created")
-
-    current_document_num <- reactiveVal(0)
-    observeEvent(
-      total_documents(),
-      {if(total_documents() >= 1) {
-        current_document_num(1)
-      }}
-    )
-    observeEvent(
-      input$previous_document,
-      {if(current_document_num() <= 1) {
-        current_document_num(total_documents())
-      } else {
-        current_document_num(current_document_num() - 1)
-      }}
-    )
-    observeEvent(
-      input$next_document,
-      {if(current_document_num() >= total_documents()) {
-        current_document_num(1)
-      } else {
-        current_document_num(current_document_num() + 1)
-      }}
-    )
-
-    current_document <- reactive({
-      documents <- documents()
-      link <- documents[current_document_num(), "internal_link"]
-      return(link)
-    })
-    logger::log_debug("Current document reactive created")
-
-    output$current_document_ui <- renderText({
-      return(glue::glue('<iframe style="height:600px; width:100%" src="', '{current_document()}', '"></iframe>'))
-    })
-    logger::log_debug("Current document UI created")
-
-    output$total_documents_ui <- renderText(stringr::str_c("Total Documents: ", total_documents()))
-    logger::log_debug("Total documents UI created")
-
-    output$current_document_num_ui <- renderText(stringr::str_c("Current Document: ", current_document_num()))
-    logger::log_debug("Current document number UI created")
-
-    output$document_selector_ui <- renderText(stringr::str_c(current_document_num(), " / ", total_documents()))
-    logger::log_debug("Document selector UI created")
   }
 }

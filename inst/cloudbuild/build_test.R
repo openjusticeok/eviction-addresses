@@ -159,4 +159,4 @@ b <- format_postgrid_request(
   state = "OK",
   zip = "74008"
 )
-res <- send_postgrid_request()
+res <- send_postgrid_request("config.yml", b, geocode = TRUE)
