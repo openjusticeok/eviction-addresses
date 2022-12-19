@@ -80,8 +80,11 @@ addressEntryServer <- function(id, config, db, current_case) {
 
   jwt <- reactive({
     invalidateLater(2700000)
+    logger::log_debug("JWT invalidated")
+    logger::log_debug("Creating JWT")
     googleCloudRunner::cr_jwt_create(api_url)
   })
+  logger::log_debug("Created JWT")
 
   moduleServer(id, function(input, output, session) {
     address_entered <- reactiveValues(
@@ -144,6 +147,7 @@ observe_address_validation <- function(input, db, current_case, jwt, api_url, ad
     logger::log_debug("URL: {url}")
 
     logger::log_debug("Address entered: {address_entered$object}")
+    logger::log_debug("Preparing POST request...")
     res <- googleCloudRunner::cr_jwt_with_httr(
       httr::POST(
         url,
