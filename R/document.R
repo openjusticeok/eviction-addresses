@@ -28,18 +28,19 @@ refresh_documents <- function(db) {
     }
     logger::log_success("Got pdf content {i}")
     upload <- googleCloudStorageR::gcs_upload(
-      document,
+      file = document,
       name = links[i, "id"],
       bucket = "eviction-addresses",
       type = "application/pdf",
       object_function = function(input, output) {
         readr::write_file(input, output)
       },
-      predefinedAcl = "bucketLevel"
+      predefinedAcl = "bucketLevel",
+      upload_type = "simple"
     )
     logger::log_success("Uploaded pdf {i}")
     internal_link <- googleCloudStorageR::gcs_download_url(
-      links[i, "id"],
+      object_name = links[i, "id"],
       bucket = "eviction-addresses",
       public = TRUE
     )
