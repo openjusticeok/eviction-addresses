@@ -31,7 +31,7 @@ eviction_addresses_api_yaml <- cr_build_yaml(
     cr_buildstep_bash("cp inst/cloudbuild/Dockerfile ./Dockerfile"),
     cr_buildstep_docker(
       image = "eviction-addresses-api",
-      kaniko_cache = TRUE
+      kaniko_cache = FALSE
     ),
     cr_buildstep_run(
       name = "eviction-addresses-api",
@@ -106,7 +106,7 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
     cr_buildstep_bash("cp inst/cloudbuild/shiny_Dockerfile ./Dockerfile"),
     cr_buildstep_docker(
       image = "eviction-addresses-dashboard",
-      kaniko_cache = TRUE
+      kaniko_cache = FALSE
     ),
     cr_buildstep_run(
       name = "eviction-addresses-dashboard",
