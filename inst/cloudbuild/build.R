@@ -115,7 +115,8 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
       memory = "1G",
       cpu = 1,
       max_instances = 1,
-      concurrency = 80
+      concurrency = 80,
+      gcloud_args = c("--timeout=3600")
     )
   ),
   timeout = 7200
