@@ -14,7 +14,7 @@ run_api <- function(config, ..., .background = FALSE) {
 
   logger::log_threshold(logger::TRACE)
 
-  future::plan(future.callr::callr)
+  # future::plan(future.callr::callr)
 
   db <- new_db_pool(config)
   withr::defer(pool::poolClose(db))
