@@ -12,8 +12,6 @@ dashboard_server <- function(config) {
   function(input, output, session) {
     logger::log_debug("dashboard_server")
 
-    session$allowReconnect(TRUE)
-
     connection_args <- config::get(
       value = "database",
       file = config
