@@ -159,6 +159,12 @@ res <- cr_jwt_with_httr(
 )
 content(res)
 
+res <- cr_jwt_with_httr(
+  GET(str_c(url, "/refresh/queue")),
+  token
+)
+content(res)
+
 b <- format_postgrid_request(
   line1 = "13243 S 68 E AVE",
   city = "Bixby",

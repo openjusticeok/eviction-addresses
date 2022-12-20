@@ -14,7 +14,7 @@ refresh_documents <- function(db, n = "ALL") {
   limit_n <- ifelse(is.numeric(n), n, "ALL")
 
   query <- glue::glue_sql(
-    'SELECT id, link FROM "eviction_addresses"."document" t WHERE t."internal_link" IS NULL ORDER BY t."created_at" LIMIT {limit_n};',
+    'SELECT id, link FROM "eviction_addresses"."document" t WHERE t."internal_link" IS NULL ORDER BY t."created_at" DESC LIMIT {limit_n};',
     .con = db
   )
   links <- DBI::dbGetQuery(db, query)
@@ -63,7 +63,7 @@ refresh_documents <- function(db, n = "ALL") {
     }
 
     logger::log_success("Completed link {i}/{nrow(links)}")
-    Sys.sleep(2)
+    Sys.sleep(1)
   }
 
   return()

@@ -196,7 +196,7 @@ observe_address_validation <- function(input, db, current_case, jwt, api_url, ad
       } else {
         modal_content <- "Could not validate address."
 
-        query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case()};', .con = db)
+        query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1 WHERE "case" = {current_case()};', .con = db)
         logger::log_debug("Query: {query}")
 
         DBI::dbExecute(
@@ -208,7 +208,7 @@ observe_address_validation <- function(input, db, current_case, jwt, api_url, ad
     } else {
       modal_content <- "Bad response from validation server"
 
-      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case()};', .con = db)
+      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1 WHERE "case" = {current_case()};', .con = db)
       logger::log_debug("Query: {query}")
 
       DBI::dbExecute(
@@ -393,7 +393,7 @@ observe_address_submission <- function(input, db, current_case, address_entered,
     } else {
       logger::log_error("Failed to write the new record to table 'address'")
 
-      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE WHERE "case" = {current_case()};', .con = db)
+      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE, success = FALSE WHERE "case" = {current_case()};', .con = db)
 
       update_res <- DBI::dbExecute(
         conn = db,
