@@ -140,6 +140,18 @@ observe_address_validation <- function(input, db, current_case, jwt, api_url, ad
     address_entered$object <- isolate_address_entered(input)
     address_entered$string <- stringify_address_entered(address_entered$object)
 
+    logger::log_debug("Formatting address entered for API...")
+    address_formatted <- format_postgrid_request(
+      street_number = address_entered$object$street_number,
+      street_direction = address_entered$object$street_direction,
+      street_name = address_entered$object$street_name,
+      street_type = address_entered$object$street_type,
+      unit = address_entered$object$unit,
+      city = address_entered$object$city,
+      state = address_entered$object$state,
+      zip = address_entered$object$zip
+    )
+
     token <- googleCloudRunner::cr_jwt_token(jwt(), api_url)
     logger::log_debug("Token: {token}")
 
@@ -152,7 +164,7 @@ observe_address_validation <- function(input, db, current_case, jwt, api_url, ad
       httr::POST(
         url,
         body = list(
-          address = address_entered$object
+          address = address_formatted
         ),
         encode = "json"
       ),
