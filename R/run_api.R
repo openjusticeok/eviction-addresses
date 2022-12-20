@@ -28,6 +28,7 @@ run_api <- function(config, ..., .background = FALSE) {
       pr_handle("GET", "/dbping", handle_dbping(db)) |>
       pr_handle("GET", "/dbpingfuture", handle_dbpingfuture(config)) |>
       pr_handle("GET", "/refresh", handle_refresh(config)) |>
+      pr_handle("GET", "/refresh/queue", handle_refresh_queue(config)) |>
       pr_handle("GET", "/refresh/documents/<n>", handle_refresh_documents(config)) |>
       pr_handle("POST", "/address/validate", handle_address_validate(db, config)) |>
       pr_run(...)
