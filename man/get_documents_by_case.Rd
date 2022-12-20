@@ -15,5 +15,5 @@ get_documents_by_case(db, id)
 A data.frame of documents
 }
 \description{
-Get Documents by Case
+Get all documents for a given case
 }

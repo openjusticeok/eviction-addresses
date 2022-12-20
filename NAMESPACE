@@ -2,6 +2,7 @@
 
 export(calculate_pay)
 export(change_password)
+export(download_oscn_document)
 export(format_postgrid_request)
 export(new_db_pool)
 export(new_user)

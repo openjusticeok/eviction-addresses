@@ -44,3 +44,45 @@ handle_refresh <- function(config) {
 
   return(f)
 }
+
+#' @title Handle API Refresh Documents
+#' 
+#' @description Plumber handler for endpoint `/refresh/documents/<n>`
+#' 
+#' @details
+#' This endpoint refreshes documents in the eviction_addresses schema. It then
+#' updates the work queue based on what it finds.
+#' 
+#' @param config The path to a configuration file ingested by `{config}`
+#' 
+handle_refresh_documents <- function(config) {
+  f <- function(res, n = 10) {
+    promises::future_promise({
+      db <- new_db_pool(config)
+      withr::defer(pool::poolClose(db))
+
+      logger::log_appender(logger::appender_tee("/var/log/eviction_addresses.log"))
+
+      refresh_documents(db, n)
+
+      return()
+    },
+    seed = TRUE) |>
+      promises::then(
+        onFulfilled = function(v) {
+          logger::log_success("Documents refreshed")
+          return()
+        },
+        onRejected = function(error) {
+          logger::log_error("Failed to refresh documents: {error}")
+          return()
+        }
+      )
+
+    msg <- "The request has been queued."
+    res$status <- 202
+    return(list(success = msg))
+  }
+
+  return(f)
+}

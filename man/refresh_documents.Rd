@@ -4,10 +4,12 @@
 \alias{refresh_documents}
 \title{Refresh Documents}
 \usage{
-refresh_documents(db)
+refresh_documents(db, n = "ALL")
 }
 \arguments{
 \item{db}{A database connection}
+
+\item{n}{The number of documents to refresh}
 }
 \description{
 Refresh Documents

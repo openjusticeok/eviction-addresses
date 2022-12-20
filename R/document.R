@@ -1,13 +1,22 @@
 #' @title Refresh Documents
 #'
 #' @param db A database connection
+#' @param n The number of documents to refresh
 #'
-refresh_documents <- function(db) {
+refresh_documents <- function(db, n = "ALL") {
   logger::log_appender(logger::appender_tee("test.log"))
 
-  googleCloudStorageR::gcs_auth(json_file = "eviction-addresses-service-account.json", email = "bq-test@ojo-database.iam.gserviceaccount.com")
+  googleCloudStorageR::gcs_auth(
+    json_file = "eviction-addresses-service-account.json",
+    email = "bq-test@ojo-database.iam.gserviceaccount.com"
+  )
 
-  query <- dplyr::sql("SELECT id, link FROM eviction_addresses.document WHERE internal_link IS NULL ORDER BY created_at;")
+  limit_n <- ifelse(is.numeric(n), n, "ALL")
+
+  query <- glue::glue_sql(
+    'SELECT id, link FROM "eviction_addresses"."document" t WHERE t."internal_link" IS NULL ORDER BY t."created_at" LIMIT {limit_n};',
+    .con = db
+  )
   links <- DBI::dbGetQuery(db, query)
 
   if(nrow(links) == 0) {
