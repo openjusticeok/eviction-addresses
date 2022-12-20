@@ -31,7 +31,7 @@ addressEntryUI <- function(id) {
     div(
       style = "display: flex; gap: 10px; justify-content: flex-start; flex-wrap: wrap;",
       textInput(
-        inputId = ns("street_unit"),
+        inputId = ns("unit"),
         label = "APT/SUITE/UNIT..."
       )
     ),
