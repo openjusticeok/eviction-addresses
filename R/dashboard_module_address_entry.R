@@ -99,6 +99,7 @@ addressEntryServer <- function(id, config, db, current_case) {
 
     observe_address_validation(
       input,
+      session,
       db,
       current_case,
       jwt,
@@ -124,6 +125,7 @@ addressEntryServer <- function(id, config, db, current_case) {
 #'  validates the address.
 #'
 #' @param input The input object from the Shiny app
+#' @param session The session object from the Shiny app
 #' @param db The database connection pool
 #' @param current_case The reactive value for the current case
 #' @param jwt The JWT token for the API
@@ -133,7 +135,9 @@ addressEntryServer <- function(id, config, db, current_case) {
 #'
 #' @returns A Shiny observeEvent object
 #'
-observe_address_validation <- function(input, db, current_case, jwt, api_url, address_entered, address_validated) {
+observe_address_validation <- function(input, session, db, current_case, jwt, api_url, address_entered, address_validated) {
+  ns <- session$ns
+
   observeEvent(input$address_validate, {
     logger::log_debug("Address validation button pressed")
 
@@ -203,7 +207,7 @@ observe_address_validation <- function(input, db, current_case, jwt, api_url, ad
               h5(HTML(address_validated$string))
             )
           ),
-          actionButton("address_submit", label = "Submit", icon = icon("upload"))
+          actionButton(ns("address_submit"), label = "Submit", icon = icon("upload"))
         )
       } else {
         modal_content <- "Could not validate address."
