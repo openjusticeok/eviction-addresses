@@ -31,6 +31,8 @@ format_postgrid_request <- function(
     unit = NA_character_
   ) {
 
+  logger::log_debug("Checking Postgrid request argument exclusivity...")
+
   address_method <- switch(
     rlang::check_exclusive(line1, street_number),
     "line1" = "lines",
@@ -93,6 +95,7 @@ format_postgrid_request <- function(
     line2 <- ""
   }
 
+  logger::log_debug("Formatting Postgrid request...")
   address <- list(
     line1 = stringr::str_to_upper(line1),
     line2 = stringr::str_to_upper(line2),
@@ -118,13 +121,16 @@ format_postgrid_request <- function(
 #' @import assertthat
 #'
 send_postgrid_request <- function(config = NULL, address = list(), geocode = T) {
+  logger::log_debug("Checking config supplied to send_postgrid_request()...")
   assert_that(
     not_empty(config),
     is.readable(config)
   )
 
+  logger::log_debug("Getting config Postgrid API key...")
   postgrid_args <- config::get(value = "postgrid", file = config)
 
+  logger::log_debug("Checking Postgrid request arguments...")
   assert_that(
     is.list(address),
     has_name(address, "line1"),
@@ -135,6 +141,7 @@ send_postgrid_request <- function(config = NULL, address = list(), geocode = T) 
     is.flag(geocode)
   )
 
+  logger::log_debug("Serializing Postgrid request...")
   req_body <- list(
     address = address
   ) |>
@@ -146,6 +153,7 @@ send_postgrid_request <- function(config = NULL, address = list(), geocode = T) 
     url <- stringr::str_c(url, "&geocode=true", sep = "")
   }
 
+  logger::log_debug("Sending Postgrid request...")
   res <- httr::POST(
     url,
     httr::add_headers(`x-api-key` = postgrid_args$key),
@@ -155,6 +163,7 @@ send_postgrid_request <- function(config = NULL, address = list(), geocode = T) 
     encode = "form"
   )
 
+  logger::log_debug("Parsing Postgrid response...")
   parsed_res <- parse_postgrid_response(res)
 
   return(parsed_res)
