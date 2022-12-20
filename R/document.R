@@ -25,7 +25,7 @@ refresh_documents <- function(db, n = "ALL") {
     return(list(status = "success", message = msg))
   }
 
-  for(i in seq_along(links)) {
+  for(i in seq_len(nrow(links))) {
     document <- tryCatch(
       download_oscn_document(links[i, "link"]),
       error = function(e) {
@@ -138,7 +138,7 @@ download_oscn_document <- function(link) {
 #' @param id The id/name of the document
 #'
 upload_gcs_document <- function(file, id) {
-  gcs_upload_set_limit(upload_limit = 10000000L)
+  googleCloudStorageR::gcs_upload_set_limit(upload_limit = 10000000L)
   logger::log_debug("Uploading pdf to GCS: {id}")
   upload <- googleCloudStorageR::gcs_upload(
     file = file,
