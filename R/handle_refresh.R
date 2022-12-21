@@ -16,7 +16,7 @@ handle_refresh <- function(config) {
       db <- new_db_pool(config)
       withr::defer(pool::poolClose(db))
 
-      logger::log_appender(logger::appender_tee("/var/log/eviction_addresses.log"))
+      # logger::log_appender(logger::appender_tee("/var/log/eviction_addresses.log"))
 
       refresh_cases(db)
       refresh_minutes(db)
@@ -60,7 +60,7 @@ handle_refresh_documents <- function(config) {
       db <- new_db_pool(config)
       withr::defer(pool::poolClose(db))
 
-      logger::log_appender(logger::appender_tee("/var/log/eviction_addresses.log"))
+      # logger::log_appender(logger::appender_tee("/var/log/eviction_addresses.log"))
 
       refresh_documents(db, n)
 
