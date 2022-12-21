@@ -3,7 +3,7 @@
 #' @param db A database connection
 #' @param n The number of documents to refresh
 #'
-refresh_documents <- function(db, n = "ALL") {
+refresh_documents <- function(db, n = NULL) {
   logger::log_appender(logger::appender_tee("test.log"))
 
   googleCloudStorageR::gcs_auth(
@@ -11,7 +11,7 @@ refresh_documents <- function(db, n = "ALL") {
     email = "bq-test@ojo-database.iam.gserviceaccount.com"
   )
 
-  limit_n <- ifelse(is.numeric(n), n, "ALL")
+  limit_n <- ifelse(is.integer(n), n, "ALL")
 
   query <- glue::glue_sql(
     'SELECT id, link FROM "eviction_addresses"."document" t WHERE t."internal_link" IS NULL ORDER BY t."created_at" DESC LIMIT {limit_n};',
