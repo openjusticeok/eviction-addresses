@@ -155,7 +155,7 @@ res <- cr_jwt_with_httr(
 content(res)
 
 res <- cr_jwt_with_httr(
-  GET(str_c(url, "/refresh/documents/10")),
+  GET(str_c(url, "/refresh/documents/1000")),
   token
 )
 content(res)

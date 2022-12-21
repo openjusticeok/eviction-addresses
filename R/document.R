@@ -4,7 +4,7 @@
 #' @param n The number of documents to refresh
 #'
 refresh_documents <- function(db, n = NULL) {
-  logger::log_appender(logger::appender_tee("test.log"))
+  # logger::log_appender(logger::appender_tee("test.log"))
 
   googleCloudStorageR::gcs_auth(
     json_file = "eviction-addresses-service-account.json",
