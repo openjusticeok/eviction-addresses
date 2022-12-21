@@ -11,7 +11,7 @@ refresh_documents <- function(db, n = NULL) {
     email = "bq-test@ojo-database.iam.gserviceaccount.com"
   )
 
-  limit_n <- ifelse(is.integer(n), n, "ALL")
+  limit_n <- ifelse(is.integer(n), n, 1000)
 
   query <- glue::glue_sql(
     'SELECT id, link FROM "eviction_addresses"."document" t WHERE t."internal_link" IS NULL ORDER BY t."created_at" DESC LIMIT {limit_n};',
