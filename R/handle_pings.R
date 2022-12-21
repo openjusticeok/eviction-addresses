@@ -52,7 +52,7 @@ handle_dbpingfuture <- function(config) {
       db <- new_db_pool(config)
       withr::defer(pool::poolClose(db))
 
-      logger::log_appender(logger::appender_tee("/var/log/eviction_addresses.log"))
+      # logger::log_appender(logger::appender_tee("/var/log/eviction_addresses.log"))
 
       test <- DBI::dbGetQuery(db, "SELECT NULL as n")
       logger::log_info("Going to sleep now")

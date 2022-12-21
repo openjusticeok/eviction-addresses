@@ -20,7 +20,6 @@ handle_refresh <- function(config) {
 
       refresh_cases(db)
       refresh_minutes(db)
-      refresh_documents(db)
       refresh_queue(db)
 
       return()
