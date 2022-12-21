@@ -60,7 +60,7 @@ parse_postgrid_response <- function(res) {
   body <- content(res, as = "parsed", type = "application/json")
   if(body$status != "success") {
     log_error("[PostGrid]: {body$status}")
-    rlang::abort()
+    rlang::abort("PostGrid returned a non-success status")
   }
 
   log_info("[PostGrid]: {body$message}")

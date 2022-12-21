@@ -189,7 +189,7 @@ parse_postgrid_response <- function(res) {
   body <- httr::content(res, as = "parsed", type = "application/json")
   if(body$status != "success") {
     logger::log_error("[PostGrid]: {body$status}")
-    rlang::abort()
+    rlang::abort("Postgrid request failed")
   }
 
   logger::log_info("[PostGrid]: {body$message}")

@@ -107,12 +107,12 @@ download_oscn_document <- function(link) {
 
   if(!res$status_code == 200) {
     logger::log_error("Bad response from link: {link}: {res$status_code}")
-    rlang::abort()
+    rlang::abort("Bad response from OSCN")
   }
 
   if(!res$headers$`content-type` == "application/pdf") {
     logger::log_error("Bad content type from link: {link}")
-    rlang::abort()
+    rlang::abort("Bad content type from OSCN")
   }
 
   doc <- httr::content(res, "raw")
