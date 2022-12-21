@@ -10,10 +10,10 @@ empties <- docs |>
   as_tibble() |>
   mutate(size_num = str_extract(size, "\\d+\\.\\d+") |>
            as.numeric()) |>
-  filter(size_num == 1.2, !str_detect(size, "Mb")) |>
+  filter(size_num == 1.2, str_detect(size, "Kb")) |>
   pull(name)
 
-walk(empties, function(x){print(x); gcs_delete_object(x, bucket = "eviction-addresses")})
+# walk(empties, function(x){print(x); gcs_delete_object(x, bucket = "eviction-addresses")})
 
 # for (i in seq_along(docs)) {
 #   url <- gcs_download_url(

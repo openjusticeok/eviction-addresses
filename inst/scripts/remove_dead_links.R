@@ -8,6 +8,7 @@ docs <- gcs_list_objects(bucket = "eviction-addresses") |>
   as_tibble()
 
 records <- ojo_tbl("document", "eviction_addresses") |>
+  filter(!is.na(internal_link)) |>
   collect()
 
 deads <- anti_join(
@@ -27,4 +28,3 @@ walk(
     dbExecute(ojodb, q)
   }
 )
-
