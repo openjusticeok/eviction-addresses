@@ -74,6 +74,11 @@ dashboard_server <- function(config) {
     })
     logger::log_debug("User data reactive created")
 
+    current_user <- reactive({
+      user_info()$user
+    })
+    logger::log_debug("Current user reactive created")
+
     current_case <- reactive({
       input$case_refresh
 
@@ -101,7 +106,7 @@ dashboard_server <- function(config) {
     })
     logger::log_debug("Documents reactive created")
 
-    addressEntryServer("address-entry", config, db, current_case)
+    addressEntryServer("address-entry", config, db, current_case, current_user)
     logger::log_debug("Address entry module created")
 
     entryDetailServer("entry-detail", current_case, total_cases)

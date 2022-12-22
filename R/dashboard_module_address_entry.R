@@ -68,10 +68,11 @@ addressEntryUI <- function(id) {
 #' @param config The path to a config file ingested by `{config}`
 #' @param db The database connection pool
 #' @param current_case The reactive value for the current case
+#' @param current_user The reactive value for the current user
 #'
 #' @returns The server for the address entry module
 #'
-addressEntryServer <- function(id, config, db, current_case) {
+addressEntryServer <- function(id, config, db, current_case, current_user) {
   api_url <- config::get(
     value = "gcp",
     file = config
@@ -112,6 +113,7 @@ addressEntryServer <- function(id, config, db, current_case) {
       input,
       db,
       current_case,
+      current_user,
       address_entered,
       address_validated
     )
@@ -334,12 +336,13 @@ stringify_address_validated <- function(address_validated) {
 #' @param input The input object
 #' @param db The database connection
 #' @param current_case The current case
+#' @param current_user The current user
 #' @param address_entered The address entered by the user
 #' @param address_validated The address validated by the API
 #'
 #' @returns A Shiny observer object
 #'
-observe_address_submission <- function(input, db, current_case, address_entered, address_validated) {
+observe_address_submission <- function(input, db, current_case, current_user, address_entered, address_validated) {
   observeEvent(input$address_submit, {
     logger::log_debug("Address submit button pressed")
 
@@ -395,17 +398,37 @@ observe_address_submission <- function(input, db, current_case, address_entered,
     if(write_status == TRUE) {
       logger::log_debug("Wrote new record in 'address' table")
 
-      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET success = TRUE, working = FALSE WHERE "case" = {current_case()};', .con = db)
+      pool::poolWithTransaction(db, function(conn) {
+        query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET success = TRUE, working = FALSE WHERE "case" = {current_case()};', .con = conn)
 
-      DBI::dbExecute(
-        conn = db,
-        statement = query
-      )
+        DBI::dbExecute(
+          conn = conn,
+          statement = query
+        )
+        logger::log_debug("Set status to success")
 
-      logger::log_debug("Set status to success")
+        # Create a new row in the process_log table associating this address with the current user
+        new_row <- tibble::tibble(
+          case = current_case(),
+          user = current_user(),
+          created_at = lubridate::now(tzone = "America/Chicago"),
+          updated_at = lubridate::now(tzone = "America/Chicago")
+        )
+
+        DBI::dbWriteTable(
+          conn = conn,
+          name = DBI::Id(
+            schema = "eviction_addresses",
+            table = "process_log"
+          ),
+          value = new_row,
+          append = TRUE
+        )
+        logger::log_debug("Wrote new record in 'process_log' table")
+
+      })
 
       removeModal()
-      input$case_refresh
     } else {
       logger::log_error("Failed to write the new record to table 'address'")
 
