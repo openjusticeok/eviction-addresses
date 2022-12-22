@@ -214,7 +214,7 @@ observe_address_validation <- function(input, session, db, current_case, jwt, ap
       } else {
         modal_content <- "Could not validate address."
 
-        query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1 WHERE "case" = {current_case()};', .con = db)
+        query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, stopped_at = CURRENT_TIMESTAMP WHERE "case" = {current_case()};', .con = db)
         logger::log_debug("Query: {query}")
 
         DBI::dbExecute(
@@ -226,7 +226,7 @@ observe_address_validation <- function(input, session, db, current_case, jwt, ap
     } else {
       modal_content <- "Bad response from validation server"
 
-      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1 WHERE "case" = {current_case()};', .con = db)
+      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, stopped_at = CURRENT_TIMESTAMP WHERE "case" = {current_case()};', .con = db)
       logger::log_debug("Query: {query}")
 
       DBI::dbExecute(
@@ -399,7 +399,7 @@ observe_address_submission <- function(input, db, current_case, current_user, ad
       logger::log_debug("Wrote new record in 'address' table")
 
       pool::poolWithTransaction(db, function(conn) {
-        query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET success = TRUE, working = FALSE WHERE "case" = {current_case()};', .con = conn)
+        query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET success = TRUE, working = FALSE, stopped_at = CURRENT_TIMESTAMP WHERE "case" = {current_case()};', .con = conn)
 
         DBI::dbExecute(
           conn = conn,
@@ -432,7 +432,7 @@ observe_address_submission <- function(input, db, current_case, current_user, ad
     } else {
       logger::log_error("Failed to write the new record to table 'address'")
 
-      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE, success = FALSE WHERE "case" = {current_case()};', .con = db)
+      query <- glue::glue_sql('UPDATE "eviction_addresses"."queue" SET attempts = attempts + 1, working = FALSE, success = FALSE, stopped_at = CURRENT_TIMESTAMP WHERE "case" = {current_case()};', .con = db)
 
       update_res <- DBI::dbExecute(
         conn = db,
