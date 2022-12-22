@@ -103,7 +103,7 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
       decrypted = "/workspace/shiny-apps-certs/server-ca.pem"
     ),
     cr_buildstep_bash("chmod 0600 /workspace/shiny-apps-certs/client-key.pem"),
-    cr_buildstep_bash("cp inst/cloudbuild/shiny_Dockerfile ./Dockerfile"),
+    cr_buildstep_bash("cp inst/cloudbuild/test_shiny_Dockerfile ./Dockerfile"),
     cr_buildstep_docker(
       image = "eviction-addresses-dashboard-test",
       kaniko_cache = FALSE
@@ -115,7 +115,8 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
       memory = "1G",
       cpu = 1,
       max_instances = 1,
-      concurrency = 80
+      concurrency = 80,
+      gcloud_args = c("--timeout=3600")
     )
   ),
   timeout = 7200
