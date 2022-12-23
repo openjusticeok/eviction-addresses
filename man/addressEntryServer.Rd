@@ -4,7 +4,7 @@
 \alias{addressEntryServer}
 \title{Address Entry Module Server}
 \usage{
-addressEntryServer(id, config, db, current_case)
+addressEntryServer(id, config, db, current_case, current_user)
 }
 \arguments{
 \item{id}{The module ID}
@@ -14,6 +14,8 @@ addressEntryServer(id, config, db, current_case)
 \item{db}{The database connection pool}
 
 \item{current_case}{The reactive value for the current case}
+
+\item{current_user}{The reactive value for the current user}
 }
 \value{
 The server for the address entry module

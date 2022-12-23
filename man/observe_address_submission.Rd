@@ -8,6 +8,7 @@ observe_address_submission(
   input,
   db,
   current_case,
+  current_user,
   address_entered,
   address_validated
 )
@@ -18,6 +19,8 @@ observe_address_submission(
 \item{db}{The database connection}
 
 \item{current_case}{The current case}
+
+\item{current_user}{The current user}
 
 \item{address_entered}{The address entered by the user}
 

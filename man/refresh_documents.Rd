@@ -4,7 +4,7 @@
 \alias{refresh_documents}
 \title{Refresh Documents}
 \usage{
-refresh_documents(db, n = "ALL")
+refresh_documents(db, n = NULL)
 }
 \arguments{
 \item{db}{A database connection}

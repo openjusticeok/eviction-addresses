@@ -6,6 +6,7 @@
 \usage{
 observe_address_validation(
   input,
+  session,
   db,
   current_case,
   jwt,
@@ -16,6 +17,8 @@ observe_address_validation(
 }
 \arguments{
 \item{input}{The input object from the Shiny app}
+
+\item{session}{The session object from the Shiny app}
 
 \item{db}{The database connection pool}
 
