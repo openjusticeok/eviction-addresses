@@ -14,7 +14,7 @@ RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
 	libharfbuzz-dev \
 	libfribidi-dev \
 	libsodium-dev
-ENV R_CONFIG_ACTIVE=docker
+ENV R_CONFIG_ACTIVE=docker_test
 RUN ["install2.r", "remotes", "here"]
 RUN ["installGithub.r", "openjusticeok/eviction-addresses@test"]
 WORKDIR /workspace/
