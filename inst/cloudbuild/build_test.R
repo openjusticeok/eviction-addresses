@@ -140,6 +140,62 @@ cr_buildtrigger(
   includedFiles = "**"
 )
 
+
+eviction_addresses_job_yaml <- cr_build_yaml(
+  steps = c(
+    cr_buildstep_secret(
+      secret = "eviction-addresses-service-account",
+      decrypted = "/workspace/eviction-addresses-service-account.json"
+    ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-api-config",
+      decrypted = "/workspace/config.yml"
+    ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-api-renviron",
+      decrypted = "/workspace/.Renviron"
+    ),
+    cr_buildstep_bash("mkdir -p /workspace/shiny-apps-certs/"),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-ssl-cert",
+      decrypted = "/workspace/shiny-apps-certs/client-cert.pem"
+    ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-ssl-key",
+      decrypted = "/workspace/shiny-apps-certs/client-key.pem"
+    ),
+    cr_buildstep_secret(
+      secret = "eviction-addresses-ssl-ca",
+      decrypted = "/workspace/shiny-apps-certs/server-ca.pem"
+    ),
+    cr_buildstep_bash("chmod 0600 /workspace/shiny-apps-certs/client-key.pem"),
+    cr_buildstep_bash("cp inst/cloudbuild/test_refresh_job_Dockerfile ./Dockerfile"),
+    cr_buildstep_docker(
+      image = "eviction-addresses-job-test",
+      kaniko_cache = FALSE
+    )
+  ),
+  timeout = 7200
+)
+
+eviction_addresses_job_build <- cr_build_make(
+  yaml = eviction_addresses_job_yaml
+)
+
+eviction_addresses_job_trigger <- cr_buildtrigger_repo(
+  repo_name = "openjusticeok/eviction-addresses",
+  branch = "test"
+)
+
+cr_buildtrigger_delete("eviction-addresses-job-test-trigger")
+
+cr_buildtrigger(
+  build = eviction_addresses_job_build,
+  name = "eviction-addresses-job-test-trigger",
+  trigger = eviction_addresses_job_trigger,
+  includedFiles = "**"
+)
+
 ###### Test JWT generation ##########
 # cr <- cr_run_get("eviction-addresses-api-test")
 # url <- cr$status$url
