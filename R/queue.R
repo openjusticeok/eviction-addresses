@@ -67,7 +67,7 @@ update_queue <- function(db) {
   ## Get any cases in case table without an address
   ## and having at least one document, are not in queue
   logger::log_debug("Getting new jobs")
-  query <- dbplyr::sql(r"(SELECT DISTINCT(d."case"), NULL::bool AS success, NULL::bool AS working, 0::int4 AS attempts, NULL::timestamp AS started_at, NULL::timestamp AS stopped_at, current_timestamp AS created_at FROM eviction_addresses."document" d LEFT JOIN eviction_addresses.queue q ON d."case" = q."case" WHERE internal_link IS NOT NULL AND q."case" IS NULL;)")
+  query <- dbplyr::sql(r"(SELECT DISTINCT(d."case"), NULL::bool AS success, NULL::bool AS working, 0::int4 AS attempts, NULL::timestamp AS started_at, NULL::timestamp AS stopped_at, current_timestamp AS created_at FROM eviction_addresses."document" d LEFT JOIN eviction_addresses.queue q ON d."case" = q."case" left join eviction_addresses.address a on d."case" = a."case" WHERE internal_link IS NOT NULL AND q."case" IS null and a."case" is null;)")
   new_jobs <- DBI::dbGetQuery(db, query)
 
   num_new_jobs <- nrow(new_jobs)
