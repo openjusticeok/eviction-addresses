@@ -20,7 +20,12 @@
 plot_logins <- function(db, users, start = lubridate::ymd("2022-12-12"), end = lubridate::today(), .silent = FALSE) {
   # Query the sessions table by users and date
     query <- glue::glue_sql(
-        'SELECT "user", DATE("login_time") AS "date", COUNT(*) AS "count" FROM "eviction_addresses"."session" WHERE "user" IN ({users}) AND "login_time" BETWEEN {start} AND {end} GROUP BY "user", DATE("login_time")',
+        'SELECT "user", DATE("login_time") AS "date", COUNT(*) AS "count"',
+        'FROM "eviction_addresses"."session"',
+        'WHERE "user" IN ({users*})',
+        'AND "login_time" BETWEEN {start} AND {end}',
+        'GROUP BY "user", DATE("login_time")',
+        .sep = " ",
         .con = db
     )
 
@@ -30,8 +35,9 @@ plot_logins <- function(db, users, start = lubridate::ymd("2022-12-12"), end = l
       dplyr::mutate(count = as.numeric(.data$count))
 
     # Plot
-    p <- ggplot2::ggplot(logins, ggplot2::aes(x = date, y = count, color = user)) +
-        ggplot2::geom_line() +
+    p <- ggplot2::ggplot(logins, ggplot2::aes(x = date, y = count, fill = user)) +
+        ggplot2::geom_col() +
+        ggplot2::facet_wrap(ggplot2::vars(.data$user)) +
         ggplot2::labs(x = "Date", y = "Number of Logins", color = "User") +
         ggplot2::theme_bw()
     
@@ -87,7 +93,12 @@ plot_address_entries <- function(db, users, start = lubridate::ymd("2022-12-12")
 calculate_pay <- function(db, users, start, end, priority_rate = 0.35, backlog_rate = 0.25) {
     # Query process table for number of addresses entered per person and entry type
     query <- glue::glue_sql(
-      'SELECT "user", DATE(pl.created_at) as created_at, c.date_filed FROM "eviction_addresses"."process_log" pl left join eviction_addresses."case" c on pl."case" = c.id WHERE "user" IN ({users*}) AND pl.created_at BETWEEN {start} AND {end};',
+      'SELECT "user", DATE(pl.created_at) as created_at, c.date_filed',
+      'FROM "eviction_addresses"."process_log" pl',
+      'LEFT JOIN eviction_addresses."case" c on pl."case" = c.id',
+      'WHERE "user" IN ({users*})',
+      'AND pl.created_at BETWEEN {start} AND {end};',
+      .sep = " ",
       .con = db
     )
 
@@ -111,8 +122,10 @@ calculate_pay <- function(db, users, start, end, priority_rate = 0.35, backlog_r
 
     # Count number of entries per user and type
     entry_counts <- res |>
-      dplyr::group_by(.data$user, .data$type) |>
-      dplyr::count()
+      dplyr::count(
+        .data$user,
+        .data$type
+      )
 
     # Multiply counts by rates for corresponding type
     entry_counts <- entry_counts |>
@@ -123,16 +136,16 @@ calculate_pay <- function(db, users, start, end, priority_rate = 0.35, backlog_r
         names_glue = "{type}_n"
       ) |>
       dplyr::mutate(
-        priority_pay = dplyr::if_else(
-          is.na(.data$priority_n * priority_rate),
-          0,
-          .data$priority_n * priority_rate
-        ),
-        backlog_pay = dplyr::if_else(
-          is.na(.data$backlog_n * backlog_rate),
-          0,
-          .data$backlog_n * backlog_rate
-        ),
+        priority_pay = .data$priority_n * priority_rate,
+        backlog_pay = .data$backlog_n * backlog_rate
+      ) |>
+      dplyr::mutate(
+        dplyr::across(
+          is.numeric,
+          ~ tidyr::replace_na(., 0)
+        )
+      ) |>
+      dplyr::mutate(
         total_pay = .data$priority_pay + .data$backlog_pay
       )
 
@@ -161,10 +174,42 @@ render_pay_report <- function(db, users, start, end) {
     dplyr::summarise(
       total_pay = sum(.data$total_pay)
     ) |>
-    dplyr::ungroup() |>
-    dplyr::mutate(
-      total_pay = scales::dollar(.data$total_pay)
-    )
+    gt::gt()
 
   return(report)
+}
+
+#' @title Email Pay Report
+#' 
+#' @description Emails a pay report for the given users using the package `{blastula}`
+#' 
+#' @param db A database connection pool created with `pool::dbPool`
+#' @param users A vector of users to plot
+#' @param start The start date
+#' @param end The end date
+#' @param email The email address to send the report to
+#' 
+#' @export email_pay_report
+#' @returns Nothing
+#' 
+email_pay_report <- function(db, users, start, end, recipient_email) {
+  # Render report
+  report <- render_pay_report(db, users, start, end)
+
+  # Create email
+  email_content <- blastula::compose_email(
+    body = report,
+    footer = "This is an automated email. Please do not reply."
+  )
+
+  # Send email
+  blastula::smtp_send(
+    email = email_content,
+    to = recipient_email,
+    from = "bgregory@okpolicy.org",
+    subject = "Data Entry Contractors Pay Report",
+    credentials = blastula::creds_file(file = here::here("blastula.json"))
+  )
+
+  return()
 }

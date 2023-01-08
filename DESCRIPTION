@@ -11,6 +11,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.2
 Imports: 
     assertthat,
+    blastula,
     config,
     DBI,
     dbplyr,
@@ -20,6 +21,7 @@ Imports:
     glue,
     googleCloudRunner,
     googleCloudStorageR,
+    gt,
     here,
     htmltools,
     httr,
@@ -33,6 +35,7 @@ Imports:
     purrr,
     readr,
     rlang,
+    rstudio/gt,
     shiny,
     shinyauthr,
     shinydashboard,
@@ -44,6 +47,7 @@ Suggests:
     callr,
     covr,
     covrpage,
+    devtools
     dittodb,
     figpatch,
     knitr,
@@ -53,12 +57,16 @@ Suggests:
     pkgdown,
     rmarkdown,
     testthat (>= 3.0.0),
+    usethis,
     vcr (>= 0.6.0),
     webmockr,
     withr
 Remotes:
     cloudyr/googleCloudStorageR,
-    MarkEdmondson1234/googleCloudRunner
+    MarkEdmondson1234/googleCloudRunner,
+    rstudio/blastula,
+    rstudio/gt,
+    rich-iannone/juicyjuice
 VignetteBuilder: knitr
 URL: https://openjusticeok.github.io/eviction-addresses/
 Config/testthat/edition: 3

@@ -227,6 +227,37 @@
         "bit"
       ]
     },
+    "blastula": {
+      "Package": "blastula",
+      "Version": "0.3.2",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "rstudio",
+      "RemoteRepo": "blastula",
+      "RemoteRef": "master",
+      "RemoteSha": "c705bcaf74ba2f624e1ba67cd3380fe9f8f7576c",
+      "Hash": "8992ee4efe0bbb14597ccd64145e6cc8",
+      "Requirements": [
+        "base64enc",
+        "commonmark",
+        "curl",
+        "digest",
+        "dplyr",
+        "fs",
+        "getPass",
+        "here",
+        "htmltools",
+        "httr",
+        "jsonlite",
+        "magrittr",
+        "mime",
+        "rlang",
+        "rmarkdown",
+        "stringr",
+        "uuid"
+      ]
+    },
     "blob": {
       "Package": "blob",
       "Version": "1.2.3",
@@ -917,6 +948,16 @@
         "rstudioapi",
         "sys",
         "zip"
+      ]
+    },
+    "getPass": {
+      "Package": "getPass",
+      "Version": "0.2-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "07a91f99e56951818ab911366db77700",
+      "Requirements": [
+        "rstudioapi"
       ]
     },
     "ggplot2": {
