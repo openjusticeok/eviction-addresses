@@ -35,7 +35,6 @@ Imports:
     purrr,
     readr,
     rlang,
-    rstudio/gt,
     shiny,
     shinyauthr,
     shinydashboard,
@@ -47,7 +46,7 @@ Suggests:
     callr,
     covr,
     covrpage,
-    devtools
+    devtools,
     dittodb,
     figpatch,
     knitr,

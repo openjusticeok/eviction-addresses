@@ -48,3 +48,4 @@ build.R
 build_test.R
 .vscode
 blastula.json
+pay_report*
