@@ -28,7 +28,6 @@ vignettes/*.pdf
 *.knit.md
 # R Environment Variables
 .Renviron
-renv/
 client-id.json
 googlecloudrunner-auth-key.json
 client.json
