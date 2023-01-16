@@ -1,0 +1,45 @@
+---
+page-layout: full
+execute: 
+  echo: false
+format: html
+params:
+  user: "kmarshall"
+---
+
+```{r setup, include=FALSE}
+# library(evictionAddresses)
+devtools::load_all()
+db <- new_db_pool("config.yml")
+withr::defer(pool::poolClose(db), envir = .GlobalEnv)
+
+pretty_name <- get_users_from_db(db) |>
+  dplyr::filter(user == params$user) |>
+  dplyr::pull(full_name)
+```
+
+::: {.grid}
+
+# INVOICE
+
+::: {.g-col-3 .g-start-1}
+## Pay To
+### `r pretty_name`
+
+| 1234 Main St
+| San Francisco, CA 94110
+:::
+
+::: {.g-col-4 .g-start-9}
+### Pay Period
+
+`r get_pay_period(lubridate::today())$start |> format("%B %d, %Y")` - `r get_pay_period(lubridate::today())$end |> format("%B %d, %Y")`
+:::
+
+::: {.g-col-12}
+```{r}
+calculate_pay(db, params$user)
+```
+:::
+
+:::

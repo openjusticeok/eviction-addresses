@@ -117,3 +117,38 @@ has_latlon_match <- function(.data, tolerance = 0.0002) {
 
   return(FALSE)
 }
+
+#' @title Get Pay Period
+#' 
+#' @description Gets the pay period for a given date
+#' 
+#' @param date A date
+#' 
+#' @export
+#' @returns
+#' A list with two values `start` and `end` which
+#' are the first and last days of the pay period containing `date`
+#' 
+get_pay_period <- function(date, pay_period_start_date = lubridate::ymd("2023-01-02")) {
+  if(!inherits(date, "Date")) {
+    if(!inherits(date, "character")) {
+      stop("`date` must be a character or Date")
+    }
+
+    date <- lubridate::ymd(date)
+  }
+
+  diff_date <- (date - pay_period_start_date) |> as.integer()
+
+  pay_period <- diff_date %/% 14
+
+  start <- pay_period_start_date + (pay_period * 14 - 1)
+  end <- start + 13
+
+  res <- list(
+    start = start,
+    end = end
+  )
+
+  return(res)
+}

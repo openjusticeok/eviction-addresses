@@ -84,59 +84,91 @@ plot_address_entries <- function(db, users, start = lubridate::ymd("2022-12-12")
 #' calculate_pay(db, c("test", "test2"), lubridate::ymd("2022-12-12"), lubridate::today())
 #' }
 #' 
-calculate_pay <- function(db, users, start, end, priority_rate = 0.35, backlog_rate = 0.25) {
-    # Query process table for number of addresses entered per person and entry type
-    query <- glue::glue_sql(
-      'SELECT "user", DATE(pl.created_at) as created_at, c.date_filed FROM "eviction_addresses"."process_log" pl left join eviction_addresses."case" c on pl."case" = c.id WHERE "user" IN ({users*}) AND pl.created_at BETWEEN {start} AND {end};',
-      .con = db
+calculate_pay <- function(
+  db,
+  users = "all",
+  start = get_pay_period(lubridate::today())$start,
+  end = get_pay_period(lubridate::today())$end,
+  priority_rate = 0.35,
+  backlog_rate = 0.25
+) {
+  # Query process table for number of addresses entered per person and entry type
+  query <- glue::glue_sql(
+    'SELECT "user", DATE(pl.created_at) as created_at, c.date_filed ',
+    'FROM "eviction_addresses"."process_log" pl ',
+    'left join eviction_addresses."case" c ',
+    'on pl."case" = c.id ',
+    'WHERE ',
+    if (!users == "all") {'"user" IN ({users*}) AND '} else "",
+    'pl.created_at BETWEEN {start} AND {end}',
+    ';',
+    .con = db
+  )
+
+  res <- DBI::dbGetQuery(
+    conn = db,
+    statement = query
+  ) |>
+    tibble::as_tibble()
+
+  # Calculate diff between created_at and date_filed and derive entry type
+  res <- res |>
+    dplyr::mutate(
+      days_diff = .data$created_at - .data$date_filed
+    ) |>
+    dplyr::mutate(
+      type = dplyr::case_when(
+        .data$days_diff <= 14 ~ "priority",
+        TRUE ~ "backlog"
+      )
     )
 
-    res <- DBI::dbGetQuery(
-      conn = db,
-      statement = query
+  rates <- tibble::tibble(
+    type = c("priority", "backlog"),
+    rate = c(priority_rate, backlog_rate)
+  )
+
+  # Count number of entries per user and type
+  entry_counts <- res |>
+    dplyr::group_by(.data$user, .data$type) |>
+    dplyr::count() |>
+    dplyr::ungroup() |>
+    dplyr::left_join(rates, by = "type") |>
+    dplyr::select(-.data$user) |>
+    dplyr::mutate(
+      pay = .data$n * .data$rate,
+      type = stringr::str_to_title(.data$type),
     ) |>
-      tibble::as_tibble()
+    gt::gt() |>
+    gt::cols_label(
+      n = "Quantity",
+      type = "Description",
+      rate = "Rate",
+      pay = "Cost"
+    ) |>
+    gt::fmt_currency(
+      columns = c("rate", "pay"),
+      currency = "USD",
+      decimals = 2
+    ) |>
+    gt::grand_summary_rows(
+      columns = c("n"),
+      fns = list(
+        TOTAL = ~sum(.)
+      ),
+      formatter = gt::fmt_integer,
+      use_seps = FALSE
+    ) |>
+    gt::grand_summary_rows(
+      columns = c("pay"),
+      fns = list(
+        TOTAL = ~sum(.)
+      ),
+      formatter = gt::fmt_currency,
+      use_seps = FALSE
+    )
 
-    # Calculate diff between created_at and date_filed and derive entry type
-    res <- res |>
-      dplyr::mutate(
-        days_diff = .data$created_at - .data$date_filed
-      ) |>
-      dplyr::mutate(
-        type = dplyr::case_when(
-          .data$days_diff <= 14 ~ "priority",
-          TRUE ~ "backlog"
-        )
-      )
-
-    # Count number of entries per user and type
-    entry_counts <- res |>
-      dplyr::group_by(.data$user, .data$type) |>
-      dplyr::count()
-
-    # Multiply counts by rates for corresponding type
-    entry_counts <- entry_counts |>
-      tidyr::pivot_wider(
-        id_cols = c("user"),
-        names_from = "type",
-        values_from = "n",
-        names_glue = "{type}_n"
-      ) |>
-      dplyr::mutate(
-        priority_pay = dplyr::if_else(
-          is.na(.data$priority_n * priority_rate),
-          0,
-          .data$priority_n * priority_rate
-        ),
-        backlog_pay = dplyr::if_else(
-          is.na(.data$backlog_n * backlog_rate),
-          0,
-          .data$backlog_n * backlog_rate
-        ),
-        total_pay = .data$priority_pay + .data$backlog_pay
-      )
-
-    return(entry_counts)
+  return(entry_counts)
 }
 
 #' @title Render Pay Report
@@ -151,20 +183,37 @@ calculate_pay <- function(db, users, start, end, priority_rate = 0.35, backlog_r
 #' @export render_pay_report
 #' @returns A tibble with the number of addresses entered by type and the corresponding pay
 #' 
-render_pay_report <- function(db, users, start, end) {
+render_pay_report <- function(
+  db,
+  users = "all",
+  start = get_pay_period(lubridate::today())$start,
+  end = get_pay_period(lubridate::today())$end
+) {
   # Calculate pay
   pay <- calculate_pay(db, users, start, end)
 
+
+
+  return(report)
+}
+
+#' @title Render Project Report
+#' 
+#' @description Renders a project report for a given user
+#' 
+#' @param db A database connection pool created with `pool::dbPool`
+#' @param users A vector of users to plot
+#' @param start The start date
+#' @param end The end date
+#' 
+#' @export
+#' @returns A rendered project report
+#' 
+render_project_report <- function() {
+  # TODO: Implement
+
   # Render report
-  report <- pay |>
-    dplyr::group_by(.data$user) |>
-    dplyr::summarise(
-      total_pay = sum(.data$total_pay)
-    ) |>
-    dplyr::ungroup() |>
-    dplyr::mutate(
-      total_pay = scales::dollar(.data$total_pay)
-    )
+  report <- "This is a project report"
 
   return(report)
 }
