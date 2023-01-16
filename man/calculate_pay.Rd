@@ -4,7 +4,7 @@
 \alias{calculate_pay}
 \title{Calculate Pay}
 \usage{
-calculate_pay(db, users, start, end)
+calculate_pay(db, users, start, end, priority_rate = 0.35, backlog_rate = 0.25)
 }
 \arguments{
 \item{db}{A database connection pool created with \code{pool::dbPool}}
