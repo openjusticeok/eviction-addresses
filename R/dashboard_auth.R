@@ -57,6 +57,7 @@ add_session_to_db <- function(db) {
 #'
 #' @param db A database connection pool created with `pool::dbPool`
 #'
+#' @export
 #' @returns A tibble of user info
 #'
 get_users_from_db <- function(db) {

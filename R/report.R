@@ -1,17 +1,17 @@
 #' @title Plot Logins
-#' 
+#'
 #' @description Plots the number of logins per day
-#' 
+#'
 #' @param db A database connection pool created with `pool::dbPool`
 #' @param users A vector of users to plot
 #' @param start The start date
 #' @param end The end date
-#' 
+#'
 #' @export plot_logins
 #' @returns A ggplot object
-#' 
+#'
 #' @importFrom lubridate ymd today
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' plot_logins(db, c("test", "test2"), lubridate::ymd("2022-12-12"), lubridate::today())
@@ -40,32 +40,32 @@ plot_logins <- function(db, users, start = lubridate::ymd("2022-12-12"), end = l
         ggplot2::facet_wrap(ggplot2::vars(.data$user)) +
         ggplot2::labs(x = "Date", y = "Number of Logins", color = "User") +
         ggplot2::theme_bw()
-    
+
     # Print if not silent
     if (!.silent) { print(p) }
-    
+
     return(p)
 }
 
 #' @title Calculate Pay
-#' 
+#'
 #' @description Calculates the pay for a given user
-#' 
+#'
 #' @param db A database connection pool created with `pool::dbPool`
 #' @param users A vector of users to plot
 #' @param start The start date
 #' @param end The end date
-#' 
+#'
 #' @export calculate_pay
 #' @returns A tibble with the number of addresses entered by type and the corresponding pay
-#' 
+#'
 #' @importFrom rlang .data
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' calculate_pay(db, c("test", "test2"), lubridate::ymd("2022-12-12"), lubridate::today())
 #' }
-#' 
+#'
 calculate_pay <- function(
   db,
   users = "all",
@@ -130,15 +130,14 @@ calculate_pay <- function(
     ) |>
     gt::fmt_currency(
       columns = c("rate", "pay"),
-      currency = "USD",
-      decimals = 2
+      currency = "USD"
     ) |>
     gt::grand_summary_rows(
       columns = c("n"),
       fns = list(
         TOTAL = ~sum(.)
       ),
-      formatter = gt::fmt_integer,
+      side = "bottom",
       use_seps = FALSE
     ) |>
     gt::grand_summary_rows(
@@ -146,7 +145,7 @@ calculate_pay <- function(
       fns = list(
         TOTAL = ~sum(.)
       ),
-      formatter = gt::fmt_currency,
+      fmt = ~gt::fmt_currency(.x, currency = "USD", decimals = 2),
       use_seps = FALSE
     )
 
@@ -154,57 +153,64 @@ calculate_pay <- function(
 }
 
 #' @title Render Pay Report
-#' 
+#'
 #' @description Renders a pay report for a given user
-#' 
+#'
 #' @param db A database connection pool created with `pool::dbPool`
-#' @param users A vector of users to plot
+#' @param user A string giving the user to plot
 #' @param start The start date
 #' @param end The end date
-#' 
-#' @export render_pay_report
-#' @returns A tibble with the number of addresses entered by type and the corresponding pay
-#' 
+#'
+#' @export
+#' @returns Nothing
+#'
 render_pay_report <- function(
   db,
-  users = "all",
+  user = "jgrob",
   start = get_pay_period(lubridate::today())$start,
   end = get_pay_period(lubridate::today())$end
 ) {
-  # Calculate pay
-  pay <- calculate_pay(db, users, start, end)
 
-  # Render table
-  tb <- pay |>
-    dplyr::group_by(.data$user) |>
-    dplyr::summarise(
-      total_pay = sum(.data$total_pay)
-    ) |>
-    gt::gt()
+  template_path <- system.file("templates", "invoice.qmd", package = "evictionAddresses")
+  report_path <- file.path(getwd(), "invoice.qmd")
 
-  return(tb)
+  file.copy(template_path, report_path, overwrite = TRUE)
+
+  quarto::quarto_render(
+    input = report_path,
+    as_job = FALSE
+  )
+
+  rendered_path <- file.path(getwd(), "invoice.html")
 }
 
 #' @title Email Pay Report
-#' 
+#'
 #' @description Emails a pay report for the given users using the package `{blastula}`
-#' 
+#'
 #' @param db A database connection pool created with `pool::dbPool`
 #' @param users A vector of users to plot
 #' @param start The start date
 #' @param end The end date
 #' @param email The email address to send the report to
-#' 
+#'
 #' @export email_pay_report
 #' @returns Nothing
-#' 
-email_pay_report <- function(db, users, start, end, recipient_email) {
+#'
+email_pay_report <- function(
+  db,
+  users,
+  start = get_pay_period(lubridate::today())$start,
+  end = get_pay_period(lubridate::today())$end,
+  recipient_email
+) {
   # Render report
-  report <- render_pay_report(db, users, start, end)
+  report_path <- render_pay_report(db, users, start, end)
+  report <- readr::read_file(report_path)
 
   # Create email
   email_content <- blastula::compose_email(
-    body = report,
+    body = blastula::md(report),
     footer = "This is an automated email. Please do not reply."
   )
 
@@ -217,21 +223,20 @@ email_pay_report <- function(db, users, start, end, recipient_email) {
     credentials = blastula::creds_file(file = here::here("blastula.json"))
   )
 
-  return()
 }
 
 
 #' @title Plot Address Coverage
-#' 
+#'
 #' @description Calculates the number of addresses entered
-#' 
+#'
 #' @param db A database connection pool created with `pool::dbPool`
 #' @param ... Additional arguments placeholder
 #' @param .silent A boolean indicating whether to print the plot
-#' 
+#'
 #' @export
 #' @returns A tibble with the number of addresses entered by month
-#' 
+#'
 plot_address_coverage <- function(db, ..., .silent = FALSE) {
   # Query the case and address tables to find the number of cases with and without addresses
   query <- glue::glue_sql(
@@ -255,9 +260,9 @@ plot_address_coverage <- function(db, ..., .silent = FALSE) {
     statement = query
   ) |>
     tibble::as_tibble()
-  
+
   # Plot
-  p <- res |> 
+  p <- res |>
     dplyr::mutate(
       month = lubridate::ymd(.data$month),
       n = as.numeric(.data$n)
@@ -291,16 +296,16 @@ plot_address_coverage <- function(db, ..., .silent = FALSE) {
 
 
 #' @title Plot Address Entries
-#' 
+#'
 #' @description Calculates the number of addresses entered
-#' 
+#'
 #' @param db A database connection pool created with `pool::dbPool`
 #' @param ... Additional arguments placeholder
 #' @param .silent A boolean indicating whether to print the plot
-#' 
+#'
 #' @export
 #' @returns A ggplot object
-#' 
+#'
 plot_address_entries <- function(db, ..., .silent = FALSE) {
   # Addresses entered per week
   query <- glue::glue_sql(
@@ -320,7 +325,7 @@ plot_address_entries <- function(db, ..., .silent = FALSE) {
     tibble::as_tibble()
 
   # Plot
-  p <- res |> 
+  p <- res |>
     dplyr::mutate(
       week = lubridate::ymd(.data$week),
       n = as.numeric(.data$n)
@@ -347,16 +352,16 @@ plot_address_entries <- function(db, ..., .silent = FALSE) {
 }
 
 #' @title Plot Address Lag
-#' 
+#'
 #' @description Calculates the time from a case being filed to an address being entered
-#' 
+#'
 #' @param db A database connection pool created with `pool::dbPool`
 #' @param ... Additional arguments placeholder
 #' @param .silent A boolean indicating whether to print the plot
-#' 
+#'
 #' @export
 #' @returns A ggplot object
-#' 
+#'
 plot_address_lag <- function(db, ..., .silent = FALSE) {
   # Time from date_filed to date address entered
   query <- glue::glue_sql(
@@ -379,7 +384,7 @@ plot_address_lag <- function(db, ..., .silent = FALSE) {
     tibble::as_tibble()
 
   # Plot
-  p <- res |> 
+  p <- res |>
     dplyr::mutate(
       week_filed = lubridate::ymd(.data$week_filed),
       # avg_lag_days = as.numeric(.data$avg_lag_days)
@@ -406,16 +411,16 @@ plot_address_lag <- function(db, ..., .silent = FALSE) {
 }
 
 #' @title Plot Cases
-#' 
+#'
 #' @description Calculates the number of cases filed per month
-#' 
+#'
 #' @param db A database connection pool created with `pool::dbPool`
 #' @param ... Additional arguments placeholder
 #' @param .silent A boolean indicating whether to print the plot
-#' 
+#'
 #' @export
 #' @returns A ggplot object
-#' 
+#'
 plot_cases <- function(db, ..., .silent = FALSE) {
   # Num evictions per month
   query <- glue::glue_sql(
@@ -432,17 +437,17 @@ plot_cases <- function(db, ..., .silent = FALSE) {
 }
 
 #' @title Render Project Report
-#' 
+#'
 #' @description Renders a project report for a given user
-#' 
+#'
 #' @param db A database connection pool created with `pool::dbPool`
 #' @param users A vector of users to plot
 #' @param start The start date
 #' @param end The end date
-#' 
+#'
 #' @export
 #' @returns A rendered project report
-#' 
+#'
 render_project_report <- function() {
   # TODO: Implement
 
@@ -457,7 +462,7 @@ render_project_report <- function() {
     tibble::as_tibble()
 
   # Plot
-  p <- res |> 
+  p <- res |>
     dplyr::mutate(
       month_filed = lubridate::ymd(.data$month_filed),
       n = as.numeric(.data$n)
