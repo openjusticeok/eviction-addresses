@@ -136,7 +136,7 @@ calculate_pay <- function(
     gt::grand_summary_rows(
       columns = c("n"),
       fns = list(
-        TOTAL = ~sum(.)
+        TOTAL = ~sum(., na.rm = TRUE)
       ),
       formatter = gt::fmt_integer,
       use_seps = FALSE
@@ -144,7 +144,7 @@ calculate_pay <- function(
     gt::grand_summary_rows(
       columns = c("pay"),
       fns = list(
-        TOTAL = ~sum(.)
+        TOTAL = ~sum(., na.rm = TRUE)
       ),
       formatter = gt::fmt_currency,
       use_seps = FALSE
@@ -176,14 +176,14 @@ render_pay_report <- function(
 
   # Render table
   tb <- pay |>
-    dplyr::group_by(.data$user) |>
-    dplyr::summarise(
-      total_pay = sum(.data$total_pay)
+    gt::tab_options(
+      table.align = "left"
     ) |>
-    gt::gt()
+    gt::as_raw_html()
 
   return(tb)
 }
+
 
 #' @title Email Pay Report
 #' 
@@ -199,13 +199,30 @@ render_pay_report <- function(
 #' @returns Nothing
 #' 
 email_pay_report <- function(db, users, start, end, recipient_email) {
+  if(!users == "all") {
+    user <- get_users_from_db(db) |>
+      dplyr::filter(.data$user == users)
+  }
+
   # Render report
   report <- render_pay_report(db, users, start, end)
 
   # Create email
   email_content <- blastula::compose_email(
-    body = report,
-    footer = "This is an automated email. Please do not reply."
+    body = blastula::md(
+      glue::glue(
+        '## Data Entry Contractors Pay Report',
+        '### Period: ',
+        '{start} to {end}',
+        '### Pay To: ',
+        '{user$full_name}',
+        '<div>{user$line1}</div>',
+        if (!is.na(user$line2)) '<div>{user$line2}</div>' else '',
+        '<div>{user$city}, {user$state} {user$zip}</div>',
+        report,
+        .sep = "\n"
+      )
+    )
   )
 
   # Send email
@@ -213,11 +230,11 @@ email_pay_report <- function(db, users, start, end, recipient_email) {
     email = email_content,
     to = recipient_email,
     from = "bgregory@okpolicy.org",
-    subject = "Data Entry Contractors Pay Report",
+    subject = glue::glue("{user$full_name} - Data Entry Contractors Pay Report"),
+
     credentials = blastula::creds_file(file = here::here("blastula.json"))
   )
 
-  return()
 }
 
 
