@@ -6,7 +6,7 @@
 \usage{
 render_pay_report(
   db,
-  user = "jgrob",
+  users = "all",
   start = get_pay_period(lubridate::today())$start,
   end = get_pay_period(lubridate::today())$end
 )
@@ -14,14 +14,14 @@ render_pay_report(
 \arguments{
 \item{db}{A database connection pool created with \code{pool::dbPool}}
 
-\item{user}{A string giving the user to plot}
+\item{users}{A vector of users to plot}
 
 \item{start}{The start date}
 
 \item{end}{The end date}
 }
 \value{
-Nothing
+A tibble with the number of addresses entered by type and the corresponding pay
 }
 \description{
 Renders a pay report for a given user

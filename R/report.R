@@ -153,37 +153,34 @@ calculate_pay <- function(
 }
 
 #' @title Render Pay Report
-#'
+#' 
 #' @description Renders a pay report for a given user
-#'
+#' 
 #' @param db A database connection pool created with `pool::dbPool`
-#' @param user A string giving the user to plot
+#' @param users A vector of users to plot
 #' @param start The start date
 #' @param end The end date
-#'
-#' @export
-#' @returns The path to the rendered report
-#'
+#' 
+#' @export render_pay_report
+#' @returns A tibble with the number of addresses entered by type and the corresponding pay
+#' 
 render_pay_report <- function(
   db,
-  user = "jgrob",
+  users = "all",
   start = get_pay_period(lubridate::today())$start,
   end = get_pay_period(lubridate::today())$end
 ) {
+  # Calculate pay
+  pay <- calculate_pay(db, users, start, end)
 
-  template_path <- system.file("templates", "invoice.qmd", package = "evictionAddresses")
-  report_path <- file.path(getwd(), "invoice.qmd")
+  # Render table
+  tb <- pay |>
+    gt::tab_options(
+      table.align = "left"
+    ) |>
+    gt::as_raw_html()
 
-  file.copy(template_path, report_path, overwrite = TRUE)
-
-  quarto::quarto_render(
-    input = report_path,
-    as_job = FALSE
-  )
-
-  rendered_path <- file.path(getwd(), "invoice.html")
-
-  return(rendered_path)
+  return(tb)
 }
 
 
@@ -203,8 +200,8 @@ render_pay_report <- function(
 email_pay_report <- function(
   db,
   users,
-  start,
-  end,
+  start = get_pay_period(lubridate::today())$start,
+  end = get_pay_period(lubridate::today())$end,
   recipient_email
 ) {
   if(!users == "all") {
@@ -213,8 +210,7 @@ email_pay_report <- function(
   }
 
   # Render report
-  report_path <- render_pay_report(db, users, start, end)
-  report <- readr::read_file(report_path)
+  report <- render_pay_report(db, users, start, end)
 
   # Create email
   email_content <- blastula::compose_email(
@@ -371,7 +367,7 @@ plot_address_entries <- function(db, ..., .silent = FALSE) {
   return(p)
 }
 
-#' @title Plot Address Lag
+#' @title Plot Lag
 #'
 #' @description Calculates the time from a case being filed to an address being entered
 #'
@@ -382,7 +378,7 @@ plot_address_entries <- function(db, ..., .silent = FALSE) {
 #' @export
 #' @returns A ggplot object
 #'
-plot_address_lag <- function(db, ..., .silent = FALSE) {
+plot_lag <- function(db, ..., .silent = FALSE) {
   # Time from date_filed to date address entered
   query <- glue::glue_sql(
     "SELECT date_trunc('week', c.date_filed) as \"week_filed\", AVG(DATE_PART('day', AGE(pl.created_at, c.date_filed))) as \"avg_lag_days\"",
@@ -487,49 +483,112 @@ plot_cases <- function(db, ..., .silent = FALSE) {
 #' @description Renders a project report for a given user
 #'
 #' @param db A database connection pool created with `pool::dbPool`
-#' @param users A vector of users to plot
 #' @param start The start date
 #' @param end The end date
 #'
 #' @export
 #' @returns A rendered project report
 #'
-render_project_report <- function() {
-  # TODO: Implement
+render_project_report <- function(
+  db,
+  start = get_pay_period(lubridate::today())$start,
+  end = get_pay_period(lubridate::today())$end,
+  ...,
+  .silent = FALSE
+) {
+  # Get plots
+  p_logins <- plot_logins(db, "all", start, end, .silent = TRUE)
+  p_cases <- plot_cases(db, .silent = TRUE)
+  p_entries <- plot_address_entries(db, .silent = TRUE)
+  p_lag <- plot_lag(db, .silent = TRUE)
+  p_coverage <- plot_address_coverage(db, "all", start, end, .silent = TRUE)
 
   # Render report
-  report <- "This is a project report"
+  temp_file <- system.file(
+    "templates", "report.qmd",
+    package = "evictionAddresses"
+  )
 
-  # Get results
-  res <- DBI::dbGetQuery(
-    conn = db,
-    statement = query
-  ) |>
-    tibble::as_tibble()
+  report_dir <- here::here()
 
-  # Plot
-  p <- res |>
-    dplyr::mutate(
-      month_filed = lubridate::ymd(.data$month_filed),
-      n = as.numeric(.data$n)
-    ) |>
-    ggplot2::ggplot(
-      ggplot2::aes(
-        x = .data$month_filed,
-        y = .data$n
-      )
-    ) +
-    ggplot2::geom_col() +
-    ggplot2::labs(
-      x = "Month",
-      y = "Number of Cases"
-    ) +
-    ggplot2::theme_bw()
+  # Copy template report file to current directory
+  template <- fs::file_copy(
+    temp_file,
+    file.path(report_dir, "report.qmd"),
+    overwrite = TRUE
+  )
+
+  report <- rmarkdown::render(
+    template,
+    params = list(
+      start = start,
+      end = end,
+      logins_plot = p_logins,
+      cases_plot = p_cases,
+      entries_plot = p_entries,
+      lag_plot = p_lag,
+      coverage_plot = p_coverage
+    ),
+    output_file = file.path(report_dir, "report.html")
+  )
+
+  report_html <- readr::read_file(report)
 
   # Print if not silent
   if (!.silent) {
-    print(p)
+
   }
 
-  return(p)
+  return(report_html)
+}
+
+#' @title Email Project Report
+#' 
+#' @description Emails a project report to a given user
+#' 
+#' @param db A database connection pool created with `pool::dbPool`
+#' @param start The start date
+#' @param end The end date
+#' @param recipient_email The email address to send the report to
+#' @param ... Additional arguments placeholder
+#' @param .silent A boolean indicating whether to print the email
+#' 
+#' @export
+#' @return Nothing
+#' 
+email_project_report <- function(
+  db,
+  start = get_pay_period(lubridate::today())$start,
+  end = get_pay_period(lubridate::today())$end,
+  recipient_email,
+  ...,
+  .silent = FALSE
+) {
+  # Get report
+  report <- render_project_report(
+    db,
+    start,
+    end,
+    .silent = TRUE
+  )
+
+  # Create email
+  email_content <- blastula::compose_email(
+    body = blastula::md(
+      glue::glue(
+        "Eviction Addresses Project Report for {start} to {end}",
+        report
+      )
+    )
+  )
+
+  # Send email
+  blastula::smtp_send(
+    email = email_content,
+    to = recipient_email,
+    from = "bgregory@okpolicy.org",
+    subject = glue::glue("Eviction Addresses Project Report"),
+    credentials = blastula::creds_file(file = here::here("blastula.json"))
+  )
+
 }

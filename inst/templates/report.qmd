@@ -1,0 +1,41 @@
+---
+page-layout: full
+execute: 
+  echo: false
+format: html
+params:
+  start: !expr evictionAddresses::get_pay_period(lubridate::today())$start
+  end: !expr evictionAddresses::get_pay_period(lubridate::today())$end
+  logins_plot: ''
+  cases_plot: ''
+  entries_plot: ''
+  lag_plot: ''
+  coverage_plot: ''
+---
+
+```{r setup, include=FALSE}
+library(evictionAddresses)
+
+db <- new_db_pool("config.yml")
+withr::defer(pool::poolClose(db))
+```
+
+::: {.grid}
+
+# Project Report
+
+::: {.g-col-3 .g-start-1}
+## Pay To
+### Test
+
+| 1234 Main St
+| San Francisco, CA 94110
+:::
+
+::: {.g-col-4 .g-start-8}
+### Pay Period
+
+`r params$start |> format("%B %d, %Y")` - `r params$end |> format("%B %d, %Y")`
+:::
+
+:::

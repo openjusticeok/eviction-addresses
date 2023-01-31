@@ -4,12 +4,16 @@
 \alias{render_project_report}
 \title{Render Project Report}
 \usage{
-render_project_report()
+render_project_report(
+  db,
+  start = get_pay_period(lubridate::today())$start,
+  end = get_pay_period(lubridate::today())$end,
+  ...,
+  .silent = FALSE
+)
 }
 \arguments{
 \item{db}{A database connection pool created with \code{pool::dbPool}}
-
-\item{users}{A vector of users to plot}
 
 \item{start}{The start date}
 
