@@ -452,8 +452,34 @@ plot_cases <- function(db, ..., .silent = FALSE) {
     .con = db
   )
 
+  # Get results
+  res <- DBI::dbGetQuery(
+    conn = db,
+    statement = query
+  ) |>
+    tibble::as_tibble()
 
-  return(report)
+  # Plot
+  p <- res |>
+    dplyr::mutate(
+      month_filed = lubridate::ymd(.data$month_filed),
+      n = as.numeric(.data$n)
+    ) |>
+    ggplot2::ggplot(
+      ggplot2::aes(
+        x = .data$month_filed,
+        y = .data$n
+      )
+    ) +
+    ggplot2::geom_col() +
+    ggplot2::labs(
+      x = "Month",
+      y = "Number of Cases"
+    ) +
+    ggplot2::theme_bw()
+
+
+  return(p)
 }
 
 #' @title Render Project Report
