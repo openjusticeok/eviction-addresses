@@ -135,7 +135,7 @@ calculate_pay <- function(
     gt::grand_summary_rows(
       columns = c("n"),
       fns = list(
-        TOTAL = ~sum(.)
+        TOTAL = ~sum(., na.rm = TRUE)
       ),
       side = "bottom",
       use_seps = FALSE
@@ -143,7 +143,7 @@ calculate_pay <- function(
     gt::grand_summary_rows(
       columns = c("pay"),
       fns = list(
-        TOTAL = ~sum(.)
+        TOTAL = ~sum(., na.rm = TRUE)
       ),
       fmt = ~gt::fmt_currency(.x, currency = "USD", decimals = 2),
       use_seps = FALSE
@@ -162,7 +162,7 @@ calculate_pay <- function(
 #' @param end The end date
 #'
 #' @export
-#' @returns Nothing
+#' @returns The path to the rendered report
 #'
 render_pay_report <- function(
   db,
@@ -182,7 +182,10 @@ render_pay_report <- function(
   )
 
   rendered_path <- file.path(getwd(), "invoice.html")
+
+  return(rendered_path)
 }
+
 
 #' @title Email Pay Report
 #'
@@ -196,22 +199,39 @@ render_pay_report <- function(
 #'
 #' @export email_pay_report
 #' @returns Nothing
-#'
+#' 
 email_pay_report <- function(
   db,
   users,
-  start = get_pay_period(lubridate::today())$start,
-  end = get_pay_period(lubridate::today())$end,
+  start,
+  end,
   recipient_email
 ) {
+  if(!users == "all") {
+    user <- get_users_from_db(db) |>
+      dplyr::filter(.data$user == users)
+  }
+
   # Render report
   report_path <- render_pay_report(db, users, start, end)
   report <- readr::read_file(report_path)
 
   # Create email
   email_content <- blastula::compose_email(
-    body = blastula::md(report),
-    footer = "This is an automated email. Please do not reply."
+    body = blastula::md(
+      glue::glue(
+        '## Data Entry Contractors Pay Report',
+        '### Period: ',
+        '{start} to {end}',
+        '### Pay To: ',
+        '{user$full_name}',
+        '<div>{user$line1}</div>',
+        if (!is.na(user$line2)) '<div>{user$line2}</div>' else '',
+        '<div>{user$city}, {user$state} {user$zip}</div>',
+        report,
+        .sep = "\n"
+      )
+    )
   )
 
   # Send email
@@ -219,7 +239,7 @@ email_pay_report <- function(
     email = email_content,
     to = recipient_email,
     from = "bgregory@okpolicy.org",
-    subject = "Data Entry Contractors Pay Report",
+    subject = glue::glue("{user$full_name} - Data Entry Contractors Pay Report"),
     credentials = blastula::creds_file(file = here::here("blastula.json"))
   )
 

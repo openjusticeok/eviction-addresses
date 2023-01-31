@@ -89,7 +89,19 @@ get_users_from_db <- function(db) {
 #' new_user(db, "test", "test", "admin", "Test User")
 #' }
 #'
-new_user <- function(db, username, password, role, name, full_name) {
+new_user <- function(
+  db,
+  username,
+  password,
+  role,
+  name,
+  full_name,
+  line1,
+  line2,
+  city,
+  state,
+  zip
+) {
     # Hash the password using {sodium}
     hashed_password <- sodium::password_store(password)
 
@@ -106,6 +118,11 @@ new_user <- function(db, username, password, role, name, full_name) {
       role = role,
       name = name,
       full_name = full_name,
+      line1 = line1,
+      line2 = line2,
+      city = city,
+      state = state,
+      zip = zip,
       created_at = lubridate::now(tzone = "America/Chicago"),
       updated_at = lubridate::now(tzone = "America/Chicago")
     )
