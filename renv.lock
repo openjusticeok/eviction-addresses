@@ -1143,14 +1143,14 @@
       "Package": "googleCloudStorageR",
       "Version": "0.7.0.9000",
       "Source": "GitHub",
-      "Remotes": "MarkEdmondson1234/googleAuthR",
       "RemoteType": "github",
+      "Remotes": "MarkEdmondson1234/googleAuthR",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "googleCloudStorageR",
       "RemoteUsername": "cloudyr",
       "RemoteRef": "HEAD",
       "RemoteSha": "070ebdb2c8cc549e8c5a9110eea18b697a99a49e",
-      "Hash": "11148a78b7185ca456e512f751e5f777",
+      "Hash": "59869afce73e9d44879c4449fdad215d",
       "Requirements": [
         "assertthat",
         "cli",
@@ -1892,14 +1892,6 @@
         "askpass"
       ]
     },
-    "packrat": {
-      "Package": "packrat",
-      "Version": "0.9.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "2735eb4b51c302014f53acbb3c80a65f",
-      "Requirements": []
-    },
     "parallelly": {
       "Package": "parallelly",
       "Version": "1.34.0",
@@ -2153,22 +2145,6 @@
         "vctrs"
       ]
     },
-    "quarto": {
-      "Package": "quarto",
-      "Version": "1.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "298a252816cabed120391c955aced484",
-      "Requirements": [
-        "jsonlite",
-        "later",
-        "processx",
-        "rmarkdown",
-        "rsconnect",
-        "rstudioapi",
-        "yaml"
-      ]
-    },
     "ragg": {
       "Package": "ragg",
       "Version": "1.2.4",
@@ -2394,22 +2370,6 @@
       "Repository": "CRAN",
       "Hash": "1de7ab598047a87bba48434ba35d497d",
       "Requirements": []
-    },
-    "rsconnect": {
-      "Package": "rsconnect",
-      "Version": "0.8.29",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "fe178fc15af80952f546aafedf655b36",
-      "Requirements": [
-        "curl",
-        "digest",
-        "jsonlite",
-        "openssl",
-        "packrat",
-        "rstudioapi",
-        "yaml"
-      ]
     },
     "rstudioapi": {
       "Package": "rstudioapi",
