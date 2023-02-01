@@ -1,3 +1,65 @@
+#' @title Plot Cases
+#'
+#' @description Calculates the number of cases filed per month
+#'
+#' @param db A database connection pool created with `pool::dbPool`
+#' @param ... Additional arguments placeholder
+#' @param .silent A boolean indicating whether to print the plot
+#'
+#' @export
+#' @returns A ggplot object
+#'
+plot_cases <- function(db, ..., .silent = FALSE) {
+  # Num evictions per month
+  query <- glue::glue_sql(
+    "SELECT date_trunc('month', c.date_filed) as \"month_filed\", COUNT(*) as n",
+    "FROM eviction_addresses.\"case\" c",
+    "GROUP BY \"month_filed\"",
+    "ORDER BY \"month_filed\";",
+    .sep = " ",
+    .con = db
+  )
+
+  # Get results
+  res <- DBI::dbGetQuery(
+    conn = db,
+    statement = query
+  ) |>
+    tibble::as_tibble()
+
+  # Plot
+  p <- res |>
+    dplyr::mutate(
+      month_filed = lubridate::ymd(.data$month_filed),
+      n = as.numeric(.data$n)
+    ) |>
+    ggplot2::ggplot(
+      ggplot2::aes(
+        x = .data$month_filed,
+        y = .data$n
+      )
+    ) +
+    ggplot2::geom_col() +
+    ggplot2::labs(
+      x = "Month",
+      y = "Number of Cases"
+    ) +
+    ggplot2::theme_bw() +
+    ggplot2::labs(
+      title = "Eviction Cases Filed per Month",
+      x = NULL,
+      y = NULL
+    )
+  
+  # Print if not silent
+  if (!.silent) {
+    print(p)
+  }
+
+  return(p)
+}
+
+
 #' @title Plot Logins
 #'
 #' @description Plots the number of logins per day
@@ -46,6 +108,210 @@ plot_logins <- function(db, users, start = lubridate::ymd("2022-12-12"), end = l
 
     return(p)
 }
+
+
+#' @title Plot Entries
+#'
+#' @description Calculates the number of addresses entered
+#'
+#' @param db A database connection pool created with `pool::dbPool`
+#' @param ... Additional arguments placeholder
+#' @param .silent A boolean indicating whether to print the plot
+#'
+#' @export
+#' @returns A ggplot object
+#'
+plot_entries <- function(db, ..., .silent = FALSE) {
+  # Addresses entered per week
+  query <- glue::glue_sql(
+    "select date_trunc('week', created_at) as \"week\", count(*) as n",
+    "from eviction_addresses.process_log pl",
+    "group by \"week\"",
+    "order by \"week\";",
+    .sep = " ",
+    .con = db
+  )
+
+  # Get results
+  res <- DBI::dbGetQuery(
+    conn = db,
+    statement = query
+  ) |>
+    tibble::as_tibble()
+
+  # Plot
+  p <- res |>
+    dplyr::mutate(
+      week = lubridate::ymd(.data$week),
+      n = as.numeric(.data$n)
+    ) |>
+    ggplot2::ggplot(
+      ggplot2::aes(
+        x = .data$week,
+        y = .data$n
+      )
+    ) +
+    ggplot2::geom_col() +
+    ggplot2::labs(
+      x = "Week",
+      y = "Number of Addresses"
+    ) +
+    ggplot2::theme_bw() +
+    ggplot2::labs(
+      title = "Eviction Case Address Coverage per Month",
+      x = NULL,
+      y = NULL
+    )
+
+  # Print if not silent
+  if (!.silent) {
+    print(p)
+  }
+
+  return(p)
+}
+
+
+#' @title Plot Coverage
+#'
+#' @description Calculates the number of addresses entered
+#'
+#' @param db A database connection pool created with `pool::dbPool`
+#' @param ... Additional arguments placeholder
+#' @param .silent A boolean indicating whether to print the plot
+#'
+#' @export
+#' @returns A tibble with the number of addresses entered by month
+#'
+plot_coverage <- function(db, ..., .silent = FALSE) {
+  # Query the case and address tables to find the number of cases with and without addresses
+  query <- glue::glue_sql(
+    "SELECT date_trunc('month', ca.date_filed) as \"month\", 'false' AS \"has_address\", COUNT(*) as n",
+    "FROM ( select * from eviction_addresses.\"case\" c left join eviction_addresses.address a on c.id = a.\"case\") ca",
+    "WHERE ca.\"case\" IS null",
+    "group by \"month\"",
+    "UNION",
+    "SELECT date_trunc('month', ca.date_filed) as \"month\", 'true' AS \"has_address\", COUNT(*)",
+    "FROM ( select * from eviction_addresses.\"case\" c left join eviction_addresses.address a on c.id = a.\"case\") ca",
+    "WHERE ca.\"case\" IS not null",
+    "group by \"month\"",
+    "order by \"month\";",
+    .sep = " ",
+    .con = db
+  )
+
+  # Get results
+  res <- DBI::dbGetQuery(
+    conn = db,
+    statement = query
+  ) |>
+    tibble::as_tibble()
+
+  # Plot
+  p <- res |>
+    dplyr::mutate(
+      month = lubridate::ymd(.data$month),
+      n = as.numeric(.data$n)
+    ) |>
+    ggplot2::ggplot(
+      ggplot2::aes(
+        x = .data$month,
+        y = .data$n,
+        fill = .data$has_address
+      )
+    ) +
+    ggplot2::geom_col() +
+    ggplot2::scale_fill_manual(
+      values = c(
+        "false" = "red",
+        "true" = "green"
+      )
+    ) +
+    ggplot2::labs(
+      x = "Month",
+      y = "Number of Addresses",
+      fill = "Has Address?"
+    ) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(legend.position = "none") +
+    ggplot2::labs(
+      title = "Eviction Cases Filed per Month",
+      x = NULL,
+      y = NULL
+    )
+
+  # Print if not silent
+  if (!.silent) { print(p) }
+
+  return(p)
+}
+
+
+#' @title Plot Lag
+#'
+#' @description Calculates the time from a case being filed to an address being entered
+#'
+#' @param db A database connection pool created with `pool::dbPool`
+#' @param ... Additional arguments placeholder
+#' @param .silent A boolean indicating whether to print the plot
+#'
+#' @export
+#' @returns A ggplot object
+#'
+plot_lag <- function(db, ..., .silent = FALSE) {
+  # Time from date_filed to date address entered
+  query <- glue::glue_sql(
+    "SELECT date_trunc('week', c.date_filed) as \"week_filed\", AVG(DATE_PART('day', AGE(pl.created_at, c.date_filed))) as \"avg_lag_days\"",
+    "FROM eviction_addresses.\"case\" c",
+    "INNER JOIN eviction_addresses.process_log pl",
+    "ON c.id = pl.\"case\"",
+    "WHERE date_filed >= '2022-12-01'",
+    "GROUP BY \"week_filed\"",
+    "ORDER BY \"week_filed\";",
+    .sep = " ",
+    .con = db
+  )
+
+  # Get results
+  res <- DBI::dbGetQuery(
+    conn = db,
+    statement = query
+  ) |>
+    tibble::as_tibble()
+
+  # Plot
+  p <- res |>
+    dplyr::mutate(
+      week_filed = lubridate::ymd(.data$week_filed),
+    ) |>
+    ggplot2::ggplot(
+      ggplot2::aes(
+        x = .data$week_filed,
+        y = .data$avg_lag_days
+      )
+    ) +
+    ggplot2::geom_col() +
+    ggplot2::labs(
+      x = "Week",
+      y = "Average Days to Enter Address"
+    ) +
+    ggplot2::theme_bw() +
+    ggplot2::geom_hline(yintercept = 2, linetype = "dashed", color = "green") +
+    ggplot2::labs(
+      title = "Eviction Cases Filed per Month",
+      x = NULL,
+      y = NULL
+    ) +
+    ggplot2::annotate("text", x = lubridate::ymd("2023-02-01"), y = 2.75, label = "2 days")
+
+  # Print if not silent
+  if (!.silent) {
+    print(p)
+  }
+
+  return(p)
+}
+
 
 #' @title Calculate Pay
 #'
@@ -242,247 +508,12 @@ email_pay_report <- function(
 }
 
 
-#' @title Plot Address Coverage
-#'
-#' @description Calculates the number of addresses entered
-#'
-#' @param db A database connection pool created with `pool::dbPool`
-#' @param ... Additional arguments placeholder
-#' @param .silent A boolean indicating whether to print the plot
-#'
-#' @export
-#' @returns A tibble with the number of addresses entered by month
-#'
-plot_address_coverage <- function(db, ..., .silent = FALSE) {
-  # Query the case and address tables to find the number of cases with and without addresses
-  query <- glue::glue_sql(
-    "SELECT date_trunc('month', ca.date_filed) as \"month\", 'false' AS \"has_address\", COUNT(*) as n",
-    "FROM ( select * from eviction_addresses.\"case\" c left join eviction_addresses.address a on c.id = a.\"case\") ca",
-    "WHERE ca.\"case\" IS null",
-    "group by \"month\"",
-    "UNION",
-    "SELECT date_trunc('month', ca.date_filed) as \"month\", 'true' AS \"has_address\", COUNT(*)",
-    "FROM ( select * from eviction_addresses.\"case\" c left join eviction_addresses.address a on c.id = a.\"case\") ca",
-    "WHERE ca.\"case\" IS not null",
-    "group by \"month\"",
-    "order by \"month\";",
-    .sep = " ",
-    .con = db
-  )
-
-  # Get results
-  res <- DBI::dbGetQuery(
-    conn = db,
-    statement = query
-  ) |>
-    tibble::as_tibble()
-
-  # Plot
-  p <- res |>
-    dplyr::mutate(
-      month = lubridate::ymd(.data$month),
-      n = as.numeric(.data$n)
-    ) |>
-    ggplot2::ggplot(
-      ggplot2::aes(
-        x = .data$month,
-        y = .data$n,
-        fill = .data$has_address
-      )
-    ) +
-    ggplot2::geom_col() +
-    ggplot2::scale_fill_manual(
-      values = c(
-        "false" = "red",
-        "true" = "green"
-      )
-    ) +
-    ggplot2::labs(
-      x = "Month",
-      y = "Number of Addresses",
-      fill = "Has Address?"
-    ) +
-    ggplot2::theme_bw()
-
-  # Print if not silent
-  if (!.silent) { print(p) }
-
-  return(p)
-}
-
-
-#' @title Plot Address Entries
-#'
-#' @description Calculates the number of addresses entered
-#'
-#' @param db A database connection pool created with `pool::dbPool`
-#' @param ... Additional arguments placeholder
-#' @param .silent A boolean indicating whether to print the plot
-#'
-#' @export
-#' @returns A ggplot object
-#'
-plot_address_entries <- function(db, ..., .silent = FALSE) {
-  # Addresses entered per week
-  query <- glue::glue_sql(
-    "select date_trunc('week', created_at) as \"week\", count(*) as n",
-    "from eviction_addresses.process_log pl",
-    "group by \"week\"",
-    "order by \"week\";",
-    .sep = " ",
-    .con = db
-  )
-
-  # Get results
-  res <- DBI::dbGetQuery(
-    conn = db,
-    statement = query
-  ) |>
-    tibble::as_tibble()
-
-  # Plot
-  p <- res |>
-    dplyr::mutate(
-      week = lubridate::ymd(.data$week),
-      n = as.numeric(.data$n)
-    ) |>
-    ggplot2::ggplot(
-      ggplot2::aes(
-        x = .data$week,
-        y = .data$n
-      )
-    ) +
-    ggplot2::geom_col() +
-    ggplot2::labs(
-      x = "Week",
-      y = "Number of Addresses"
-    ) +
-    ggplot2::theme_bw()
-
-  # Print if not silent
-  if (!.silent) {
-    print(p)
-  }
-
-  return(p)
-}
-
-#' @title Plot Lag
-#'
-#' @description Calculates the time from a case being filed to an address being entered
-#'
-#' @param db A database connection pool created with `pool::dbPool`
-#' @param ... Additional arguments placeholder
-#' @param .silent A boolean indicating whether to print the plot
-#'
-#' @export
-#' @returns A ggplot object
-#'
-plot_lag <- function(db, ..., .silent = FALSE) {
-  # Time from date_filed to date address entered
-  query <- glue::glue_sql(
-    "SELECT date_trunc('week', c.date_filed) as \"week_filed\", AVG(DATE_PART('day', AGE(pl.created_at, c.date_filed))) as \"avg_lag_days\"",
-    "FROM eviction_addresses.\"case\" c",
-    "INNER JOIN eviction_addresses.process_log pl",
-    "ON c.id = pl.\"case\"",
-    "WHERE date_filed >= '2022-12-01'",
-    "GROUP BY \"week_filed\"",
-    "ORDER BY \"week_filed\";",
-    .sep = " ",
-    .con = db
-  )
-
-  # Get results
-  res <- DBI::dbGetQuery(
-    conn = db,
-    statement = query
-  ) |>
-    tibble::as_tibble()
-
-  # Plot
-  p <- res |>
-    dplyr::mutate(
-      week_filed = lubridate::ymd(.data$week_filed),
-      # avg_lag_days = as.numeric(.data$avg_lag_days)
-    ) |>
-    ggplot2::ggplot(
-      ggplot2::aes(
-        x = .data$week_filed,
-        y = .data$avg_lag_days
-      )
-    ) +
-    ggplot2::geom_col() +
-    ggplot2::labs(
-      x = "Week",
-      y = "Average Days to Enter Address"
-    ) +
-    ggplot2::theme_bw()
-
-  # Print if not silent
-  if (!.silent) {
-    print(p)
-  }
-
-  return(p)
-}
-
-#' @title Plot Cases
-#'
-#' @description Calculates the number of cases filed per month
-#'
-#' @param db A database connection pool created with `pool::dbPool`
-#' @param ... Additional arguments placeholder
-#' @param .silent A boolean indicating whether to print the plot
-#'
-#' @export
-#' @returns A ggplot object
-#'
-plot_cases <- function(db, ..., .silent = FALSE) {
-  # Num evictions per month
-  query <- glue::glue_sql(
-    "SELECT date_trunc('month', c.date_filed) as \"month_filed\", COUNT(*) as n",
-    "FROM eviction_addresses.\"case\" c",
-    "GROUP BY \"month_filed\"",
-    "ORDER BY \"month_filed\";",
-    .sep = " ",
-    .con = db
-  )
-
-  # Get results
-  res <- DBI::dbGetQuery(
-    conn = db,
-    statement = query
-  ) |>
-    tibble::as_tibble()
-
-  # Plot
-  p <- res |>
-    dplyr::mutate(
-      month_filed = lubridate::ymd(.data$month_filed),
-      n = as.numeric(.data$n)
-    ) |>
-    ggplot2::ggplot(
-      ggplot2::aes(
-        x = .data$month_filed,
-        y = .data$n
-      )
-    ) +
-    ggplot2::geom_col() +
-    ggplot2::labs(
-      x = "Month",
-      y = "Number of Cases"
-    ) +
-    ggplot2::theme_bw()
-
-
-  return(p)
-}
-
 #' @title Render Project Report
 #'
 #' @description Renders a project report for a given user
 #'
 #' @param db A database connection pool created with `pool::dbPool`
+#' @param users A vector of users to include in the report
 #' @param start The start date
 #' @param end The end date
 #'
@@ -491,21 +522,16 @@ plot_cases <- function(db, ..., .silent = FALSE) {
 #'
 render_project_report <- function(
   db,
+  users = "all",
   start = get_pay_period(lubridate::today())$start,
   end = get_pay_period(lubridate::today())$end,
   ...,
   .silent = FALSE
 ) {
-  # Get plots
-  p_logins <- plot_logins(db, "all", start, end, .silent = TRUE)
-  p_cases <- plot_cases(db, .silent = TRUE)
-  p_entries <- plot_address_entries(db, .silent = TRUE)
-  p_lag <- plot_lag(db, .silent = TRUE)
-  p_coverage <- plot_address_coverage(db, "all", start, end, .silent = TRUE)
 
   # Render report
   temp_file <- system.file(
-    "templates", "report.qmd",
+    "templates", "report.Rmd",
     package = "evictionAddresses"
   )
 
@@ -514,29 +540,24 @@ render_project_report <- function(
   # Copy template report file to current directory
   template <- fs::file_copy(
     temp_file,
-    file.path(report_dir, "report.qmd"),
+    file.path(report_dir, "report.Rmd"),
     overwrite = TRUE
   )
 
-  report <- rmarkdown::render(
-    template,
-    params = list(
-      start = start,
-      end = end,
-      logins_plot = p_logins,
-      cases_plot = p_cases,
-      entries_plot = p_entries,
-      lag_plot = p_lag,
-      coverage_plot = p_coverage
-    ),
-    output_file = file.path(report_dir, "report.html")
+  report_html <- blastula::render_email(
+    input = template,
+    render_options = list(
+      params = list(
+        users = users,
+        start = start,
+        end = end
+      )
+    )
   )
-
-  report_html <- readr::read_file(report)
 
   # Print if not silent
   if (!.silent) {
-
+    print(report_html)
   }
 
   return(report_html)
@@ -572,23 +593,12 @@ email_project_report <- function(
     .silent = TRUE
   )
 
-  # Create email
-  email_content <- blastula::compose_email(
-    body = blastula::md(
-      glue::glue(
-        "Eviction Addresses Project Report for {start} to {end}",
-        report
-      )
-    )
-  )
-
   # Send email
   blastula::smtp_send(
-    email = email_content,
+    email = report,
     to = recipient_email,
     from = "bgregory@okpolicy.org",
-    subject = glue::glue("Eviction Addresses Project Report"),
+    subject = "Eviction Addresses Project Report",
     credentials = blastula::creds_file(file = here::here("blastula.json"))
   )
-
 }

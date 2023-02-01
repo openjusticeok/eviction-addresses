@@ -6,6 +6,7 @@
 \usage{
 render_project_report(
   db,
+  users = "all",
   start = get_pay_period(lubridate::today())$start,
   end = get_pay_period(lubridate::today())$end,
   ...,
@@ -14,6 +15,8 @@ render_project_report(
 }
 \arguments{
 \item{db}{A database connection pool created with \code{pool::dbPool}}
+
+\item{users}{A vector of users to include in the report}
 
 \item{start}{The start date}
 
