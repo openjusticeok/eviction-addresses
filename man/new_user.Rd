@@ -4,7 +4,19 @@
 \alias{new_user}
 \title{New User}
 \usage{
-new_user(db, username, password, role, name)
+new_user(
+  db,
+  username,
+  password,
+  role,
+  name,
+  full_name,
+  line1,
+  line2,
+  city,
+  state,
+  zip
+)
 }
 \arguments{
 \item{db}{A database connection pool created with \code{pool::dbPool}}

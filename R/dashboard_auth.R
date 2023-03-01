@@ -57,6 +57,7 @@ add_session_to_db <- function(db) {
 #'
 #' @param db A database connection pool created with `pool::dbPool`
 #'
+#' @export
 #' @returns A tibble of user info
 #'
 get_users_from_db <- function(db) {
@@ -69,26 +70,38 @@ get_users_from_db <- function(db) {
 }
 
 #' @title New User
-#' 
+#'
 #' @description Adds a new user to the database
-#' 
+#'
 #' @param db A database connection pool created with `pool::dbPool`
 #' @param username The username
 #' @param password The password
 #' @param role The role of the user; either "admin" or "standard"
 #' @param name The name of the user
-#' 
+#'
 #' @export new_user
 #' @returns Returns invisibly if successful
-#' 
+#'
 #' @importFrom sodium password_store
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' new_user(db, "test", "test", "admin", "Test User")
 #' }
-#' 
-new_user <- function(db, username, password, role, name) {
+#'
+new_user <- function(
+  db,
+  username,
+  password,
+  role,
+  name,
+  full_name,
+  line1,
+  line2,
+  city,
+  state,
+  zip
+) {
     # Hash the password using {sodium}
     hashed_password <- sodium::password_store(password)
 
@@ -104,6 +117,12 @@ new_user <- function(db, username, password, role, name) {
       password_hash = hashed_password,
       role = role,
       name = name,
+      full_name = full_name,
+      line1 = line1,
+      line2 = line2,
+      city = city,
+      state = state,
+      zip = zip,
       created_at = lubridate::now(tzone = "America/Chicago"),
       updated_at = lubridate::now(tzone = "America/Chicago")
     )
@@ -118,19 +137,19 @@ new_user <- function(db, username, password, role, name) {
 }
 
 #' @title Change Password
-#' 
+#'
 #' @description Changes a user's password
-#' 
+#'
 #' @param db A database connection pool created with `pool::dbPool`
 #' @param username The username
 #' @param old_password The old password
 #' @param new_password The new password
-#' 
+#'
 #' @export change_password
 #' @returns Returns invisibly if successful
-#' 
+#'
 #' @importFrom sodium password_verify password_store
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' change_password(db, "test", "test", "test2")
@@ -169,114 +188,4 @@ change_password <- function(db, username, old_password, new_password) {
     conn = db,
     statement = query
   )
-}
-
-#' @title Plot Logins
-#' 
-#' @description Plots the number of logins per day
-#' 
-#' @param db A database connection pool created with `pool::dbPool`
-#' @param users A vector of users to plot
-#' @param start The start date
-#' @param end The end date
-#' 
-#' @export plot_logins
-#' @returns A ggplot object
-#' 
-#' @importFrom lubridate ymd today
-#' 
-#' @examples
-#' \dontrun{
-#' plot_logins(db, c("test", "test2"), lubridate::ymd("2022-12-12"), lubridate::today())
-#' }
-#'
-plot_logins <- function(db, users, start = lubridate::ymd("2022-12-12"), end = lubridate::today()) {
-  # Query the sessions table by users and date
-
-  # Plot 
-}
-
-#' @title Plot Address Entries
-#' 
-#' @description Plots the number of address entries per day
-#' 
-#' @param db A database connection pool created with `pool::dbPool`
-#' @param users A vector of users to plot
-#' @param start The start date
-#' @param end The end date
-#' @param type The type of address entry to plot; either "priority" or "backlog"
-#' 
-#' @export plot_address_entries
-#' @returns A ggplot object
-#' 
-#' @importFrom lubridate ymd today
-#' 
-#' @examples
-#' \dontrun{
-#' plot_address_entries(db, c("test", "test2"), lubridate::ymd("2022-12-12"), lubridate::today(), "priority")
-#' }
-#' 
-plot_address_entries <- function(db, users, start = lubridate::ymd("2022-12-12"), end = lubridate::today(), type) {
-  # Query count of address entries by users and creation time
-}
-
-#' @title Calculate Pay
-#' 
-#' @description Calculates the pay for a given user
-#' 
-#' @param db A database connection pool created with `pool::dbPool`
-#' @param users A vector of users to plot
-#' @param start The start date
-#' @param end The end date
-#' 
-#' @export calculate_pay
-#' @returns A tibble with the number of addresses entered by type and the corresponding pay
-#' 
-#' @importFrom rlang .data
-#' 
-#' @examples
-#' \dontrun{
-#' calculate_pay(db, c("test", "test2"), lubridate::ymd("2022-12-12"), lubridate::today())
-#' }
-#' 
-calculate_pay <- function(db, users, start, end) {
-    # Query process table for number of addresses entered per person and entry type
-    query <- glue::glue_sql(
-      'SELECT "user", "type", COUNT(*) AS "count" FROM "eviction_addresses"."process_log" WHERE "user" IN ({users}) AND "created_at" BETWEEN {start} AND {end} GROUP BY "user", "type"',
-      .con = db
-    )
-
-    entry_counts <- DBI::dbGetQuery(
-      conn = db,
-      statement = query
-    ) |>
-      tibble::as_tibble()
-
-    # Define pay rates
-    priority_rate <- 0.15
-    backlog_rate <- 0.10
-
-    # Multiply counts by rates for corresponding type
-    entry_counts <- entry_counts |>
-      dplyr::mutate(
-        priority_pay = dplyr::case_when(
-          .data$type == "priority" ~ .data$count * priority_rate,
-          TRUE ~ 0
-        ),
-        backlog_pay = dplyr::case_when(
-          .data$type == "backlog" ~ .data$count * backlog_rate,
-          TRUE ~ 0
-        ),
-        total_pay = .data$priority_pay + .data$backlog_pay
-      )
-    
-    return(entry_counts)
-}
-
-#' @title Render Pay Report
-#' 
-#' @description Renders a pay report for a given user
-#' 
-render_pay_report <- function() {
-
 }

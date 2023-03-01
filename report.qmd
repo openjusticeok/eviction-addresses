@@ -1,0 +1,45 @@
+---
+title: "Eviction Address Entry Report"
+page-layout: full
+execute: 
+  echo: false
+format: html
+params:
+  users: "all"
+  start: !expr evictionAddresses::get_pay_period(lubridate::today())$start
+  end: !expr evictionAddresses::get_pay_period(lubridate::today())$end
+---
+
+```{r setup, include=FALSE}
+library(evictionAddresses)
+
+db <- new_db_pool("config.yml")
+withr::defer(pool::poolClose(db))
+```
+
+## Eviction Address Entry Report
+
+```{r}
+p_cases <- plot_cases(db)
+
+p_cases
+```
+
+
+```{r}
+p_entries <- plot_entries(db)
+
+p_entries
+```
+
+```{r}
+p_coverage <- plot_coverage(db)
+
+p_coverage
+```
+
+```{r}
+p_lag <- plot_lag(db)
+
+p_lag
+```

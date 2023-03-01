@@ -5,6 +5,8 @@
 .RData
 # User-specific files
 .Ruserdata
+# All other session data files
+*.RData
 # Example code in package build process
 *-Ex.R
 # Output files from R CMD build
@@ -26,7 +28,6 @@ vignettes/*.pdf
 *.knit.md
 # R Environment Variables
 .Renviron
-renv/
 client-id.json
 googlecloudrunner-auth-key.json
 client.json
@@ -45,3 +46,5 @@ docs
 build.R
 build_test.R
 .vscode
+blastula.json
+pay_report*
