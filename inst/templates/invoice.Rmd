@@ -1,32 +1,32 @@
 ---
-page-layout: full
-execute: 
-  echo: false
-format: html
+title: "Eviction Addresses Invoice"
+format: blastula::blastula_email
 params:
+  user: "kmarshall"
   start: !expr evictionAddresses::get_pay_period(lubridate::today())$start
   end: !expr evictionAddresses::get_pay_period(lubridate::today())$end
-  logins_plot: ''
-  cases_plot: ''
-  entries_plot: ''
-  lag_plot: ''
-  coverage_plot: ''
 ---
 
 ```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
 library(evictionAddresses)
 
 db <- new_db_pool("config.yml")
 withr::defer(pool::poolClose(db))
+
+pretty_name <- get_users_from_db(db) |>
+  dplyr::filter(.data$user == params$user) |>
+  dplyr::pull(.data$full_name)
 ```
 
 ::: {.grid}
 
-# Project Report
+# INVOICE
 
 ::: {.g-col-3 .g-start-1}
 ## Pay To
-### Test
+### `r pretty_name`
 
 | 1234 Main St
 | San Francisco, CA 94110
@@ -36,6 +36,14 @@ withr::defer(pool::poolClose(db))
 ### Pay Period
 
 `r params$start |> format("%B %d, %Y")` - `r params$end |> format("%B %d, %Y")`
+:::
+
+::: {.g-col-12}
+```{r}
+pay_tbl <- calculate_pay(db, params$user, params$start, params$end)
+
+pay_tbl
+```
 :::
 
 :::

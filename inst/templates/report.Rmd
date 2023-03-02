@@ -1,9 +1,6 @@
 ---
-title: "Eviction Address Entry Report"
-page-layout: full
-execute: 
-  echo: false
-format: html
+title: "Eviction Address Project Report"
+output: blastula::blastula_email
 params:
   users: "all"
   start: !expr evictionAddresses::get_pay_period(lubridate::today())$start
@@ -11,35 +8,26 @@ params:
 ---
 
 ```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
 library(evictionAddresses)
 
 db <- new_db_pool("config.yml")
 withr::defer(pool::poolClose(db))
 ```
 
-## Eviction Address Entry Report
-
 ```{r}
-p_cases <- plot_cases(db)
-
-p_cases
-```
-
-
-```{r}
-p_entries <- plot_entries(db)
-
-p_entries
+plot_cases(db, .silent = TRUE)
 ```
 
 ```{r}
-p_coverage <- plot_coverage(db)
-
-p_coverage
+plot_entries(db, .silent = TRUE)
 ```
 
 ```{r}
-p_lag <- plot_lag(db)
+plot_coverage(db, .silent = TRUE)
+```
 
-p_lag
+```{r}
+plot_lag(db, .silent = TRUE)
 ```
