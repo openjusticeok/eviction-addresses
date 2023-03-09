@@ -298,7 +298,7 @@ plot_lag <- function(db, ..., .silent = FALSE) {
     ggplot2::theme_bw() +
     ggplot2::geom_hline(yintercept = 2, linetype = "dashed", color = "green") +
     ggplot2::labs(
-      title = "Eviction Cases Filed per Month",
+      title = "Eviction Case Entry Lag",
       x = NULL,
       y = NULL
     ) +
