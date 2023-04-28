@@ -298,7 +298,7 @@ plot_lag <- function(db, ..., .silent = FALSE) {
     ggplot2::theme_bw() +
     ggplot2::geom_hline(yintercept = 2, linetype = "dashed", color = "green") +
     ggplot2::labs(
-      title = "Eviction Cases Filed per Month",
+      title = "Eviction Case Entry Lag",
       x = NULL,
       y = NULL
     ) +
@@ -347,7 +347,7 @@ calculate_pay <- function(
     'left join eviction_addresses."case" c ',
     'on pl."case" = c.id ',
     'WHERE ',
-    if (!users == "all") {'"user" IN ({users*}) AND '} else "",
+    if (!any(users == "all")) {'"user" IN ({users*}) AND '} else "",
     'pl.created_at BETWEEN {start} AND {end}',
     ';',
     .con = db
@@ -470,7 +470,7 @@ email_pay_report <- function(
   end = get_pay_period(lubridate::today())$end,
   recipient_email
 ) {
-  if(!users == "all") {
+  if(!any(users == "all")) {
     user <- get_users_from_db(db) |>
       dplyr::filter(.data$user == users)
   }
