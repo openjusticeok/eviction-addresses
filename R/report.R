@@ -158,7 +158,7 @@ plot_entries <- function(db, ..., .silent = FALSE) {
     ) +
     ggplot2::theme_bw() +
     ggplot2::labs(
-      title = "Eviction Case Address Coverage per Month",
+      title = "Eviction Addresses Entered per Week",
       x = NULL,
       y = NULL
     )
@@ -235,7 +235,7 @@ plot_coverage <- function(db, ..., .silent = FALSE) {
     ggplot2::theme_bw() +
     ggplot2::theme(legend.position = "none") +
     ggplot2::labs(
-      title = "Eviction Cases Filed per Month",
+      title = "Eviction Address Coverage per Month",
       x = NULL,
       y = NULL
     )
@@ -298,7 +298,7 @@ plot_lag <- function(db, ..., .silent = FALSE) {
     ggplot2::theme_bw() +
     ggplot2::geom_hline(yintercept = 2, linetype = "dashed", color = "green") +
     ggplot2::labs(
-      title = "Eviction Cases Filed per Month",
+      title = "Eviction Address Entry Lag per Week",
       x = NULL,
       y = NULL
     ) +
