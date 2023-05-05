@@ -1,9 +1,8 @@
 Package: evictionAddresses
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9003
-Authors@R: person("First", "Last", ,
-      "first.last@example.com", role = c("aut", "cre"),
-      comment = c(ORCID = "YOUR-ORCID-ID"))
+Authors@R: person("Brancen", "Gregory", ,
+      "bgregory@okpolicy.org", role = c("aut", "cre"))
 Description: What the package does (one paragraph).
 License: GPL (>= 3)
 Encoding: UTF-8
@@ -52,6 +51,8 @@ Suggests:
     knitr,
     languageserver,
     mockery,
+    ojodb (>= 2.5.0),
+    pak,
     patchwork,
     pkgdown,
     rmarkdown,
@@ -63,6 +64,7 @@ Suggests:
 Remotes:
     cloudyr/googleCloudStorageR,
     MarkEdmondson1234/googleCloudRunner,
+    openjusticeok/ojodb,
     rstudio/blastula,
     rstudio/gt,
     rich-iannone/juicyjuice
