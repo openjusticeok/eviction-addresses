@@ -1,9 +1,12 @@
 Package: evictionAddresses
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9003
+Title: A Data Entry Dashboard, API, and Reporting Tool for Eviction Addresses
+Version: 0.1.0
 Authors@R: person("Brancen", "Gregory", ,
       "bgregory@okpolicy.org", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Description: Eviction case documents contain addresses and are public records,
+    but they are not available in a format that is easy to use.
+    This package provides a dashboard for data entry, an API for accessing the
+    data, and a reporting tool for analyzing the data.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
