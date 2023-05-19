@@ -33,7 +33,8 @@ load_preprocess_data <- function(start_date, end_date) {
       date_filed,
       date_closed,
       created_at = created_at.issue,
-      disposition
+      disposition,
+      disposition_date
     ) |>
     mutate(
       date_scraped = floor_date(created_at, "day") |>
@@ -121,7 +122,7 @@ plot_letters_each_day <- function(result) {
       x = NULL,
       y = NULL,
       title = "Number of Letters Available to Send Each Day",
-      caption = str_wrap(
+      subtitle = str_wrap(
         "A letter is available to be sent if the case was filed within the last 15 days and the address was entered within the last 5 days.",
         65
       )
@@ -134,7 +135,7 @@ plot_letters_each_day <- function(result) {
 
 # Plot average days to ready for each day
 plot_avg_days_to_ready <- function(data, result) {
-  min_points <- 7 # Minimum number of points to calculate rolling average
+  min_points <- 15 # Minimum number of points to calculate rolling average
 
   data_to_plot <- result |>
     unnest(case_ids) |>
@@ -144,9 +145,6 @@ plot_avg_days_to_ready <- function(data, result) {
       by = c("case_ids" = "case")
     ) |>
     distinct() |>
-    mutate(
-      days_to_ready = date - date_filed
-    ) |>
     arrange(date) |>
     mutate(
       days_to_ready = date - date_filed,
@@ -164,7 +162,7 @@ plot_avg_days_to_ready <- function(data, result) {
       x = NULL,
       y = NULL,
       title = "Average Days to Ready for Each Day",
-      caption = str_wrap(
+      subtitle = str_wrap(
         "The average number of days between when a case is filed and when the address is entered into the system.",
         65
       )
@@ -179,8 +177,8 @@ plot_avg_days_to_ready <- function(data, result) {
 
 # Main script
 
-start_date <- as.Date("2023-03-01")
-end_date <- as.Date("2023-03-31")
+start_date <- as_date("2023-03-01")
+end_date <- as_date("2023-03-31")
 
 data <- load_preprocess_data(
   start_date = start_date,
@@ -199,27 +197,62 @@ plot2 <- plot_avg_days_to_ready(data, result)
 plot1
 plot2
 
+result |>
+  unnest(case_ids) |>
+  distinct() |>
+  left_join(
+    data,
+    by = c("case_ids" = "case")
+  ) |>
+  distinct() |>
+  arrange(date) |>
+  mutate(
+    days_to_ready = date - date_filed
+  ) |>
+  group_by(date) |>
+  summarise(
+    avg_days_to_ready = mean(days_to_ready)
+  )
+
+ggplot(data_to_plot, aes(x = date_filed, y = days_to_ready)) +
+  geom_line() +
+  labs(
+    x = NULL,
+    y = NULL,
+    title = "Average Days to Ready for Each Day",
+    subtitle = str_wrap(
+      "The average number of days between when a case is filed and when the address is entered into the system.",
+      65
+    )
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1)
+  )
 
 ###### Scratch
 
-# data |>
-#   arrange(date_filed, date_scraped) |>
-#   mutate(
-#     days_to_scrape = date_scraped - date_filed,
-#   ) |>
-#   ggplot(aes(x = date_filed, y = days_to_scrape)) +
-#     geom_smooth(method = "loess", se = TRUE) +
-#     geom_jitter(alpha = 0.2, size = 0.5, height = 0, width = 0.3) +
-#     labs(
-#       x = NULL,
-#       y = NULL,
-#       title = "Average Days to Scrape for Each Filing Day",
-#       caption = str_wrap(
-#         "The average number of days between when a case is filed and when the case is entered into the system.",
-#         65
-#       )
-#     ) +
-#     theme_minimal() +
-#     theme(
-#       axis.text.x = element_text(angle = 90, hjust = 1)
-#     )
+data |>
+  arrange(date_filed, date_scraped) |>
+  mutate(
+    days_to_scrape = date_scraped - date_filed,
+  ) |>
+  ggplot(aes(x = date_filed, y = days_to_scrape)) +
+    geom_smooth(method = "loess", se = TRUE) +
+    geom_jitter(alpha = 0.2, size = 0.5, height = 0, width = 0.3) +
+    labs(
+      x = NULL,
+      y = NULL,
+      title = "Average Days to Scrape for Each Filing Day",
+      caption = str_wrap(
+        "The average number of days between when a case is filed and when the case is entered into the system.",
+        65
+      )
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1)
+    ) +
+    expand_limits(
+      y = c(0, 50)
+    )
