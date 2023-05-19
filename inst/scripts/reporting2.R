@@ -5,65 +5,65 @@ library(purrr)
 # Load and preprocess data
 load_preprocess_data <- function(start_date, end_date) {
   data <- ojo_tbl("process_log", schema = "eviction_addresses") |>
-  filter(
-    updated_at >= start_date - days(15),
-    updated_at <= end_date
-  ) |>
-  mutate(
-    date_entered = floor_date(created_at, "day") |>
-      as_date(),
-  ) |>
-  select(
-    case,
-    date_entered
-  ) |>
-  left_join(
-    ojo_tbl("case"),
-    by = c("case" = "id"),
-    suffix = c(".process_log", ".case")
-  ) |>
-  left_join(
-    ojo_tbl("issue"),
-    by = c("case" = "case_id"),
-    suffix = c(".case", ".issue")
-  ) |>
-  select(
-    case,
-    date_entered,
-    date_filed,
-    date_closed,
-    created_at = created_at.issue,
-    disposition
-  ) |>
-  mutate(
-    date_scraped = floor_date(created_at, "day") |>
-      as_date(),
-    clean_disposition = case_when(
-      str_detect(disposition,  "DISMISS") ~ "DISMISSED",
-      str_detect(disposition,  "JUDGMENT|JUDGEMENT") ~
-        case_when(
-          str_detect(disposition,  "DEFAULT") ~ "DEFAULT JUDGMENT",
-          str_detect(disposition,  "PLAINTIFF") ~ "JUDGMENT FOR PLAINTIFF",
-          str_detect(disposition,  "DEFENDANT") ~ "JUDGMENT FOR DEFENDANT",
-          TRUE ~ "JUDGMENT ENTERED"
-        ),
-      str_detect(disposition,  "ADVISEMENT") ~ "UNDER ADVISEMENT",
-      is.na(disposition) ~ NA_character_,
-      TRUE ~ "OTHER"
-    )
-  ) |>
-  mutate(
-    judgment = case_when(
-      clean_disposition %in% c("DEFAULT JUDGMENT", "JUDGMENT FOR PLAINTIFF") ~ "Landlord",
-      clean_disposition == "JUDGMENT FOR DEFENDANT" ~ "Tenant",
-      clean_disposition == "JUDGMENT ENTERED" ~ "Decided, Outcome Unknown",
-      clean_disposition == "DISMISSED" ~ "Dismissed (Settled Outside Court)",
-      !is.na(clean_disposition) ~ "Decided, Outcome Unknown",
-      TRUE ~ NA_character_
-    )
-  ) |>
-  select(-disposition) |>
-  ojo_collect()
+    filter(
+      updated_at >= start_date - days(15),
+      updated_at <= end_date
+    ) |>
+    mutate(
+      date_entered = floor_date(created_at, "day") |>
+        as_date(),
+    ) |>
+    select(
+      case,
+      date_entered
+    ) |>
+    left_join(
+      ojo_tbl("case"),
+      by = c("case" = "id"),
+      suffix = c(".process_log", ".case")
+    ) |>
+    left_join(
+      ojo_tbl("issue"),
+      by = c("case" = "case_id"),
+      suffix = c(".case", ".issue")
+    ) |>
+    select(
+      case,
+      date_entered,
+      date_filed,
+      date_closed,
+      created_at = created_at.issue,
+      disposition
+    ) |>
+    mutate(
+      date_scraped = floor_date(created_at, "day") |>
+        as_date(),
+      clean_disposition = case_when(
+        str_detect(disposition,  "DISMISS") ~ "DISMISSED",
+        str_detect(disposition,  "JUDGMENT|JUDGEMENT") ~
+          case_when(
+            str_detect(disposition,  "DEFAULT") ~ "DEFAULT JUDGMENT",
+            str_detect(disposition,  "PLAINTIFF") ~ "JUDGMENT FOR PLAINTIFF",
+            str_detect(disposition,  "DEFENDANT") ~ "JUDGMENT FOR DEFENDANT",
+            TRUE ~ "JUDGMENT ENTERED"
+          ),
+        str_detect(disposition,  "ADVISEMENT") ~ "UNDER ADVISEMENT",
+        is.na(disposition) ~ NA_character_,
+        TRUE ~ "OTHER"
+      )
+    ) |>
+    mutate(
+      judgment = case_when(
+        clean_disposition %in% c("DEFAULT JUDGMENT", "JUDGMENT FOR PLAINTIFF") ~ "Landlord",
+        clean_disposition == "JUDGMENT FOR DEFENDANT" ~ "Tenant",
+        clean_disposition == "JUDGMENT ENTERED" ~ "Decided, Outcome Unknown",
+        clean_disposition == "DISMISSED" ~ "Dismissed (Settled Outside Court)",
+        !is.na(clean_disposition) ~ "Decided, Outcome Unknown",
+        TRUE ~ NA_character_
+      )
+    ) |>
+    select(-disposition) |>
+    ojo_collect()
 
   return(data)
 }
@@ -84,7 +84,7 @@ get_filtered_cases <- function(data, date, exclude_cases) {
 # Generate results for plotting
 get_result_data <- function(data, start_date, end_date) {
   num_days <- as.numeric(end_date - start_date) + 1
-  
+
   # Initialize an empty data frame for the result
   result <- tibble(
     date = seq(start_date, end_date, by = "day"),
@@ -109,7 +109,7 @@ get_result_data <- function(data, start_date, end_date) {
       filtered_data$case
     )
   }
-  
+
   return(result)
 }
 
@@ -132,7 +132,6 @@ plot_letters_each_day <- function(result) {
     )
 }
 
-# Plot average days to ready for each day
 # Plot average days to ready for each day
 plot_avg_days_to_ready <- function(data, result) {
   min_points <- 7 # Minimum number of points to calculate rolling average
@@ -197,24 +196,30 @@ result <- get_result_data(
 plot1 <- plot_letters_each_day(result)
 plot2 <- plot_avg_days_to_ready(data, result)
 
-data |>
-  arrange(date_filed, date_scraped) |>
-  mutate(
-    days_to_scrape = date_scraped - date_filed,
-  ) |>
-  ggplot(aes(x = date_filed, y = days_to_scrape)) +
-    geom_smooth(method = "loess", se = TRUE) +
-    geom_jitter(alpha = 0.2, size = 0.5, height = 0, width = 0.3) +
-    labs(
-      x = NULL,
-      y = NULL,
-      title = "Average Days to Scrape for Each Filing Day",
-      caption = str_wrap(
-        "The average number of days between when a case is filed and when the case is entered into the system.",
-        65
-      )
-    ) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 90, hjust = 1)
-    )
+plot1
+plot2
+
+
+###### Scratch
+
+# data |>
+#   arrange(date_filed, date_scraped) |>
+#   mutate(
+#     days_to_scrape = date_scraped - date_filed,
+#   ) |>
+#   ggplot(aes(x = date_filed, y = days_to_scrape)) +
+#     geom_smooth(method = "loess", se = TRUE) +
+#     geom_jitter(alpha = 0.2, size = 0.5, height = 0, width = 0.3) +
+#     labs(
+#       x = NULL,
+#       y = NULL,
+#       title = "Average Days to Scrape for Each Filing Day",
+#       caption = str_wrap(
+#         "The average number of days between when a case is filed and when the case is entered into the system.",
+#         65
+#       )
+#     ) +
+#     theme_minimal() +
+#     theme(
+#       axis.text.x = element_text(angle = 90, hjust = 1)
+#     )

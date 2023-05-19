@@ -136,7 +136,7 @@ result |>
       axis.text.x = element_text(angle = 90, hjust = 1)
     )
 
-result |> 
+result |>
   unnest(case_ids) |>
   distinct() |>
   left_join(
@@ -147,7 +147,7 @@ result |>
   mutate(
     days_to_ready = date - date_filed,
     rolling_avg_days_to_ready = cumsum(
-      as.numeric(date-date_filed)
+      as.numeric(date - date_filed)
     ) / row_number()
   ) |>
   ggplot(
@@ -155,7 +155,7 @@ result |>
       x = date,
       y = rolling_avg_days_to_ready
     )
-  ) + 
+  ) +
     geom_smooth(
       method = "loess",
       se = TRUE
@@ -177,3 +177,4 @@ result |>
     theme(
       axis.text.x = element_text(angle = 90, hjust = 1)
     )
+
