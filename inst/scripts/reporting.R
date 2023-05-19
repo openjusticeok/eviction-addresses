@@ -16,7 +16,7 @@ library(tidyverse)
 data <- ojo_tbl("process_log", schema = "eviction_addresses") |>
   filter(
     updated_at >= "2023-02-24",
-    updated_at <= "2023-03-31"
+    updated_at <= "2023-05-01"
   ) |>
   mutate(
     date_entered = floor_date(created_at, "day") |>
@@ -69,59 +69,111 @@ data <- ojo_tbl("process_log", schema = "eviction_addresses") |>
   select(-disposition) |>
   ojo_collect()
 
-# For each day of the month create a table of cases filed in the last 15 days with addresses added in the last 5 days
-tibble(
-  day = seq.Date(
-    from = as.Date("2023-02-24"),
-    to = as.Date("2023-03-31"),
-    by = "day"
-  )
-) |>
-  mutate(
-    ready_to_send = accumulate(
-      day,
-      ~ data |>
-        filter(
-          date_filed >= (as_date(.y) - days(15)),
-          date_filed <= as_date(.y),
-          date_entered >= (as_date(.y) - days(5)),
-        ) |>
-        pull(case) |>
-        unique()
-    )
-  )
 
 # Define a function to filter the data for each date
 get_filtered_cases <- function(data, date, exclude_cases) {
-  filtered_data <- data %>%
+  filtered_data <- data |>
     filter(
       date_filed >= date - days(15),
       date_entered >= date - days(5),
+      date_entered <= date,
       !case %in% exclude_cases
     )
+
   return(filtered_data)
 }
 
 # Initialize an empty data frame for the result
 result <- tibble(
-  date = seq(as_date("2023-03-01"), as_date("2023-03-31"), by = "days"),
-  case_ids = list(rep(character(), 31)),
-  n = integer(length = 31)
+  date = seq(as_date("2023-03-01"), as_date("2023-05-01"), by = "days"),
+  case_ids = list(rep(character(), 62)),
+  n = integer(length = 62)
 )
 
 # Iterate over the dates and apply the filtering criteria
 excluded_cases <- c()
-for (i in seq_along(result)) {
+for (i in seq_along(result$date)) {
   filtered_data <- get_filtered_cases(
     data,
-    result[i, "date"] |> pull(),
+    result$date[i],
     excluded_cases
   )
 
-  result[i, "case_ids"] <- list(filtered_data$case)
+  result <- result |>
+    mutate(
+      case_ids = if_else(
+        date == result$date[i],
+        list(filtered_data$case),
+        case_ids
+      ),
+      n = if_else(
+        date == result$date[i],
+        nrow(filtered_data),
+        n
+      )
+    )
 
   excluded_cases <- c(
     excluded_cases,
     filtered_data$case
   )
 }
+
+result |>
+  ggplot(aes(x = date, y = n)) +
+    geom_col() +
+    labs(
+      x = NULL,
+      y = NULL,
+      title = "Number of Letters Available to Send Each Day",
+      caption = str_wrap(
+        "A letter is available to be sent if the case was filed within the last 15 days and the address was entered within the last 5 days.",
+        65
+      )
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1)
+    )
+
+result |> 
+  unnest(case_ids) |>
+  distinct() |>
+  left_join(
+    data,
+    by = c("case_ids" = "case")
+  ) |>
+  distinct() |>
+  mutate(
+    days_to_ready = date - date_filed,
+    rolling_avg_days_to_ready = cumsum(
+      as.numeric(date-date_filed)
+    ) / row_number()
+  ) |>
+  ggplot(
+    aes(
+      x = date,
+      y = rolling_avg_days_to_ready
+    )
+  ) + 
+    geom_smooth(
+      method = "loess",
+      se = TRUE
+    ) +
+    geom_point(
+      alpha = 0.2,
+      size = 0.5
+    ) +
+    labs(
+      x = NULL,
+      y = NULL,
+      title = "Average Days to Ready for Each Day",
+      caption = str_wrap(
+        "The average number of days between when a case is filed and when the address is entered into the system.",
+        65
+      )
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 90, hjust = 1)
+    )
