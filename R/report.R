@@ -50,7 +50,7 @@ plot_cases <- function(db, ..., .silent = FALSE) {
       x = NULL,
       y = NULL
     )
-  
+
   # Print if not silent
   if (!.silent) {
     print(p)
@@ -419,17 +419,17 @@ calculate_pay <- function(
 }
 
 #' @title Render Pay Report
-#' 
+#'
 #' @description Renders a pay report for a given user
-#' 
+#'
 #' @param db A database connection pool created with `pool::dbPool`
 #' @param users A vector of users to plot
 #' @param start The start date
 #' @param end The end date
-#' 
+#'
 #' @export render_pay_report
 #' @returns A tibble with the number of addresses entered by type and the corresponding pay
-#' 
+#'
 render_pay_report <- function(
   db,
   users = "all",
@@ -462,7 +462,7 @@ render_pay_report <- function(
 #'
 #' @export email_pay_report
 #' @returns Nothing
-#' 
+#'
 email_pay_report <- function(
   db,
   users,
@@ -470,7 +470,7 @@ email_pay_report <- function(
   end = get_pay_period(lubridate::today())$end,
   recipient_email
 ) {
-  if(!any(users == "all")) {
+  if (!any(users == "all")) {
     user <- get_users_from_db(db) |>
       dplyr::filter(.data$user == users)
   }
@@ -564,19 +564,19 @@ render_project_report <- function(
 }
 
 #' @title Email Project Report
-#' 
+#'
 #' @description Emails a project report to a given user
-#' 
+#'
 #' @param db A database connection pool created with `pool::dbPool`
 #' @param start The start date
 #' @param end The end date
 #' @param recipient_email The email address to send the report to
 #' @param ... Additional arguments placeholder
 #' @param .silent A boolean indicating whether to print the email
-#' 
+#'
 #' @export
 #' @return Nothing
-#' 
+#'
 email_project_report <- function(
   db,
   start = get_pay_period(lubridate::today())$start,
