@@ -16,4 +16,4 @@ where district = 'TULSA'
 	and s.description like 'FORC%'
 	and date_filed >= transaction_timestamp() - interval '1 month'
 ) v
-where v.link like '%fmt=pdf'
+where v.link like '%fmt=pdf';

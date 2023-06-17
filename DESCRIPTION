@@ -1,10 +1,12 @@
 Package: evictionAddresses
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9003
-Authors@R: person("First", "Last", ,
-      "first.last@example.com", role = c("aut", "cre"),
-      comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Title: A Data Entry Dashboard, API, and Reporting Tool for Eviction Addresses
+Version: 0.1.0
+Authors@R: person("Brancen", "Gregory", ,
+      "bgregory@okpolicy.org", role = c("aut", "cre"))
+Description: Eviction case documents contain addresses and are public records,
+    but they are not available in a format that is easy to use.
+    This package provides a dashboard for data entry, an API for accessing the
+    data, and a reporting tool for analyzing the data.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -29,12 +31,12 @@ Imports:
     jsonlite,
     logger,
     lubridate,
-    odbc,
     plumber,
     pool,
     promises,
     purrr,
     readr,
+    RPostgres,
     rlang,
     shiny,
     shinyauthr,
@@ -46,24 +48,24 @@ Imports:
 Suggests: 
     callr,
     covr,
-    covrpage,
     devtools,
-    dittodb,
     figpatch,
+    httpgd,
     knitr,
     languageserver,
-    mockery,
+    ojodb (>= 2.5.0),
+    pak,
     patchwork,
     pkgdown,
     rmarkdown,
     testthat (>= 3.0.0),
     usethis,
-    vcr (>= 0.6.0),
-    webmockr,
+    vcr,
     withr
 Remotes:
     cloudyr/googleCloudStorageR,
     MarkEdmondson1234/googleCloudRunner,
+    openjusticeok/ojodb,
     rstudio/blastula,
     rstudio/gt,
     rich-iannone/juicyjuice
