@@ -8,3 +8,4 @@ googlecloudrunner-auth-key.json
 tests/testthat/config.yml
 .Renviron
 shiny-apps-certs/
+pay_report*
