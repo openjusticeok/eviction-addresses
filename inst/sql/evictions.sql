@@ -22,7 +22,7 @@ CREATE MATERIALIZED VIEW "eviction_addresses"."recent_tulsa_evictions" AS (
 	WHERE
 		oc.DISTRICT = 'TULSA'
 		AND oc.case_type = 'SC'
-		AND DATE_FILED >= '2022-01-01'
+		AND DATE_FILED >= '2019-01-01'
 		AND oi.description ~* 'EVICTION|(?:ENTRY.*(?:FORCIBLE|DETAINER))|(?:(?:FORCIBLE|DETAINER).*ENTRY)'
 );
 
@@ -61,8 +61,8 @@ CREATE MATERIALIZED VIEW "eviction_addresses"."recent_tulsa_eviction_minutes" AS
 
 
 /* Need to start from recent eevictions, match
- * 
- * 
+ *
+ *
  */
 
 SELECT id
@@ -110,7 +110,7 @@ WHERE c.id IS NULL;
 /*
 INSERT INTO eviction_addresses."case" (id, district, case_type, case_number, date_filed, created_at, updated_at)
 VALUES (
-	
+
 );
 */
 
@@ -151,7 +151,7 @@ SELECT
 FROM eviction_addresses."document" d
 LEFT JOIN eviction_addresses.queue q
 	ON d."case" = q."case"
-WHERE internal_link IS NOT NULL 
+WHERE internal_link IS NOT NULL
 	AND q."case" IS NULL;
 
 
@@ -181,7 +181,7 @@ FROM
 	EVICTION_ADDRESSES."case" C
 LEFT JOIN EVICTION_ADDRESSES.ADDRESS A ON C.id = A."case"
 LEFT JOIN public."case" pc ON c.id = pc.id
-INNER JOIN EVICTION_ADDRESSES."document" D ON C.ID = D."case" 
+INNER JOIN EVICTION_ADDRESSES."document" D ON C.ID = D."case"
 WHERE A."case" IS NULL
 	AND pc.STATUS ~ 'Open'
 GROUP BY C.date_filed
@@ -212,12 +212,12 @@ SET created_at = current_timestamp, updated_at = current_timestamp
 WHERE created_at IS NULL;
 
 /* set accuracy to exact, method to manual */
-update eviction_addresses.address_migrate am 
+update eviction_addresses.address_migrate am
 set "method" = 'manual', accuracy = 'mailing'
 where "method" is null
 
 /* set geocode service */
-update eviction_addresses.address_migrate am 
+update eviction_addresses.address_migrate am
 set "geo_service" = 'postgrid'
 where "geo_service" is null
 
@@ -263,17 +263,17 @@ LEFT JOIN public."case" c
 
 
 SELECT count(*)
-FROM eviction_addresses.recent_tulsa_evictions rte 
+FROM eviction_addresses.recent_tulsa_evictions rte
 left join eviction_addresses.address a on rte.id = a."case";
 
 select count(*)
-from eviction_addresses.recent_tulsa_evictions rte 
+from eviction_addresses.recent_tulsa_evictions rte
 left join eviction_addresses."case" c on rte.id = c.id;
-	
-	
-	
+
+
+
 select *
-from eviction_addresses.address_migrate am 
+from eviction_addresses.address_migrate am
 
 select
 	"id" as "case",
@@ -285,10 +285,10 @@ select
 	zip,
 	current_timestamp as created_at,
 	current_timestamp as updated_at
-from eviction_addresses.old_db_temp odt 
+from eviction_addresses.old_db_temp odt
 full join eviction_addresses.id_lookup_temp ilt
-	on odt.casenum = ilt.casenum 
-		and odt.court = ilt.court 
+	on odt.casenum = ilt.casenum
+		and odt.court = ilt.court
 		and odt.file_date = ilt.file_date;
 
 
