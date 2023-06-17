@@ -4,7 +4,7 @@
     "Repositories": [
       {
         "Name": "CRAN",
-        "URL": "https://cran.rstudio.com"
+        "URL": "https://cloud.r-project.org"
       }
     ]
   },
@@ -888,22 +888,6 @@
         "rstudioapi"
       ]
     },
-    "gganimate": {
-      "Package": "gganimate",
-      "Version": "1.0.8",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "8e627464910e6bcf6ccb62b0bdbffa35",
-      "Requirements": [
-        "ggplot2",
-        "glue",
-        "progress",
-        "rlang",
-        "scales",
-        "stringi",
-        "tweenr"
-      ]
-    },
     "ggplot2": {
       "Package": "ggplot2",
       "Version": "3.4.2",
@@ -1659,27 +1643,6 @@
         "lattice"
       ]
     },
-    "odbc": {
-      "Package": "odbc",
-      "Version": "1.3.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "RemoteType": "standard",
-      "RemotePkgRef": "odbc",
-      "RemoteRef": "odbc",
-      "RemoteRepos": "https://cran.rstudio.com",
-      "RemotePkgPlatform": "x86_64-apple-darwin20",
-      "RemoteSha": "1.3.4",
-      "Hash": "dbbc00be3bd1e9808568a9bb686da239",
-      "Requirements": [
-        "DBI",
-        "Rcpp",
-        "bit64",
-        "blob",
-        "hms",
-        "rlang"
-      ]
-    },
     "ojodb": {
       "Package": "ojodb",
       "Version": "2.5.0",
@@ -1708,6 +1671,63 @@
         "tibble",
         "tidyr",
         "withr"
+      ]
+    },
+    "ojoslackr": {
+      "Package": "ojoslackr",
+      "Version": "0.1.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "openjusticeok",
+      "RemoteRepo": "ojoslackr",
+      "RemoteRef": "main",
+      "RemoteSha": "efbf92ca24c2020b59eddc8c6a9c695ee79eed93",
+      "Hash": "b033adda2c532c18b0f1dc94a318c553",
+      "Requirements": [
+        "ggplot2",
+        "slackr"
+      ]
+    },
+    "ojoutils": {
+      "Package": "ojoutils",
+      "Version": "0.0.0.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "openjusticeok",
+      "RemoteRepo": "ojoutils",
+      "RemoteRef": "main",
+      "RemoteSha": "c837ad47daeebb594bfb9cb7c72e136d3b654a00",
+      "Hash": "dfbf1249bbbecae4f2b3becf1bff9bce",
+      "Requirements": [
+        "dbplyr",
+        "dplyr",
+        "rlang"
+      ]
+    },
+    "ojoverse": {
+      "Package": "ojoverse",
+      "Version": "0.2.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "openjusticeok",
+      "RemoteRepo": "ojoverse",
+      "RemoteRef": "main",
+      "RemoteSha": "b248150567b37e4dd926f0737a08cb5be24bae35",
+      "Remotes": "openjusticeok/ojodb, openjusticeok/ojoslackr, openjusticeok/ojoutils",
+      "Hash": "bd0049193c60eec2b91f525ee49a2b53",
+      "Requirements": [
+        "cli",
+        "dplyr",
+        "ojodb",
+        "ojoslackr",
+        "ojoutils",
+        "purrr",
+        "rlang",
+        "rstudioapi",
+        "tibble"
       ]
     },
     "openssl": {
@@ -2396,6 +2416,24 @@
         "shiny"
       ]
     },
+    "slackr": {
+      "Package": "slackr",
+      "Version": "3.3.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "652c91f452bc8a46d2ab155cd08a41fe",
+      "Requirements": [
+        "cachem",
+        "dplyr",
+        "httr",
+        "jsonlite",
+        "magrittr",
+        "memoise",
+        "rlang",
+        "tibble",
+        "withr"
+      ]
+    },
     "sodium": {
       "Package": "sodium",
       "Version": "1.2.1",
@@ -2654,20 +2692,6 @@
       "Hash": "642507a148b0dd9b5620177e0a044413",
       "Requirements": [
         "Rcpp"
-      ]
-    },
-    "tweenr": {
-      "Package": "tweenr",
-      "Version": "2.0.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "c16efcef4c72d3bff5e65031f3f1f841",
-      "Requirements": [
-        "cpp11",
-        "farver",
-        "magrittr",
-        "rlang",
-        "vctrs"
       ]
     },
     "tzdb": {
