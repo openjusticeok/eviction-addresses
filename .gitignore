@@ -1,2 +1,10 @@
 *.pyc
 venv/
+blastula.json
+client-id.json
+config.yml
+eviction-addresses-service-account.json
+googlecloudrunner-auth-key.json
+tests/testthat/config.yml
+.Renviron
+shiny-apps-certs/
