@@ -60,7 +60,11 @@ api_image = docker.Image('eviction-addresses-api-image',
              build = docker.DockerBuildArgs(
                   context = './inst/docker/',
                   dockerfile = './inst/docker/api/Dockerfile',
-                  platform = 'linux/x86_64'
+                  args = {
+                      'BUILDKIT_INLINE_CACHE': '1'
+                    },
+                  builder_version = 'BuilderBuildKit',
+                  platform = 'linux/amd64'
              ),
              image_name = api_image_name,
              registry = docker.RegistryArgs(
