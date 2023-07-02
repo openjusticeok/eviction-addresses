@@ -48,3 +48,6 @@ build_test.R
 .vscode
 blastula.json
 pay_report*
+venv/
+*.pyc
+tests/testthat/config.yml

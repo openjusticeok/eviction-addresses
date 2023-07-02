@@ -5,7 +5,7 @@
 #'
 #' @returns A Shiny server function
 #'
-#' @import shiny shinydashboard logger
+#' @import shiny logger
 #'
 dashboard_server <- function(config) {
 
@@ -114,24 +114,6 @@ dashboard_server <- function(config) {
 
     currentDocumentsServer("current-documents", current_case, db)
     logger::log_debug("Current documents module created")
-
-#    output$sidebar_menu <- shinydashboard::renderMenu({
-#      req(credentials()$user_auth)
-#      shinydashboard::sidebarMenu(
-#        id = "sidebar-menu",
-#        shinydashboard::menuItem(
-#          "Entry",
-#          tabName = "entry",
-#          icon = icon("edit")
-#        ),
-#        shinydashboard::menuItem(
-#          "Metrics",
-#          tabName = "metrics",
-#          icon = icon("chart-bar")
-#        )
-#      )
-#    })
-#    logger::log_debug("Sidebar menu created")
 
     output$entry_ui <- renderUI({
       req(credentials()$user_auth)

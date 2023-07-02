@@ -177,8 +177,8 @@ plot_avg_days_to_ready <- function(data, result) {
 
 # Main script
 
-start_date <- as_date("2023-01-01")
-end_date <- as_date("2023-05-28")
+start_date <- as_date("2023-04-01")
+end_date <- as_date("2023-04-30")
 
 data <- load_preprocess_data(
   start_date = start_date,
@@ -265,31 +265,4 @@ data_to_plot |>
     days_to_ready = as.numeric(days_to_ready)
   ) |>
   pull(days_to_ready) |>
-  summary()
-
-###### Scratch
-
-data |>
-  arrange(date_filed, date_scraped) |>
-  mutate(
-    days_to_scrape = date_scraped - date_filed,
-  ) |>
-  ggplot(aes(x = date_filed, y = days_to_scrape)) +
-    geom_smooth(method = "loess", se = TRUE) +
-    geom_jitter(alpha = 0.2, size = 0.5, height = 0, width = 0.3) +
-    labs(
-      x = NULL,
-      y = NULL,
-      title = "Average Days to Scrape for Each Filing Day",
-      caption = str_wrap(
-        "The average number of days between when a case is filed and when the case is entered into the system.", # nolint
-        65
-      )
-    ) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 90, hjust = 1)
-    ) +
-    expand_limits(
-      y = c(0, 50)
-    )
+  skimr::skim()
