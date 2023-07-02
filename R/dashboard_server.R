@@ -5,7 +5,7 @@
 #'
 #' @returns A Shiny server function
 #'
-#' @import shiny shinydashboard logger
+#' @import shiny logger
 #'
 dashboard_server <- function(config) {
 
@@ -49,14 +49,14 @@ dashboard_server <- function(config) {
     )
     logger::log_debug("Logout module created")
 
-    observe({
-      if (credentials()$user_auth) {
-        shinyjs::removeClass(selector = "body", class = "sidebar-collapse")
-      } else {
-        shinyjs::addClass(selector = "body", class = "sidebar-collapse")
-      }
-    })
-    logger::log_debug("Sidebar collapse class added")
+#    observe({
+#      if (credentials()$user_auth) {
+#        shinyjs::removeClass(selector = "body", class = "sidebar-collapse")
+#      } else {
+#        shinyjs::addClass(selector = "body", class = "sidebar-collapse")
+#      }
+#    })
+#    logger::log_debug("Sidebar collapse class added")
 
     user_info <- reactive({
       credentials()$info
@@ -115,40 +115,20 @@ dashboard_server <- function(config) {
     currentDocumentsServer("current-documents", current_case, db)
     logger::log_debug("Current documents module created")
 
-    output$sidebar_menu <- shinydashboard::renderMenu({
-      req(credentials()$user_auth)
-      shinydashboard::sidebarMenu(
-        id = "sidebar-menu",
-        shinydashboard::menuItem(
-          "Entry",
-          tabName = "entry",
-          icon = icon("edit")
-        ),
-        shinydashboard::menuItem(
-          "Metrics",
-          tabName = "metrics",
-          icon = icon("chart-bar")
-        )
-      )
-    })
-    logger::log_debug("Sidebar menu created")
-
     output$entry_ui <- renderUI({
       req(credentials()$user_auth)
       tagList(
         fluidRow(
           column(
             width = 4,
-            shinydashboard::box(
-              width = 12,
+            bslib::card(
               entryDetailUI("entry-detail")
             )
           ),
           column(
             width = 8,
             offset = 0,
-            shinydashboard::box(
-              width = 12,
+            bslib::card(
               addressEntryUI("address-entry")
             )
           )
@@ -156,8 +136,7 @@ dashboard_server <- function(config) {
         fluidRow(
           column(
             width = 12,
-            shinydashboard::box(
-              width = 12,
+            bslib::card(
               currentDocumentsUI("current-documents")
             )
           )

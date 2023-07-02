@@ -4,9 +4,11 @@
 \alias{download_oscn_document}
 \title{Download OSCN Document}
 \usage{
-download_oscn_document(link)
+download_oscn_document(id, link)
 }
 \arguments{
+\item{id}{The id of the document minute}
+
 \item{link}{The link to the document}
 }
 \value{
