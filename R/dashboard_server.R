@@ -117,16 +117,14 @@ dashboard_server <- function(config) {
 
     output$entry_ui <- renderUI({
       req(credentials()$user_auth)
-      tagList(
-        bslib::card(
-          entryDetailUI("entry-detail")
+      list(
+        bslib::layout_column_wrap(
+          width = 1/2,
+          fillable = FALSE,
+          entryDetailUI("entry-detail"),
+          addressEntryUI("address-entry"),
         ),
-        bslib::card(
-          addressEntryUI("address-entry")
-        ),
-        bslib::card(
-          currentDocumentsUI("current-documents")
-        )
+        currentDocumentsUI("current-documents")
       )
     })
     logger::log_debug("Entry UI created")

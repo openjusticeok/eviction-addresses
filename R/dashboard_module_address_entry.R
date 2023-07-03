@@ -8,44 +8,61 @@
 #'
 addressEntryUI <- function(id) {
   ns <- NS(id)
-  textInput(
-    inputId = ns("street_number"),
-    label = "Street Number"
-  )
-  textInput(
-    inputId = ns("street_direction"),
-    label = "Street Direction"
-  )
-  textInput(
-    inputId = ns("street_name"),
-    label = "Street Name"
-  )
-  textInput(
-    inputId = ns("street_type"),
-    label = "Street Type"
-  )
-  textInput(
-    inputId = ns("unit"),
-    label = "APT/SUITE/UNIT..."
-  )
-  textInput(
-    inputId = ns("city"),
-    label = "City"
-  )
-  selectInput(
-    width = "80px",
-    inputId = ns("state"),
-    label = "State",
-    choices = c("AR", "OK", "TX"),
-    selected = "OK"
-  )
-  textInput(
-    inputId = ns("zip"),
-    label = "Zip Code"
-  )
-  actionButton(
-    inputId = ns("address_validate"),
-    label = "Validate"
+  bslib::card(
+    bslib::card_body(
+      bslib::layout_column_wrap(
+        width = 1/4,
+        textInput(
+          inputId = ns("street_number"),
+          label = "Street Number"
+        ),
+        textInput(
+          inputId = ns("street_direction"),
+          label = "Street Direction"
+        ),
+        textInput(
+          inputId = ns("street_name"),
+          label = "Street Name"
+        ),
+        textInput(
+          inputId = ns("street_type"),
+          label = "Street Type"
+        )
+      )
+    ),
+    bslib::card_body(
+      textInput(
+        inputId = ns("unit"),
+        label = "APT/SUITE/UNIT..."
+      )
+    ),
+    bslib::card_body(
+      bslib::layout_column_wrap(
+        width = 1/4,
+        textInput(
+          inputId = ns("city"),
+          label = "City"
+        ),
+        selectInput(
+          width = "80px",
+          inputId = ns("state"),
+          label = "State",
+          choices = c("AR", "OK", "TX"),
+          selected = "OK"
+        ),
+        textInput(
+          inputId = ns("zip"),
+          label = "Zip Code"
+        )
+      )
+    ),
+    bslib::card_body(
+      fillable = FALSE,
+      actionButton(
+        inputId = ns("address_validate"),
+        label = "Validate"
+      )
+    )
   )
 }
 

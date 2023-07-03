@@ -7,18 +7,28 @@
 #'
 entryDetailUI <- function(id) {
   ns <- NS(id)
-  div(
-    bslib::value_box(
-      value = textOutput("queue")
+  bslib::card(
+    bslib::card_body(
+      bslib::layout_column_wrap(
+        width = "250px",
+        fill = FALSE,
+        bslib::value_box(
+          title = "Queue",
+          value = textOutput(ns("queue"))
+        ),
+        bslib::value_box(
+          title = "Current Case",
+          value = textOutput(ns("current_case_number"))
+        )
+      )
     ),
-    bslib::value_box(
-      value = textOutput("current_case_number")
-    ),
-    #uiOutput(ns("current_case_ui")),
-    actionButton(
-      inputId = "case_refresh",
-      label = "New Case",
-      icon = icon("sync")
+    bslib::card_body(
+      fillable = FALSE,
+      actionButton(
+        inputId = "case_refresh",
+        label = "New Case",
+        icon = icon("sync")
+      )
     )
   )
 }
@@ -35,20 +45,14 @@ entryDetailUI <- function(id) {
 #'
 entryDetailServer <- function(id, current_case, total_cases) {
   moduleServer(id, function(input, output, session) {
-    current_case <- jsonlite::fromJSON(current_case())
-    queue <- total_cases()
 
     output$current_case_number <- renderText({
-      invalidateLater(1000)
-      current_case$case_number
+      jsonlite::fromJSON(current_case())$case_number
     })
-    # output$current_case_ui <- renderUI({
-    #   current_case <- jsonlite::fromJSON(current_case())
-    #   queue <- total_cases()
-    #   div(
-    #     h4(glue::glue("Current case: {current_case$case_number}")),
-    #     h4(glue::glue("{queue} cases in queue"))
-    #   )
-    # })
+
+    output$queue <- renderText({
+      total_cases()
+    })
+
   })
 }
