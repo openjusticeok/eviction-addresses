@@ -118,28 +118,14 @@ dashboard_server <- function(config) {
     output$entry_ui <- renderUI({
       req(credentials()$user_auth)
       tagList(
-        fluidRow(
-          column(
-            width = 4,
-            bslib::card(
-              entryDetailUI("entry-detail")
-            )
-          ),
-          column(
-            width = 8,
-            offset = 0,
-            bslib::card(
-              addressEntryUI("address-entry")
-            )
-          )
+        bslib::card(
+          entryDetailUI("entry-detail")
         ),
-        fluidRow(
-          column(
-            width = 12,
-            bslib::card(
-              currentDocumentsUI("current-documents")
-            )
-          )
+        bslib::card(
+          addressEntryUI("address-entry")
+        ),
+        bslib::card(
+          currentDocumentsUI("current-documents")
         )
       )
     })
