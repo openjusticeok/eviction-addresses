@@ -187,7 +187,7 @@ observe_address_validation <- function(input, session, db, current_case, jwt, ap
     modal_content <- shiny::div()
     logger::log_debug("Modal content: {modal_content}")
 
-    if(res$status_code == 200){
+    if (res$status_code == 200) {
       logger::log_debug("Response status code: {res$status_code}")
 
       response_content <- httr::content(res, as = "parsed", encoding = "UTF-8")
@@ -199,7 +199,7 @@ observe_address_validation <- function(input, session, db, current_case, jwt, ap
       logger::log_debug("Address validated: {address_validated$object}")
 
       logger::log_debug("Is null test: {!is.null(address_validated$object$line1)}")
-      if(!is.null(address_validated$object$line1)){
+      if (!is.null(address_validated$object$line1)) {
         address_validated$string <- stringify_address_validated(address_validated$object)
 
         modal_content <- div(
@@ -354,7 +354,7 @@ observe_address_submission <- function(input, db, current_case, current_user, ad
 
     current_case <- current_case()
 
-    if(is.null(address_validated$object)) {
+    if (is.null(address_validated$object)) {
       rlang::abort("Something is wrong. You submitted an address without first validating.")
     }
 
@@ -401,7 +401,7 @@ observe_address_submission <- function(input, db, current_case, current_user, ad
       append = TRUE
     )
 
-    if(write_status == TRUE) {
+    if (write_status == TRUE) {
       logger::log_debug("Wrote new record in 'address' table")
 
       pool::poolWithTransaction(db, function(conn) {
@@ -445,7 +445,7 @@ observe_address_submission <- function(input, db, current_case, current_user, ad
         statement = query
       )
 
-      if(update_res == 1) {
+      if (update_res == 1) {
         logger::log_debug("Incremented attempts by one")
       } else {
         logger::log_debug("{update_res} rows affected by incrementing attempts")

@@ -8,7 +8,6 @@
 #' @import shiny logger
 #'
 dashboard_server <- function(config) {
-
   function(input, output, session) {
     logger::log_debug("dashboard_server")
 
@@ -48,15 +47,6 @@ dashboard_server <- function(config) {
       active = reactive(credentials()$user_auth)
     )
     logger::log_debug("Logout module created")
-
-#    observe({
-#      if (credentials()$user_auth) {
-#        shinyjs::removeClass(selector = "body", class = "sidebar-collapse")
-#      } else {
-#        shinyjs::addClass(selector = "body", class = "sidebar-collapse")
-#      }
-#    })
-#    logger::log_debug("Sidebar collapse class added")
 
     user_info <- reactive({
       credentials()$info
@@ -133,5 +123,10 @@ dashboard_server <- function(config) {
       req(credentials()$user_auth)
     })
     logger::log_debug("Metrics UI created")
+
+    output$audit_ui <- renderUI({
+      req(credentials()$user_auth)
+    })
+    logger::log_debug("Audit UI created")
   }
 }

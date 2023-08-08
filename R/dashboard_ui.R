@@ -18,6 +18,10 @@ dashboard_ui <- function() {
       title = "Metrics",
       shiny::uiOutput("metrics_ui")
     ),
+    bslib::nav_panel(
+      title = "Audit",
+      shiny::uiOutput("audit_ui")
+    ),
     bslib::nav_spacer(),
     bslib::nav_menu(
       title = "Menu",
@@ -26,7 +30,7 @@ dashboard_ui <- function() {
         htmltools::tags$a(
           shiny::icon("github"),
           shiny::p("Github", style = "display: inline;"),
-          href = "https://github.com/paulc91/shinyauthr",
+          href = "https://github.com/openjusticeok/eviction-addresses",
           title = "See the code on github",
         )
       ),
