@@ -119,13 +119,19 @@ dashboard_server <- function(config) {
     })
     logger::log_debug("Entry UI created")
 
+    metricsServer("metrics")
+
     output$metrics_ui <- renderUI({
       req(credentials()$user_auth)
+      metricsUI("metrics")
     })
     logger::log_debug("Metrics UI created")
 
+    auditServer("audit")
+
     output$audit_ui <- renderUI({
       req(credentials()$user_auth)
+      auditUI("audit")
     })
     logger::log_debug("Audit UI created")
   }
