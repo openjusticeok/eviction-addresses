@@ -7,7 +7,7 @@
 #' @returns The UI for the audit module
 #'
 auditUI <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   htmltools::p("Audit")
 }
 
@@ -21,7 +21,7 @@ auditUI <- function(id) {
 #' @returns The server for the audit module
 #'
 auditServer <- function(id) {
-  moduleServer(id, function(input, output, session) {
+  shiny::moduleServer(id, function(input, output, session) {
 
   })
 }

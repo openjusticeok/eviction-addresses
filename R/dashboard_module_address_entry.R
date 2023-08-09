@@ -7,24 +7,24 @@
 #' @returns The UI for the address entry module
 #'
 addressEntryUI <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   bslib::card(
     bslib::card_body(
       bslib::layout_column_wrap(
-        width = 1/4,
-        textInput(
+        width = 1 / 4,
+        shiny::textInput(
           inputId = ns("street_number"),
           label = "Street Number"
         ),
-        textInput(
+        shiny::textInput(
           inputId = ns("street_direction"),
           label = "Street Direction"
         ),
-        textInput(
+        shiny::textInput(
           inputId = ns("street_name"),
           label = "Street Name"
         ),
-        textInput(
+        shiny::textInput(
           inputId = ns("street_type"),
           label = "Street Type"
         )
@@ -38,12 +38,12 @@ addressEntryUI <- function(id) {
     ),
     bslib::card_body(
       bslib::layout_column_wrap(
-        width = 1/4,
+        width = 1 / 4,
         textInput(
           inputId = ns("city"),
           label = "City"
         ),
-        selectInput(
+        shiny::selectInput(
           width = "80px",
           inputId = ns("state"),
           label = "State",
@@ -58,7 +58,7 @@ addressEntryUI <- function(id) {
     ),
     bslib::card_body(
       fillable = FALSE,
-      actionButton(
+      shiny::actionButton(
         inputId = ns("address_validate"),
         label = "Validate"
       )
@@ -85,21 +85,21 @@ addressEntryServer <- function(id, config, db, current_case, current_user) {
   )$service_url
   logger::log_debug("API URL: {api_url}")
 
-  jwt <- reactive({
-    invalidateLater(2700000)
+  jwt <- shiny::reactive({
+    shiny::invalidateLater(2700000)
     logger::log_debug("JWT invalidated")
     logger::log_debug("Creating JWT")
     googleCloudRunner::cr_jwt_create(api_url)
   })
   logger::log_debug("Created JWT")
 
-  moduleServer(id, function(input, output, session) {
-    address_entered <- reactiveValues(
+  shiny::moduleServer(id, function(input, output, session) {
+    address_entered <- shiny::reactiveValues(
       object = NULL,
       string = NULL
     )
 
-    address_validated <- reactiveValues(
+    address_validated <- shiny::reactiveValues(
       object = NULL,
       string = NULL
     )
@@ -146,7 +146,7 @@ addressEntryServer <- function(id, config, db, current_case, current_user) {
 observe_address_validation <- function(input, session, db, current_case, jwt, api_url, address_entered, address_validated) {
   ns <- session$ns
 
-  observeEvent(input$address_validate, {
+  shiny::observeEvent(input$address_validate, {
     logger::log_debug("Address validation button pressed")
 
     address_entered$object <- isolate_address_entered(input)
@@ -202,20 +202,24 @@ observe_address_validation <- function(input, session, db, current_case, jwt, ap
       if (!is.null(address_validated$object$line1)) {
         address_validated$string <- stringify_address_validated(address_validated$object)
 
-        modal_content <- div(
-          h5("Address successfully validated"),
-          div(
+        modal_content <- htmltools::div(
+          htmltools::h5("Address successfully validated"),
+          htmltools::div(
             style = "display: flex; pad: 10px; justify-content: space-around;",
-            div(
-              h5("Address entered:"),
-              h5(HTML(address_entered$string))
+            htmltools::div(
+              htmltools::h5("Address entered:"),
+              htmltools::h5(htmltools::HTML(address_entered$string))
             ),
-            div(
-              h5("Verified address:"),
-              h5(HTML(address_validated$string))
+            htmltools::div(
+              htmltools::h5("Verified address:"),
+              htmltools::h5(htmltools::HTML(address_validated$string))
             )
           ),
-          actionButton(ns("address_submit"), label = "Submit", icon = icon("upload"))
+          shiny::actionButton(
+            ns("address_submit"),
+            label = "Submit",
+            icon = shiny::icon("upload")
+          )
         )
       } else {
         modal_content <- "Could not validate address."
@@ -247,10 +251,12 @@ observe_address_validation <- function(input, session, db, current_case, jwt, ap
       address_validated$string <- NULL
     }
 
-    showModal(modalDialog(
-      title = "Address Validation",
-      modal_content
-    ))
+    shiny::showModal(
+      shiny::modalDialog(
+        title = "Address Validation",
+        modal_content
+      )
+    )
     logger::log_debug("Modal shown")
   })
 }
@@ -349,7 +355,7 @@ stringify_address_validated <- function(address_validated) {
 #' @returns A Shiny observer object
 #'
 observe_address_submission <- function(input, db, current_case, current_user, address_entered, address_validated) {
-  observeEvent(input$address_submit, {
+  shiny::observeEvent(input$address_submit, {
     logger::log_debug("Address submit button pressed")
 
     current_case <- current_case()
@@ -434,7 +440,7 @@ observe_address_submission <- function(input, db, current_case, current_user, ad
 
       })
 
-      removeModal()
+      shiny::removeModal()
     } else {
       logger::log_error("Failed to write the new record to table 'address'")
 
