@@ -44,17 +44,17 @@ dashboard_server <- function(config) {
     # call the logout module with reactive trigger to hide/show
     logout_init <- shinyauthr::logoutServer(
       id = "logout",
-      active = reactive(credentials()$user_auth)
+      active = shiny::reactive(credentials()$user_auth)
     )
     logger::log_debug("Logout module created")
 
-    user_info <- reactive({
+    user_info <- shiny::reactive({
       credentials()$info
     })
     logger::log_debug("User info reactive created")
 
-    user_data <- reactive({
-      req(credentials()$user_auth)
+    user_data <- shiny::reactive({
+      shiny::req(credentials()$user_auth)
 
       if (user_info()$role == "admin") {
         logger::log_debug("User has admin priveleges")
@@ -64,12 +64,12 @@ dashboard_server <- function(config) {
     })
     logger::log_debug("User data reactive created")
 
-    current_user <- reactive({
+    current_user <- shiny::reactive({
       user_info()$user
     })
     logger::log_debug("Current user reactive created")
 
-    current_case <- reactive({
+    current_case <- shiny::reactive({
       input$case_refresh
 
       case <- get_case_from_queue(db = db)
@@ -78,7 +78,7 @@ dashboard_server <- function(config) {
     })
     logger::log_debug("Current case reactive created")
 
-    total_cases <- reactive({
+    total_cases <- shiny::reactive({
       input$case_refresh
 
       queue_length <- get_queue_length(db = db)
@@ -87,7 +87,7 @@ dashboard_server <- function(config) {
     })
     logger::log_debug("Total cases reactive created")
 
-    documents <- reactive({
+    documents <- shiny::reactive({
       current_case <- current_case()
 
       res <- get_documents_by_case(db = db, id = current_case)
@@ -105,11 +105,11 @@ dashboard_server <- function(config) {
     currentDocumentsServer("current-documents", current_case, db)
     logger::log_debug("Current documents module created")
 
-    output$entry_ui <- renderUI({
-      req(credentials()$user_auth)
+    output$entry_ui <- shiny::renderUI({
+      shiny::req(credentials()$user_auth)
       list(
         bslib::layout_column_wrap(
-          width = 1/2,
+          width = 1 / 2,
           fillable = FALSE,
           entryDetailUI("entry-detail"),
           addressEntryUI("address-entry"),
@@ -121,16 +121,16 @@ dashboard_server <- function(config) {
 
     metricsServer("metrics")
 
-    output$metrics_ui <- renderUI({
-      req(credentials()$user_auth)
+    output$metrics_ui <- shiny::renderUI({
+      shiny::req(credentials()$user_auth)
       metricsUI("metrics")
     })
     logger::log_debug("Metrics UI created")
 
     auditServer("audit")
 
-    output$audit_ui <- renderUI({
-      req(credentials()$user_auth)
+    output$audit_ui <- shiny::renderUI({
+      shiny::req(credentials()$user_auth)
       auditUI("audit")
     })
     logger::log_debug("Audit UI created")
