@@ -8,7 +8,6 @@
 #' @import shiny logger
 #'
 dashboard_server <- function(config) {
-
   function(input, output, session) {
     logger::log_debug("dashboard_server")
 
@@ -48,15 +47,6 @@ dashboard_server <- function(config) {
       active = reactive(credentials()$user_auth)
     )
     logger::log_debug("Logout module created")
-
-#    observe({
-#      if (credentials()$user_auth) {
-#        shinyjs::removeClass(selector = "body", class = "sidebar-collapse")
-#      } else {
-#        shinyjs::addClass(selector = "body", class = "sidebar-collapse")
-#      }
-#    })
-#    logger::log_debug("Sidebar collapse class added")
 
     user_info <- reactive({
       credentials()$info
@@ -117,37 +107,32 @@ dashboard_server <- function(config) {
 
     output$entry_ui <- renderUI({
       req(credentials()$user_auth)
-      tagList(
-        fluidRow(
-          column(
-            width = 4,
-            bslib::card(
-              entryDetailUI("entry-detail")
-            )
-          ),
-          column(
-            width = 8,
-            offset = 0,
-            bslib::card(
-              addressEntryUI("address-entry")
-            )
-          )
+      list(
+        bslib::layout_column_wrap(
+          width = 1/2,
+          fillable = FALSE,
+          entryDetailUI("entry-detail"),
+          addressEntryUI("address-entry"),
         ),
-        fluidRow(
-          column(
-            width = 12,
-            bslib::card(
-              currentDocumentsUI("current-documents")
-            )
-          )
-        )
+        currentDocumentsUI("current-documents")
       )
     })
     logger::log_debug("Entry UI created")
 
+    metricsServer("metrics")
+
     output$metrics_ui <- renderUI({
       req(credentials()$user_auth)
+      metricsUI("metrics")
     })
     logger::log_debug("Metrics UI created")
+
+    auditServer("audit")
+
+    output$audit_ui <- renderUI({
+      req(credentials()$user_auth)
+      auditUI("audit")
+    })
+    logger::log_debug("Audit UI created")
   }
 }

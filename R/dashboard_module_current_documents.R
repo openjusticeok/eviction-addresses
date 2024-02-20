@@ -10,29 +10,32 @@
 currentDocumentsUI <- function(id) {
   ns <- NS(id)
 
-  tagList(
-    div(
-      style = "display: flex; justify-content: center; gap: 10px;",
+  bslib::card(
+    bslib::card_body(
+      fillable = FALSE,
+      style = "display:flex; justify-content:center;",
       actionButton(inputId = ns("previous_document"), label = "Previous"),
       textOutput(ns("document_selector_ui")),
       actionButton(inputId = ns("next_document"), label = "Next")
     ),
-    htmlOutput(ns("current_document_ui"))
+    bslib::card_body(
+      htmlOutput(ns("current_document_ui"))
+    )
   )
 }
 
 
 #' @title Current Documents Module Server
-#' 
+#'
 #' @description
 #' This function creates the server for the current documents module.
-#' 
+#'
 #' @param id The id of the module
 #' @param current_case The reactive value containing the current case
 #' @param db The database connection
-#' 
+#'
 #' @returns The server function for the current documents module
-#' 
+#'
 currentDocumentsServer <- function(id, current_case, db) {
   moduleServer(id, function(input, output, session) {
     documents <- reactive({
