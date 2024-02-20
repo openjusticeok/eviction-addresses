@@ -19,7 +19,7 @@ run_api <- function(config, ..., .background = FALSE) {
   db <- new_db_pool(config)
   withr::defer(pool::poolClose(db))
 
-  if(.background) {
+  if (.background) {
     future::plan(future.callr::callr)
 
   } else {

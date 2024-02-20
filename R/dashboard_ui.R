@@ -4,45 +4,45 @@
 #' @returns A shiny ui function
 #'
 dashboard_ui <- function() {
-  shinydashboard::dashboardPage(
-    title = "Open Justice Oklahoma Eviction Addresses",
-    skin = "blue",
-    shinydashboard::dashboardHeader(
-      title = "Eviction Addresses",
-      htmltools::tags$li(
-        class = "dropdown",
-        style = "padding: 8px;",
-        shinyauthr::logoutUI("logout")
+  bslib::page_navbar(
+    title = "Eviction Addresses",
+    bslib::nav_panel(
+      title = "Entry",
+      shinyauthr::loginUI(
+        "login",
+        cookie_expiry = 7
       ),
-      htmltools::tags$li(
-        class = "dropdown",
+      shiny::uiOutput("entry_ui")
+    ),
+    bslib::nav_panel(
+      title = "Metrics",
+      shiny::uiOutput("metrics_ui")
+    ),
+    bslib::nav_panel(
+      title = "Audit",
+      shiny::uiOutput("audit_ui")
+    ),
+    bslib::nav_spacer(),
+    bslib::nav_menu(
+      title = "Menu",
+      align = "right",
+      bslib::nav_item(
         htmltools::tags$a(
           shiny::icon("github"),
-          href = "https://github.com/paulc91/shinyauthr",
-          title = "See the code on github"
+          shiny::p("Github", style = "display: inline;"),
+          href = "https://github.com/openjusticeok/eviction-addresses",
+          title = "See the code on github",
         )
       ),
-      htmltools::tags$li(
-        class = "dropdown",
+      bslib::nav_item(
         shiny::actionLink(
           inputId = "header-help",
           label = "Help",
           icon = shiny::icon("question-circle")
         )
-      )
-    ),
-    shinydashboard::dashboardSidebar(
-      collapsed = TRUE,
-      shinydashboard::sidebarMenuOutput(outputId = "sidebar_menu")
-    ),
-    shinydashboard::dashboardBody(
-      shinyauthr::loginUI(
-        "login",
-        cookie_expiry = 7
       ),
-      shinydashboard::tabItems(
-        shinydashboard::tabItem("entry", shiny::uiOutput("entry_ui")),
-        shinydashboard::tabItem("metrics", shiny::uiOutput("metrics_ui"))
+      bslib::nav_item(
+        shinyauthr::logoutUI("logout", class = "my-1 mx-3 btn-danger")
       )
     )
   )
