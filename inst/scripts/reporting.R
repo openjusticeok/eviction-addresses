@@ -176,8 +176,8 @@ plot_avg_days_to_ready <- function(data, result) {
 
 # Main script
 
-start_date <- as_date("2023-09-01")
-end_date <- rollback(as_date("2023-10-01"))
+start_date <- as_date("2023-10-01")
+end_date <- rollback(as_date("2023-11-01"))
 
 data <- load_preprocess_data(
   start_date = start_date,
