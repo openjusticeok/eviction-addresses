@@ -174,11 +174,10 @@ plot_avg_days_to_ready <- function(data, result) {
 }
 
 
-
 # Main script
 
-start_date <- as_date("2023-01-01")
-end_date <- as_date("2023-05-28")
+start_date <- as_date("2022-10-01")
+end_date <- rollback(as_date("2024-01-01"))
 
 data <- load_preprocess_data(
   start_date = start_date,
@@ -195,7 +194,7 @@ plot1 <- plot_letters_each_day(result)
 plot2 <- plot_avg_days_to_ready(data, result)
 
 plot1
-plot2 + expand_limits(y = 0)
+plot2
 
 plot2 |>
   ggsave(
@@ -265,31 +264,20 @@ data_to_plot |>
     days_to_ready = as.numeric(days_to_ready)
   ) |>
   pull(days_to_ready) |>
-  summary()
-
-###### Scratch
-
-data |>
-  arrange(date_filed, date_scraped) |>
-  mutate(
-    days_to_scrape = date_scraped - date_filed,
+  skimr::skim() |>
+  select(
+    starts_with("numeric.p")
   ) |>
-  ggplot(aes(x = date_filed, y = days_to_scrape)) +
-    geom_smooth(method = "loess", se = TRUE) +
-    geom_jitter(alpha = 0.2, size = 0.5, height = 0, width = 0.3) +
-    labs(
-      x = NULL,
-      y = NULL,
-      title = "Average Days to Scrape for Each Filing Day",
-      caption = str_wrap(
-        "The average number of days between when a case is filed and when the case is entered into the system.", # nolint
-        65
-      )
-    ) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 90, hjust = 1)
-    ) +
-    expand_limits(
-      y = c(0, 50)
-    )
+  gt::gt() |>
+  gt::cols_label(
+    numeric.p0 = "Min",
+    numeric.p25 = "25%",
+    numeric.p50 = "Median",
+    numeric.p75 = "75%",
+    numeric.p100 = "Max"
+  ) |>
+  gt::tab_header(
+    title = "Summary Statistics for Days to Ready",
+    subtitle = "The percentage of cases that are ready within a certain number of days after being filed, e.g. 75% of cases are ready within 8 days."
+  )
+

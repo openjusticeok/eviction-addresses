@@ -7,4 +7,4 @@ left join(
 where district = 'TULSA'
 	and case_type = 'SC'
 	and s.description like 'FORC%'
-	and date_filed >= transaction_timestamp() - interval '1 month'
+	and date_filed >= transaction_timestamp() - interval '1 month';
