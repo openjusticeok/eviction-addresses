@@ -79,17 +79,22 @@ plot_cases <- function(db, ..., .silent = FALSE) {
 #' plot_logins(db, c("test", "test2"), lubridate::ymd("2022-12-12"), lubridate::today())
 #' }
 #'
-plot_logins <- function(db, users, start = lubridate::ymd("2022-12-12"), end = lubridate::today(), .silent = FALSE) {
+plot_logins <- function(db, users = "all", start = lubridate::ymd("2022-12-12"), end = lubridate::today(), .silent = FALSE) {
   # Query the sessions table by users and date
-    query <- glue::glue_sql(
-        'SELECT "user", DATE("login_time") AS "date", COUNT(*) AS "count"',
-        'FROM "eviction_addresses"."session"',
-        'WHERE "user" IN ({users*})',
-        'AND "login_time" BETWEEN {start} AND {end}',
-        'GROUP BY "user", DATE("login_time")',
-        .sep = " ",
-        .con = db
-    )
+  user_filter <- if (users == "all") {
+    ""
+  } else {
+    glue::glue_sql("WHERE \"user\" IN ({users*}) AND \"login_time\" BETWEEN {start} AND {end}", users = users, start = start, end = end, .con = db)
+  }
+
+  query <- glue::glue_sql(
+    'SELECT "user", DATE("login_time") AS "date", COUNT(*) AS "count"',
+    'FROM "eviction_addresses"."session"',
+    user_filter,
+    'GROUP BY "user", DATE("login_time")',
+    .sep = " ",
+    .con = db
+  )
 
     # Store the result in a tibble
     # Convert the count column to numeric from integer64
@@ -340,6 +345,7 @@ calculate_pay <- function(
   priority_rate = 0.35,
   backlog_rate = 0.25
 ) {
+
   # Query process table for number of addresses entered per person and entry type
   query <- glue::glue_sql(
     'SELECT "user", DATE(pl.created_at) as created_at, c.date_filed ',
@@ -382,7 +388,6 @@ calculate_pay <- function(
     dplyr::count() |>
     dplyr::ungroup() |>
     dplyr::left_join(rates, by = "type") |>
-    dplyr::select(-.data$user) |>
     dplyr::mutate(
       pay = .data$n * .data$rate,
       type = stringr::str_to_title(.data$type),
