@@ -1,0 +1,56 @@
+# Multi-stage build for R base with dependencies
+FROM rocker/r-ver:4.2.2 as base
+
+LABEL maintainer="brancengregory"
+
+# Install system dependencies
+RUN export DEBIAN_FRONTEND=noninteractive; apt-get -y update \
+  && apt-get install -y \
+    git-core \
+    libpq-dev \
+    libxml2-dev \
+    libsodium-dev \
+    libssl-dev \
+    unixodbc-dev \
+    odbc-postgresql \
+    libudunits2-dev \
+    libproj-dev \
+    libgdal-dev \
+  && rm -rf /var/lib/apt/lists/*
+
+# Set R environment
+ENV R_CONFIG_ACTIVE=docker
+
+# Install R packages
+RUN install2.r remotes here
+
+# Install the eviction-addresses package
+RUN installGithub.r openjusticeok/eviction-addresses
+
+# Production stage
+FROM base as production
+
+WORKDIR /workspace/
+
+# Copy configuration files (these will be mounted as secrets in Cloud Run)
+# Note: In the new infrastructure, these are mounted as volumes from Secret Manager
+# COPY .Renviron .
+# COPY config.yml .
+# COPY client-id.json .
+# COPY eviction-addresses-service-account.json .
+# COPY shiny-apps-certs/ ./shiny-apps-certs
+
+# Create user for better security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN chown -R appuser:appuser /workspace
+USER appuser
+
+# Expose port
+EXPOSE 3838
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:3838/ || exit 1
+
+# Start the dashboard
+CMD ["R", "-e", "evictionAddresses::run_dashboard('config.yml', host = '0.0.0.0', port = as.numeric(Sys.getenv('PORT')))"]
