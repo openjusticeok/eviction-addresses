@@ -35,7 +35,7 @@ eviction_addresses_api_yaml <- cr_build_yaml(
     ),
     cr_buildstep_run(
       name = "eviction-addresses-api",
-      image = "gcr.io/ojo-database/eviction-addresses-api:$BUILD_ID",
+      image = "us-central1-docker.pkg.dev/ojo-database/docker/eviction-addresses-api:$BUILD_ID",
       port = 3838,
       memory = "2G",
       cpu = 1,
@@ -110,7 +110,7 @@ eviction_addresses_dashboard_yaml <- cr_build_yaml(
     ),
     cr_buildstep_run(
       name = "eviction-addresses-dashboard",
-      image = "gcr.io/ojo-database/eviction-addresses-dashboard:$BUILD_ID",
+      image = "us-central1-docker.pkg.dev/ojo-database/docker/eviction-addresses-dashboard:$BUILD_ID",
       port = 3838,
       memory = "1G",
       cpu = 1,
