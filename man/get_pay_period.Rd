@@ -4,14 +4,23 @@
 \alias{get_pay_period}
 \title{Get Pay Period}
 \usage{
-get_pay_period(date, pay_period_start_date = lubridate::ymd("2023-01-02"))
+get_pay_period(
+  date,
+  pay_period_start_date = lubridate::ymd("2023-01-01"),
+  period = "1 week"
+)
 }
 \arguments{
 \item{date}{A date}
+
+\item{pay_period_start_date}{The reference start date for pay periods. Defaults to a Sunday (2023-01-01)}
+
+\item{period}{The length of the pay period as a string (e.g., "1 week", "2 weeks", "1 month"). Defaults to "1 week"}
 }
 \value{
 A list with two values \code{start} and \code{end} which
-are the first and last days of the pay period containing \code{date}
+are the first and last days of the pay period containing \code{date}.
+Pay periods start on Sunday and go through Saturday.
 }
 \description{
 Gets the pay period for a given date
