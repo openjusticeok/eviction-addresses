@@ -1,0 +1,12 @@
+# Legacy googleCloudRunner files
+# These files are deprecated and will be removed after migration verification
+inst/cloudbuild/build.R
+inst/cloudbuild/build_test.R
+
+# Legacy Dockerfiles (replaced by dockerfiles/ directory)
+inst/cloudbuild/Dockerfile
+inst/cloudbuild/shiny_Dockerfile
+inst/cloudbuild/refresh_job_Dockerfile
+inst/cloudbuild/test_Dockerfile
+inst/cloudbuild/test_shiny_Dockerfile
+inst/cloudbuild/test_refresh_job_Dockerfile
