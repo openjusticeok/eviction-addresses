@@ -55,8 +55,8 @@ resource "google_secret_manager_secret" "client_id" {
   }
 }
 
-resource "google_secret_manager_secret" "ssl_certs" {
-  secret_id = "eviction-addresses-ssl-certs-${var.environment}"
+resource "google_secret_manager_secret" "ssl_cert" {
+  secret_id = "eviction-addresses-ssl-cert-${var.environment}"
   
   replication {
     auto {}
@@ -80,7 +80,7 @@ resource "google_secret_manager_secret_iam_member" "service_account_access" {
     api_renviron            = google_secret_manager_secret.api_renviron.secret_id
     dashboard_renviron      = google_secret_manager_secret.dashboard_renviron.secret_id
     client_id               = google_secret_manager_secret.client_id.secret_id
-    ssl_certs              = google_secret_manager_secret.ssl_certs.secret_id
+    ssl_cert                = google_secret_manager_secret.ssl_cert.secret_id
   }
   
   secret_id = each.value

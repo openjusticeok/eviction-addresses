@@ -40,19 +40,19 @@ resource "google_cloud_run_v2_service" "api" {
         value = "3838"
       }
       
-      # Service account key
+      # Service account key - mounted as volume
       volume_mounts {
         name       = "service-account"
         mount_path = "/workspace"
       }
       
-      # Config file
+      # Config file - mounted as volume
       volume_mounts {
         name       = "config"
         mount_path = "/workspace"
       }
       
-      # SSL certificates - simplified to mount the directory with all certs
+      # SSL certificates
       volume_mounts {
         name       = "ssl-certs"
         mount_path = "/workspace/shiny-apps-certs"
@@ -89,6 +89,15 @@ resource "google_cloud_run_v2_service" "api" {
           version = "latest"
           path    = "client-cert.pem"
         }
+        items {
+          version = "latest"
+          path    = "client-key.pem"
+          mode    = 0400
+        }
+        items {
+          version = "latest"
+          path    = "server-ca.pem"
+        }
       }
     }
     
@@ -106,7 +115,7 @@ resource "google_cloud_run_v2_service" "api" {
   }
 }
 
-# IAM policy for API service (only for test environment)
+# IAM policy for API service (only for test environment - prod should require auth)
 resource "google_cloud_run_service_iam_member" "api_noauth" {
   count = var.environment == "test" ? 1 : 0
   
@@ -149,31 +158,37 @@ resource "google_cloud_run_v2_service" "dashboard" {
         value = "3838"
       }
       
+      # Service account key
       volume_mounts {
         name       = "service-account"
         mount_path = "/workspace"
       }
       
+      # Dashboard service account
       volume_mounts {
         name       = "dashboard-service-account"
         mount_path = "/workspace"
       }
       
+      # Config file
       volume_mounts {
         name       = "config"
         mount_path = "/workspace"
       }
       
+      # Client ID
       volume_mounts {
         name       = "client-id"
         mount_path = "/workspace"
       }
       
+      # Environment variables
       volume_mounts {
         name       = "renviron"
         mount_path = "/workspace"
       }
       
+      # SSL certificates
       volume_mounts {
         name       = "ssl-certs"
         mount_path = "/workspace/shiny-apps-certs"
@@ -243,6 +258,15 @@ resource "google_cloud_run_v2_service" "dashboard" {
           version = "latest"
           path    = "client-cert.pem"
         }
+        items {
+          version = "latest"
+          path    = "client-key.pem"
+          mode    = 0400
+        }
+        items {
+          version = "latest"
+          path    = "server-ca.pem"
+        }
       }
     }
     
@@ -292,16 +316,19 @@ resource "google_cloud_run_v2_service" "job" {
         value = "8080"
       }
       
+      # Service account key
       volume_mounts {
         name       = "service-account"
         mount_path = "/workspace"
       }
       
+      # Config file
       volume_mounts {
         name       = "config"
         mount_path = "/workspace"
       }
       
+      # SSL certificates
       volume_mounts {
         name       = "ssl-certs"
         mount_path = "/workspace/shiny-apps-certs"
@@ -337,6 +364,15 @@ resource "google_cloud_run_v2_service" "job" {
         items {
           version = "latest"
           path    = "client-cert.pem"
+        }
+        items {
+          version = "latest"
+          path    = "client-key.pem"
+          mode    = 0400
+        }
+        items {
+          version = "latest"
+          path    = "server-ca.pem"
         }
       }
     }
