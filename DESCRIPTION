@@ -1,14 +1,16 @@
 Package: evictionAddresses
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9003
-Authors@R: person("First", "Last", ,
-      "first.last@example.com", role = c("aut", "cre"),
-      comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Title: Eviction Address Collection and Validation for OSCN Data
+Version: 0.1.0
+Authors@R: person("Brancen", "Gregory", ,
+      "brancengregory@gmail.com", role = c("aut", "cre"))
+Description: Provides tools for collecting, validating, and geocoding eviction 
+    addresses from the Oklahoma State Courts Network (OSCN). Includes a data-entry 
+    dashboard and API for processing eviction case data, address verification through 
+    Postgrid, and utility functions for pay period calculations and data processing.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.2
+RoxygenNote: 7.3.2
 Imports: 
     assertthat,
     base64enc,
@@ -62,11 +64,8 @@ Suggests:
     webmockr,
     withr
 Remotes:
-    cloudyr/googleCloudStorageR,
-    MarkEdmondson1234/googleCloudRunner,
-    rstudio/blastula,
-    rstudio/gt,
-    rich-iannone/juicyjuice
+    yonicd/covrpage,
+    MarkEdmondson1234/googleCloudRunner
 VignetteBuilder: knitr
 URL: https://openjusticeok.github.io/eviction-addresses/
 Config/testthat/edition: 3

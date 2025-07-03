@@ -123,13 +123,16 @@ has_latlon_match <- function(.data, tolerance = 0.0002) {
 #' @description Gets the pay period for a given date
 #' 
 #' @param date A date
+#' @param pay_period_start_date The reference start date for pay periods. Defaults to a Sunday (2023-01-01)
+#' @param period The length of the pay period as a string (e.g., "1 week", "2 weeks", "1 month"). Defaults to "1 week"
 #' 
 #' @export
 #' @returns
 #' A list with two values `start` and `end` which
-#' are the first and last days of the pay period containing `date`
+#' are the first and last days of the pay period containing `date`.
+#' Pay periods start on Sunday and go through Saturday.
 #' 
-get_pay_period <- function(date, pay_period_start_date = lubridate::ymd("2023-01-02")) {
+get_pay_period <- function(date, pay_period_start_date = lubridate::ymd("2023-01-01"), period = "1 week") {
   if(!inherits(date, "Date")) {
     if(!inherits(date, "character")) {
       stop("`date` must be a character or Date")
@@ -138,12 +141,20 @@ get_pay_period <- function(date, pay_period_start_date = lubridate::ymd("2023-01
     date <- lubridate::ymd(date)
   }
 
+  # Parse the period string into days
+  period_duration <- lubridate::duration(period)
+  period_days <- as.integer(period_duration / lubridate::ddays(1))
+  
+  if(period_days <= 0) {
+    stop("`period` must result in a positive number of days")
+  }
+
   diff_date <- (date - pay_period_start_date) |> as.integer()
 
-  pay_period <- diff_date %/% 14
+  pay_period <- diff_date %/% period_days
 
-  start <- pay_period_start_date + (pay_period * 14 - 1)
-  end <- start + 13
+  start <- pay_period_start_date + (pay_period * period_days)
+  end <- start + period_days - 1
 
   res <- list(
     start = start,
