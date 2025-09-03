@@ -1,17 +1,17 @@
 Package: evictionAddresses
-Title: Eviction Address Collection and Validation for OSCN Data
-Version: 0.1.0
+Title: A Data Entry Dashboard, API, and Reporting Tool for Eviction Addresses
+Version: 1.0.0
 Authors@R: person("Brancen", "Gregory", ,
       "brancengregory@gmail.com", role = c("aut", "cre"))
-Description: Provides tools for collecting, validating, and geocoding eviction 
-    addresses from the Oklahoma State Courts Network (OSCN). Includes a data-entry 
-    dashboard and API for processing eviction case data, address verification through 
-    Postgrid, and utility functions for pay period calculations and data processing.
+Description: Eviction case documents contain addresses and are public records,
+    but they are not available in a format that is easy to use.
+    This package provides a dashboard for data entry, an API for accessing the
+    data, and a reporting tool for analyzing the data.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-Imports: 
+Imports:
     assertthat,
     base64enc,
     blastula,
@@ -45,7 +45,7 @@ Imports:
     sodium,
     stringr,
     tibble
-Suggests: 
+Suggests:
     callr,
     covr,
     covrpage,
