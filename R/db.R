@@ -20,22 +20,19 @@ new_db_pool <- function(config = "config.yml") {
 
   }
 
-  db <- pool::dbPool(odbc::odbc(),
-                     Driver = connection_args$driver,
-                     Server = connection_args$server,
-                     Database = connection_args$database,
-                     Port = connection_args$port,
-                     Username = connection_args$uid,
-                     Password = connection_args$pwd,
-                     SSLmode = "verify-ca",
-                     Pqopt = stringr::str_glue(
-                       "{sslrootcert={{connection_args$ssl.ca}}",
-                       "sslcert={{connection_args$ssl.cert}}",
-                       "sslkey={{connection_args$ssl.key}}}",
-                       .open = "{{",
-                       .close = "}}",
-                       .sep = " "
-                     )
+  db <- pool::dbPool(
+    RPostgres::Postgres(),
+    host = connection_args$server,
+    dbname = connection_args$database,
+    port = connection_args$port,
+    user = connection_args$uid,
+    password = connection_args$pwd,
+    sslmode = "verify-ca",
+    sslrootcert = connection_args$ssl.ca,
+    sslcert = connection_args$ssl.cert,
+    sslkey = connection_args$ssl.key,
+    bigint = "integer",
+    check_interrupts = TRUE
   )
 
   return(db)
@@ -64,22 +61,18 @@ new_db_connection <- function(config = "config.yml") {
   }
 
   conn <- DBI::dbConnect(
-    odbc::odbc(),
-    Driver = connection_args$driver,
-    Server = connection_args$server,
-    Database = connection_args$database,
-    Port = connection_args$port,
-    Username = connection_args$uid,
-    Password = connection_args$pwd,
-    SSLmode = "verify-ca",
-    Pqopt = stringr::str_glue(
-      "{sslrootcert={{connection_args$ssl.ca}}",
-      "sslcert={{connection_args$ssl.cert}}",
-      "sslkey={{connection_args$ssl.key}}}",
-      .open = "{{",
-      .close = "}}",
-      .sep = " "
-    )
+    RPostgres::Postgres(),
+    host = connection_args$server,
+    dbname = connection_args$database,
+    port = connection_args$port,
+    user = connection_args$uid,
+    password = connection_args$pwd,
+    sslmode = "verify-ca",
+    sslrootcert = connection_args$ssl.ca,
+    sslcert = connection_args$ssl.cert,
+    sslkey = connection_args$ssl.key,
+    bigint = "integer",
+    check_interrupts = TRUE
   )
 
   return(conn)

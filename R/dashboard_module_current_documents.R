@@ -23,16 +23,16 @@ currentDocumentsUI <- function(id) {
 
 
 #' @title Current Documents Module Server
-#' 
+#'
 #' @description
 #' This function creates the server for the current documents module.
-#' 
+#'
 #' @param id The id of the module
 #' @param current_case The reactive value containing the current case
 #' @param db The database connection
-#' 
+#'
 #' @returns The server function for the current documents module
-#' 
+#'
 currentDocumentsServer <- function(id, current_case, db) {
   moduleServer(id, function(input, output, session) {
     documents <- reactive({

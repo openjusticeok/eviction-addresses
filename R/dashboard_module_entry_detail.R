@@ -1,10 +1,10 @@
 #' @title Entry Detail Module UI
 #' @description UI function for the entry detail module
-#' 
+#'
 #' @param id The module ID
-#' 
+#'
 #' @returns The UI function for the entry detail module
-#' 
+#'
 entryDetailUI <- function(id) {
   ns <- NS(id)
   div(
@@ -20,11 +20,11 @@ entryDetailUI <- function(id) {
 
 #' @title Entry Detail Module Server
 #' @description Server function for the entry detail module
-#' 
+#'
 #' @param id The module ID
 #' @param current_case The reactive value containing the current case
 #' @param total_cases The reactive value containing the total number of cases
-#' 
+#'
 #' @returns The server function for the entry detail module
 #'
 entryDetailServer <- function(id, current_case, total_cases) {
