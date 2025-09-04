@@ -1,23 +1,15 @@
 #' @title Eviction Addresses Dashboard Server
 #' @description Generates the server function passed to `shinyApp`
 #'
+#' @param db A database connection pool
 #' @param config The path to a config file
 #'
 #' @returns A Shiny server function
 #'
 #' @import shiny logger
 #'
-dashboard_server <- function(config) {
+dashboard_server <- function(db, config) {
   function(input, output, session) {
-    connection_args <- config::get(
-      value = "database",
-      file = config
-    )
-
-    db <- new_db_pool(config = config)
-    shiny::onStop(function() {
-      pool::poolClose(pool = db)
-    })
 
     user_base <- get_users_from_db(db = db)
 

@@ -4,9 +4,11 @@
 \alias{dashboard_server}
 \title{Eviction Addresses Dashboard Server}
 \usage{
-dashboard_server(config)
+dashboard_server(db, config)
 }
 \arguments{
+\item{db}{A database connection pool}
+
 \item{config}{The path to a config file}
 }
 \value{

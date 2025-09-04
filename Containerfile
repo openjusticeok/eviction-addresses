@@ -14,4 +14,4 @@ RUN ["install2.r", "remotes"]
 RUN ["installGithub.r", "openjusticeok/eviction-addresses@cleanup"]
 WORKDIR /workspace
 COPY ["./", "./"]
-ENTRYPOINT ["R", "--quiet", "--no-echo", "-e", "R.version"]
+ENTRYPOINT ["R", "--quiet", "--no-echo", "-e", "evictionAddresses::run_dashboard('config.yml', host = '0.0.0.0', port = 8080)"]
