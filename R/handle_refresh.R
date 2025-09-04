@@ -6,16 +6,13 @@
 #' documents into the eviction_addresses schema. It then updates the work queue
 #' based on what it finds.
 #'
-#' @param config The path to a configuration file ingested by `{config}`
+#' @param db A database connection pool
 #'
 #' @returns A 200 if successful
 #'
-handle_refresh <- function(config) {
+handle_refresh <- function(db) {
   f <- function(res) {
     promises::future_promise({
-      db <- new_db_pool(config)
-      withr::defer(pool::poolClose(db))
-
       # logger::log_appender(logger::appender_tee("/var/log/eviction_addresses.log"))
 
       refresh_cases(db)
@@ -52,14 +49,11 @@ handle_refresh <- function(config) {
 #' This endpoint refreshes documents in the eviction_addresses schema. It then
 #' updates the work queue based on what it finds.
 #'
-#' @param config The path to a configuration file ingested by `{config}`
+#' @param db A database connection pool
 #'
-handle_refresh_documents <- function(config) {
+handle_refresh_documents <- function(db) {
   f <- function(res, n = 10) {
     promises::future_promise({
-      db <- new_db_pool(config)
-      withr::defer(pool::poolClose(db))
-
       # logger::log_appender(logger::appender_tee("/var/log/eviction_addresses.log"))
 
       refresh_documents(db, n)
@@ -95,14 +89,11 @@ handle_refresh_documents <- function(config) {
 #' This endpoint refreshes the work queue based on what it finds in the
 #' eviction_addresses schema.
 #'
-#' @param config The path to a configuration file ingested by `{config}`
+#' @param db A database connection pool
 #'
-handle_refresh_queue <- function(config) {
+handle_refresh_queue <- function(db) {
   f <- function(res) {
     promises::future_promise({
-      db <- new_db_pool(config)
-      withr::defer(pool::poolClose(db))
-
       #logger::log_appender(logger::appender_tee("/var/log/eviction_addresses.log"))
 
       refresh_queue(db)

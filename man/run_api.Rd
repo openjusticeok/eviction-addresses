@@ -4,14 +4,12 @@
 \alias{run_api}
 \title{Run API}
 \usage{
-run_api(config, ..., .background = FALSE)
+run_api(config, ...)
 }
 \arguments{
 \item{config}{The path to a configuration file ingested by \code{{config}}}
 
 \item{...}{Additional arguments passed to \code{plumber::pr_run}, e.g. port = 8080}
-
-\item{.background}{Whether to start the API in a background process}
 }
 \value{
 Nothing

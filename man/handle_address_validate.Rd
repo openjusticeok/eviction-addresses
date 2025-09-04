@@ -4,11 +4,9 @@
 \alias{handle_address_validate}
 \title{Handle Address Validate}
 \usage{
-handle_address_validate(db, config)
+handle_address_validate(config)
 }
 \arguments{
-\item{db}{A database connection pool created by \code{pool::dbPool()}}
-
 \item{config}{The path to a \code{config.yml} file to be ingested by \code{{config}}}
 }
 \value{

@@ -4,10 +4,10 @@
 \alias{handle_refresh}
 \title{Handle API Refresh}
 \usage{
-handle_refresh(config)
+handle_refresh(db)
 }
 \arguments{
-\item{config}{The path to a configuration file ingested by \code{{config}}}
+\item{db}{A database connection pool}
 }
 \value{
 A 200 if successful

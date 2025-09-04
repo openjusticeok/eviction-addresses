@@ -4,10 +4,10 @@
 \alias{handle_dbpingfuture}
 \title{Handle Future DB Ping}
 \usage{
-handle_dbpingfuture(config)
+handle_dbpingfuture(db)
 }
 \arguments{
-\item{config}{The path to a configuration file ingested by \code{{config}}}
+\item{db}{A database connection pool}
 }
 \value{
 A plumber handler that returns a 202 status code and a message that the request has been queued

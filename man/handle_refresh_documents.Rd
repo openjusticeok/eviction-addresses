@@ -4,10 +4,10 @@
 \alias{handle_refresh_documents}
 \title{Handle API Refresh Documents}
 \usage{
-handle_refresh_documents(config)
+handle_refresh_documents(db)
 }
 \arguments{
-\item{config}{The path to a configuration file ingested by \code{{config}}}
+\item{db}{A database connection pool}
 }
 \description{
 Plumber handler for endpoint \verb{/refresh/documents/<n>}

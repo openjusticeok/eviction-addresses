@@ -42,16 +42,13 @@ handle_dbping <- function(db) {
 #' @title Handle Future DB Ping
 #' @description A plumber handler that pings the database in a background process, returning before returning a response
 #'
-#' @param config The path to a configuration file ingested by `{config}`
+#' @param db A database connection pool
 #' 
 #' @returns A plumber handler that returns a 202 status code and a message that the request has been queued
 #' 
-handle_dbpingfuture <- function(config) {
+handle_dbpingfuture <- function(db) {
   f <- function(res) {
     promises::future_promise({
-      db <- new_db_pool(config)
-      withr::defer(pool::poolClose(db))
-
       # logger::log_appender(logger::appender_tee("/var/log/eviction_addresses.log"))
 
       test <- DBI::dbGetQuery(db, "SELECT NULL as n")
