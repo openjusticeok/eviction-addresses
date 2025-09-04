@@ -1,0 +1,17 @@
+FROM docker.io/rocker/r-ver:4.5.1
+RUN apt-get update && apt-get install -y \
+  libgit2-dev \
+  libpq-dev \
+  libsodium-dev \
+  libcurl4-openssl-dev \
+  libicu-dev \
+  libnode-dev \
+  libx11-dev \
+  libxml2-dev \
+  pandoc
+ENV R_CONFIG_ACTIVE=docker
+RUN ["install2.r", "remotes"]
+RUN ["installGithub.r", "openjusticeok/eviction-addresses@cleanup"]
+WORKDIR /workspace
+COPY ["./", "./"]
+ENTRYPOINT ["R", "--quiet", "--no-echo", "-e", "R.version"]
