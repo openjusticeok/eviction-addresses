@@ -10,11 +10,14 @@ run_dashboard <- function(config, ...) {
   logger::log_info('Active Configuration: {Sys.getenv("R_CONFIG_ACTIVE")}')
   
   db <- new_db_pool(config = config)
-  on.exit(pool::poolClose(db), add = TRUE)
 
   shiny::shinyApp(
     ui = dashboard_ui,
     server = dashboard_server(db = db, config = config),
+    onStop = function() {
+      pool::poolClose(db)
+      logger::log_info("Database pool closed.")
+    },
     options = list(...)
   )
 }
