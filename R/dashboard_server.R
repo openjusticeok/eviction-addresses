@@ -27,6 +27,9 @@ dashboard_server <- function(config) {
     user_base <- get_users_from_db(db = db)
     logger::log_debug("User base created")
 
+    # Initialize logout reactive value first to avoid circular dependency
+    logout_init <- shiny::reactiveVal(FALSE)
+    
     # call login module supplying data frame, user and password cols and reactive trigger
     credentials <- shinyauthr::loginServer(
       id = "login",
@@ -43,10 +46,16 @@ dashboard_server <- function(config) {
     logger::log_debug("Login module created")
 
     # call the logout module with reactive trigger to hide/show
-    logout_init <- shinyauthr::logoutServer(
+    logout_from_server <- shinyauthr::logoutServer(
       id = "logout",
       active = reactive(credentials()$user_auth)
     )
+    
+    # Update the logout reactive value when logout occurs
+    observe({
+      logout_init(logout_from_server())
+    })
+    
     logger::log_debug("Logout module created")
 
     observe({
