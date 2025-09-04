@@ -10,7 +10,6 @@
 #'
 get_sessions_from_db <- function(db, cookie_expiry = 7) {
   f <- function(expiry = cookie_expiry) {
-    logger::log_debug("Getting sessions from db")
     DBI::dbGetQuery(
       conn = db,
       dbplyr::sql('SELECT * FROM "eviction_addresses"."session"')
@@ -32,7 +31,6 @@ get_sessions_from_db <- function(db, cookie_expiry = 7) {
 #'
 add_session_to_db <- function(db) {
   f <- function(user, session) {
-    logger::log_debug("Adding session to db")
     values <- tibble::tibble(
       user = user,
       sessionid = session,
@@ -59,7 +57,6 @@ add_session_to_db <- function(db) {
 #' @returns A tibble of user info
 #'
 get_users_from_db <- function(db) {
-  logger::log_debug("Getting users from db")
   DBI::dbGetQuery(
     conn = db,
     statement = dbplyr::sql('SELECT * FROM "eviction_addresses"."user"')

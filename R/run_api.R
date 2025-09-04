@@ -11,17 +11,11 @@
 #' @import plumber
 #'
 run_api <- function(config, ..., .background = FALSE) {
-
-  logger::log_threshold(logger::TRACE)
-
-  # future::plan(future.callr::callr)
-
   db <- new_db_pool(config)
   withr::defer(pool::poolClose(db))
 
   if(.background) {
     future::plan(future.callr::callr)
-
   } else {
     pr() |>
       pr_handle("GET", "/ping", handle_ping()) |>

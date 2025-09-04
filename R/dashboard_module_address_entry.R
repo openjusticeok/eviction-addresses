@@ -77,7 +77,6 @@ addressEntryServer <- function(id, config, db, current_case, current_user) {
     value = "gcp",
     file = config
   )$service_url
-  logger::log_debug("API URL: {api_url}")
 
   jwt <- reactive({
     invalidateLater(2700000)
@@ -85,7 +84,6 @@ addressEntryServer <- function(id, config, db, current_case, current_user) {
     logger::log_debug("Creating JWT")
     googleCloudRunner::cr_jwt_create(api_url)
   })
-  logger::log_debug("Created JWT")
 
   moduleServer(id, function(input, output, session) {
     address_entered <- reactiveValues(
@@ -159,10 +157,8 @@ observe_address_validation <- function(input, session, db, current_case, jwt, ap
     )
 
     token <- googleCloudRunner::cr_jwt_token(jwt(), api_url)
-    logger::log_debug("Token: {token}")
 
     url <- stringr::str_c(api_url, "/address/validate")
-    logger::log_debug("URL: {url}")
 
     logger::log_debug("Address entered: {address_entered$object}")
     logger::log_debug("Preparing POST request...")
@@ -179,11 +175,8 @@ observe_address_validation <- function(input, session, db, current_case, jwt, ap
     logger::log_debug("Response: {res}")
 
     modal_content <- shiny::div()
-    logger::log_debug("Modal content: {modal_content}")
 
     if(res$status_code == 200){
-      logger::log_debug("Response status code: {res$status_code}")
-
       response_content <- httr::content(res, as = "parsed", encoding = "UTF-8")
       logger::log_debug("Response content: {response_content}")
 
@@ -245,7 +238,6 @@ observe_address_validation <- function(input, session, db, current_case, jwt, ap
       title = "Address Validation",
       modal_content
     ))
-    logger::log_debug("Modal shown")
   })
 }
 

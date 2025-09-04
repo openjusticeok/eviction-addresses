@@ -9,22 +9,17 @@
 #'
 dashboard_server <- function(config) {
   function(input, output, session) {
-    logger::log_debug("dashboard_server")
-
     connection_args <- config::get(
       value = "database",
       file = config
     )
-    logger::log_debug("Connection args: {connection_args}")
 
     db <- new_db_pool(config = config)
     shiny::onStop(function() {
       pool::poolClose(pool = db)
     })
-    logger::log_debug("Database connection pool created")
 
     user_base <- get_users_from_db(db = db)
-    logger::log_debug("User base created")
 
     logout_init <- shinyauthr::logoutServer(
       id = "logout",
@@ -116,13 +111,8 @@ dashboard_server <- function(config) {
       {
         if (credentials()$user_auth) {
           addressEntryServer("address-entry", config, db, current_case, current_user)
-          logger::log_debug("Address entry module created")
-
           entryDetailServer("entry-detail", current_case, total_cases)
-          logger::log_debug("Entry detail module created")
-
           currentDocumentsServer("current-documents", current_case, db)
-          logger::log_debug("Current documents module created")
         }
       }
     )

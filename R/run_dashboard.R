@@ -7,9 +7,7 @@
 #' @export
 #'
 run_dashboard <- function(config, ...) {
-  logger::log_threshold(logger::DEBUG)
-
-  logger::log_debug('Active Configuration: {Sys.getenv("R_CONFIG_ACTIVE")}')
+  logger::log_info('Active Configuration: {Sys.getenv("R_CONFIG_ACTIVE")}')
 
   shiny::shinyApp(
     ui = dashboard_ui,

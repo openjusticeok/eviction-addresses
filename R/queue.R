@@ -49,7 +49,7 @@ clean_queue <- function(db) {
 
   query <- dbplyr::sql("DELETE FROM eviction_addresses.queue WHERE success IS TRUE AND created_at < current_timestamp - interval '14 days';")
   num_deleted_queue_rows <- DBI::dbExecute(db, query)
-  logger::log_debug("{num_deleted_queue_rows} rows deleted")
+  logger::log_info("{num_deleted_queue_rows} rows deleted")
 
   return()
 }
@@ -66,12 +66,11 @@ clean_queue <- function(db) {
 update_queue <- function(db) {
   ## Get any cases in case table without an address
   ## and having at least one document, are not in queue
-  logger::log_debug("Getting new jobs")
   query <- dbplyr::sql(r"(SELECT DISTINCT(d."case"), NULL::bool AS success, NULL::bool AS working, 0::int4 AS attempts, NULL::timestamp AS started_at, NULL::timestamp AS stopped_at, current_timestamp AS created_at FROM eviction_addresses."document" d LEFT JOIN eviction_addresses.queue q ON d."case" = q."case" left join eviction_addresses.address a on d."case" = a."case" WHERE internal_link IS NOT NULL AND q."case" IS null and a."case" is null;)")
   new_jobs <- DBI::dbGetQuery(db, query)
 
   num_new_jobs <- nrow(new_jobs)
-  logger::log_debug("{num_new_jobs} new jobs found")
+  logger::log_info("{num_new_jobs} new jobs found")
 
   if(num_new_jobs >= 1) {
     DBI::dbAppendTable(
@@ -79,9 +78,9 @@ update_queue <- function(db) {
       name = DBI::Id(schema = "eviction_addresses", table = "queue"),
       value = new_jobs
     )
-    logger::log_debug("Inserted {num_new_jobs} new jobs to table eviction_addresses.queue")
+    logger::log_success("Inserted {num_new_jobs} new jobs to queue")
   } else {
-    logger::log_debug("No new jobs to add")
+    logger::log_info("No new jobs to add")
   }
 
   return()
@@ -93,7 +92,6 @@ update_queue <- function(db) {
 #' @param db A database connection
 #'
 refresh_queue <- function(db) {
-
   clean_queue(db)
   update_queue(db)
 
@@ -108,7 +106,6 @@ refresh_queue <- function(db) {
 #' @returns A case id
 #'
 get_case_from_queue <- function(db) {
-
   pool::poolWithTransaction(db, func = function(conn) {
     case <- DBI::dbGetQuery(
       conn,
@@ -124,5 +121,4 @@ get_case_from_queue <- function(db) {
 
     return(case_id)
   })
-
 }
