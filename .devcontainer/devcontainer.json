@@ -1,6 +1,0 @@
-{
-    "name": "Demo Environment",
-	"build": {
-		"dockerfile": "Dockerfile"
-	}
-}
