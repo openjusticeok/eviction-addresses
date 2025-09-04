@@ -31,13 +31,12 @@ get_sessions_from_db <- function(db, cookie_expiry = 7) {
 #' @returns Returns invisibly if successful
 #'
 add_session_to_db <- function(db) {
-  f <- function(user, sessionid) {
+  f <- function(user, session) {
     logger::log_debug("Adding session to db")
     values <- tibble::tibble(
       user = user,
-      sessionid = sessionid,
+      sessionid = session,
       login_time = lubridate::now(tzone = "America/Chicago"))
-    logger::log_trace("{values}")
     DBI::dbWriteTable(
       conn = db,
       name = DBI::Id(schema = "eviction_addresses", table = "session"),
@@ -45,7 +44,6 @@ add_session_to_db <- function(db) {
       append = TRUE,
       row.names = FALSE
     )
-    logger::log_debug("Wrote session to database table 'session'")
   }
 
   return(f)

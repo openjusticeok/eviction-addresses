@@ -8,7 +8,6 @@
 #' @import shiny logger
 #'
 dashboard_server <- function(config) {
-
   function(input, output, session) {
     logger::log_debug("dashboard_server")
 
@@ -27,9 +26,11 @@ dashboard_server <- function(config) {
     user_base <- get_users_from_db(db = db)
     logger::log_debug("User base created")
 
-    # Initialize logout reactive value first to avoid circular dependency
-    logout_init <- shiny::reactiveVal(FALSE)
-    
+    logout_init <- shinyauthr::logoutServer(
+      id = "logout",
+      active = shiny::reactive(TRUE)
+    )
+
     # call login module supplying data frame, user and password cols and reactive trigger
     credentials <- shinyauthr::loginServer(
       id = "login",
@@ -43,36 +44,30 @@ dashboard_server <- function(config) {
       cookie_setter = add_session_to_db(db = db),
       log_out = shiny::reactive(logout_init())
     )
-    logger::log_debug("Login module created")
 
-    # call the logout module with reactive trigger to hide/show
-    logout_from_server <- shinyauthr::logoutServer(
-      id = "logout",
-      active = reactive(credentials()$user_auth)
-    )
-    
     # Update the logout reactive value when logout occurs
-    observe({
-      logout_init(logout_from_server())
-    })
-    
-    logger::log_debug("Logout module created")
+    shiny::observeEvent(
+      credentials()$user_auth,
+      {
+        shinyjs::runjs("document.body.style.visibility = 'visible';")
+      },
+      once = TRUE
+    )
 
-    observe({
-      if (credentials()$user_auth) {
-        shinyjs::show("main_content")
-        shinyjs::hide("login_page")
-      } else {
-        shinyjs::hide("main_content")
-        shinyjs::show("login_page")
-      }
+    output$user_is_authenticated <- shiny::reactive({
+      isTRUE(credentials()$user_auth)
     })
+
+    shiny::outputOptions(
+      output,
+      "user_is_authenticated",
+      suspendWhenHidden = FALSE
+    )
 
     user_info <- reactive({
       req(credentials()$user_auth)
       credentials()$info
     })
-    logger::log_debug("User info reactive created")
 
     user_data <- reactive({
       req(credentials()$user_auth)
@@ -83,13 +78,11 @@ dashboard_server <- function(config) {
         logger::log_debug("User has standard role")
       }
     })
-    logger::log_debug("User data reactive created")
 
     current_user <- reactive({
       req(credentials()$user_auth)
       user_info()$user
     })
-    logger::log_debug("Current user reactive created")
 
     current_case <- reactive({
       req(credentials()$user_auth)
@@ -99,7 +92,6 @@ dashboard_server <- function(config) {
 
       case
     })
-    logger::log_debug("Current case reactive created")
 
     total_cases <- reactive({
       req(credentials()$user_auth)
@@ -109,7 +101,6 @@ dashboard_server <- function(config) {
 
       queue_length
     })
-    logger::log_debug("Total cases reactive created")
 
     documents <- reactive({
       req(credentials()$user_auth)
@@ -119,7 +110,6 @@ dashboard_server <- function(config) {
 
       res
     })
-    logger::log_debug("Documents reactive created")
 
     observeEvent(
       credentials()$user_auth,
@@ -137,10 +127,8 @@ dashboard_server <- function(config) {
       }
     )
 
-
     output$metrics_ui <- renderUI({
       req(credentials()$user_auth)
     })
-    logger::log_debug("Metrics UI created")
-}
+  }
 }

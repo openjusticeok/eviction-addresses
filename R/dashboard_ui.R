@@ -4,22 +4,30 @@
 #' @returns A shiny ui function
 #'
 dashboard_ui <- function() {
-  shiny::tagList(
-    shinyjs::useShinyjs(),
-    shiny::div(
-      id = "login_page",
-      style = "width: 500px; max-width: 100%; margin: 0 auto; padding: 20px;",
-      shinyauthr::loginUI("login", cookie_expiry = 7)
+  bslib::page_fillable(
+    theme = bslib::bs_theme(
+      version = 5,
+      preset = "flatly"
     ),
-    shiny::div(
-      id = "main_content",
-      style = "display: none;",
+    shinyjs::useShinyjs(),
+    shiny::tags$head(
+      shiny::tags$style(
+        shiny::HTML("body { visibility: hidden; }")
+      )
+    ),
+    shiny::conditionalPanel(
+      condition = "output.user_is_authenticated == false",
+      shinyauthr::loginUI(
+        id = "login",
+        title = "Please log in",
+        cookie_expiry = 7
+      )
+    ),
+    shiny::conditionalPanel(
+      condition = "output.user_is_authenticated == true",
       bslib::page_navbar(
         title = "Eviction Addresses",
-        theme = bslib::bs_theme(
-          version = 5,
-          preset = "flatly"
-        ),
+        id = "main_nav",
         bslib::nav_panel(
           title = "Entry",
           bslib::card(
@@ -37,12 +45,16 @@ dashboard_ui <- function() {
           shiny::uiOutput("metrics_ui")
         ),
         bslib::nav_spacer(),
-        bslib::nav_item(shinyauthr::logoutUI("logout")),
+        bslib::nav_item(
+          shinyauthr::logoutUI(
+            id = "logout"
+          )
+        ),
         bslib::nav_item(
           htmltools::tags$a(
-            shiny::icon("github"),
+            bsicons::bs_icon("github"),
             href = "https://github.com/openjusticeok/eviction-addresses",
-            title = "see the code on github"
+            title = "See the code on github"
           )
         )
       )
