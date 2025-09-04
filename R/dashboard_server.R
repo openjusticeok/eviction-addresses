@@ -49,7 +49,18 @@ dashboard_server <- function(config) {
     )
     logger::log_debug("Logout module created")
 
+    observe({
+      if (credentials()$user_auth) {
+        shinyjs::show("main_content")
+        shinyjs::hide("login_page")
+      } else {
+        shinyjs::hide("main_content")
+        shinyjs::show("login_page")
+      }
+    })
+
     user_info <- reactive({
+      req(credentials()$user_auth)
       credentials()$info
     })
     logger::log_debug("User info reactive created")
@@ -66,11 +77,13 @@ dashboard_server <- function(config) {
     logger::log_debug("User data reactive created")
 
     current_user <- reactive({
+      req(credentials()$user_auth)
       user_info()$user
     })
     logger::log_debug("Current user reactive created")
 
     current_case <- reactive({
+      req(credentials()$user_auth)
       input$case_refresh
 
       case <- get_case_from_queue(db = db)
@@ -80,6 +93,7 @@ dashboard_server <- function(config) {
     logger::log_debug("Current case reactive created")
 
     total_cases <- reactive({
+      req(credentials()$user_auth)
       input$case_refresh
 
       queue_length <- get_queue_length(db = db)
@@ -89,6 +103,7 @@ dashboard_server <- function(config) {
     logger::log_debug("Total cases reactive created")
 
     documents <- reactive({
+      req(credentials()$user_auth)
       current_case <- current_case()
 
       res <- get_documents_by_case(db = db, id = current_case)
@@ -97,20 +112,26 @@ dashboard_server <- function(config) {
     })
     logger::log_debug("Documents reactive created")
 
-    addressEntryServer("address-entry", config, db, current_case, current_user)
-    logger::log_debug("Address entry module created")
+    observeEvent(
+      credentials()$user_auth,
+      {
+        if (credentials()$user_auth) {
+          addressEntryServer("address-entry", config, db, current_case, current_user)
+          logger::log_debug("Address entry module created")
 
-    entryDetailServer("entry-detail", current_case, total_cases)
-    logger::log_debug("Entry detail module created")
+          entryDetailServer("entry-detail", current_case, total_cases)
+          logger::log_debug("Entry detail module created")
 
-    currentDocumentsServer("current-documents", current_case, db)
-    logger::log_debug("Current documents module created")
-
+          currentDocumentsServer("current-documents", current_case, db)
+          logger::log_debug("Current documents module created")
+        }
+      }
+    )
 
 
     output$metrics_ui <- renderUI({
       req(credentials()$user_auth)
     })
     logger::log_debug("Metrics UI created")
-  }
+}
 }
