@@ -9,7 +9,7 @@ run_dashboard(config, ...)
 \arguments{
 \item{config}{The path to a config.yml file}
 
-\item{...}{Additional arguments passed to \code{shiny::shinyApp}}
+\item{...}{Additional arguments passed to \code{shiny::runApp}}
 }
 \description{
 Runs the eviction address entry dashboard
