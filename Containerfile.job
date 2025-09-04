@@ -1,0 +1,15 @@
+FROM docker.io/rocker/r-ver:4.5.1
+RUN apt-get update && apt-get install -y \
+  libgit2-dev \
+  libpq-dev \
+  libsodium-dev \
+  libcurl4-openssl-dev \
+  libicu-dev \
+  libnode-dev \
+  libxml2-dev
+ENV R_CONFIG_ACTIVE=docker
+RUN ["install2.r", "remotes"]
+RUN ["installGithub.r", "openjusticeok/eviction-addresses"]
+WORKDIR /workspace
+COPY ["./", "./"]
+ENTRYPOINT ["R", "--quiet", "--no-echo", "-e", "evictionAddresses::run_job('config.yml')"]
