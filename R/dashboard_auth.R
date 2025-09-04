@@ -36,7 +36,7 @@ add_session_to_db <- function(db) {
     values <- tibble::tibble(
       user = user,
       sessionid = sessionid,
-      login_time = as.character(lubridate::now(tzone = "America/Chicago")))
+      login_time = lubridate::now(tzone = "America/Chicago"))
     logger::log_trace("{values}")
     DBI::dbWriteTable(
       conn = db,
