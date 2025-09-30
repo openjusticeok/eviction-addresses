@@ -30,22 +30,47 @@ data <- ojo_tbl("minute") |>
   ) |>
   collect()
 
-res |>
-      mutate(
-        is_forc    = code == "FED", 
-        is_summons = code == "AFDC1", is_nada = !is_forc & !is_summons
-      ) |>
-      summarise(
-        .by = "case_id",
-        perc_forc    = sum(is_forc, na.rm = true) / n() * 100,
-        perc_summons = sum(is_summons, na.rm = true) / n() * 100, perc_nada = sum(is_nada, na.rm = true) / n() * 100
-      ) |>
-      summarise(
-        perc_without_forc    = sum(perc_forc <= 0, na.rm = true) / n() * 100,
-        perc_without_summons = sum(perc_summons <= 0, na.rm = true) / n() * 100, perc_without_nada = sum(perc_nada <= 0, na.rm = true) / n() * 100
-      )
+data |>
+  filter(
+    str_detect(code, "FED") |
+      (str_detect(description, "^FED") |
+        str_detect(description, "^FORC"))
+  ) |>
+  count(
+    code,
+    sort = TRUE
+  )
 
-res |>
+data |>
+  mutate(
+    is_forc = str_detect(code, "FED") |
+      (str_detect(description, "^FED") |
+        str_detect(description, "^FORC")),
+    is_summons = str_detect(code, "^AFDC")
+  ) |>
+  summarise(
+    .by = "case_id",
+    has_forc = any(is_forc, na.rm = TRUE),
+    has_summons = any(is_summons, na.rm = TRUE)
+  ) |>
+  count(
+    has_forc,
+    has_summons
+  ) |>
+  summarise(
+    total_n = sum(n),
+    forc_n = sum(if_else(has_forc, n, 0L)),
+    summons_n = sum(if_else(has_summons, n, 0L)),
+    neither_n = sum(if_else(!has_forc & !has_summons, n, 0L))
+  ) |>
+    mutate(
+    percent_has_forc = (forc_n / total_n) * 100,
+    percent_has_summons = (summons_n / total_n) * 100,
+    perc_has_neither = (neither_n / total_n) * 100,
+    .keep = "none"
+  )
+
+data |>
   slice_min(
     by = case_id,
     order_by = date,
