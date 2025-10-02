@@ -22,7 +22,7 @@ CREATE MATERIALIZED VIEW "eviction_addresses"."recent_tulsa_evictions" AS (
 	WHERE
 		oc.DISTRICT = 'TULSA'
 		AND oc.case_type = 'SC'
-		AND DATE_FILED >= '2022-01-01'
+		AND oc.date_filed >= '2022-01-01'
 		AND oi.description ~* 'EVICTION|(?:ENTRY.*(?:FORCIBLE|DETAINER))|(?:(?:FORCIBLE|DETAINER).*ENTRY)'
 );
 
