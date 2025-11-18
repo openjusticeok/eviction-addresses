@@ -69,7 +69,7 @@ get_users_from_db <- function(db) {
     tibble::as_tibble()
 }
 
-#' @title New User
+#' @title Add New User
 #'
 #' @description Adds a new user to the database
 #'
@@ -78,6 +78,14 @@ get_users_from_db <- function(db) {
 #' @param password The password
 #' @param role The role of the user; either "admin" or "standard"
 #' @param name The name of the user
+#' @param full_name The full name of the user
+#' @param organization The organization of the user
+#' @param email The email of the user
+#' @param line1 The address line 1 of the user
+#' @param line2 The address line 2 of the user
+#' @param city The city of the user
+#' @param state The state of the user
+#' @param zip The zip code of the user
 #'
 #' @export new_user
 #' @returns Returns invisibly if successful
@@ -96,12 +104,22 @@ new_user <- function(
   role,
   name,
   full_name,
+  organization,
+  email,
   line1,
   line2,
   city,
   state,
   zip
 ) {
+    if (!is.character(username) || length(username) != 1L || is.na(username) || username == "") {
+      stop("`username` must be a single, non-missing, non-empty character value.", call. = FALSE)
+    }
+
+    if (!grepl("^[A-Za-z]+$", username)) {
+      stop("`username` must contain only alphabetical letters.", call. = FALSE)
+    }
+
     # Hash the password using {sodium}
     hashed_password <- sodium::password_store(password)
 
@@ -111,6 +129,12 @@ new_user <- function(
       multiple = FALSE
     )
 
+    users <- get_users_from_db(db)
+
+    if (any(users$user == username, na.rm = TRUE)) {
+      stop("`username` already exists. Choose a different username.", call. = FALSE)
+    }
+
     # Store the user record in the user table
     user_record <- tibble::tibble(
       user = username,
@@ -118,6 +142,8 @@ new_user <- function(
       role = role,
       name = name,
       full_name = full_name,
+      organization = organization,
+      email = email,
       line1 = line1,
       line2 = line2,
       city = city,
@@ -134,6 +160,100 @@ new_user <- function(
       append = TRUE,
       row.names = FALSE
     )
+
+    message(glue::glue("✅ User '{username}' added successfully."))
+    message("Please immediately store the username & password in OK Policy's Bitwarden vault.")
+}
+
+#' @title Delete User
+#'
+#' @description Removes one or more rows for a matching username from the
+#' `eviction_addresses.user` table, with optional confirmation prompts.
+#'
+#' @param db A database connection pool created with `pool::dbPool`
+#' @param username A single character string identifying the account to delete.
+#' @param confirm Optional logical flag controlling confirmation prompts. Set to
+#'   `TRUE` to delete without prompting, `FALSE` to cancel, or leave as `NULL` to
+#'   prompt interactively.
+#'
+#' @returns Invisibly returns the number of rows deleted, or `0L` when no action
+#'   is taken.
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' delete_user(db, "demo-user", confirm = TRUE)
+#' }
+#'
+#' @seealso [get_users_from_db()], [new_user()]
+#'
+#' @family dashboard-authentication
+#'
+#' @importFrom DBI dbExecute
+#'
+#' @importFrom glue glue_sql
+#'
+delete_user <- function(db, username, confirm = NULL) {
+  users <- get_users_from_db(db)
+
+  matching_users <- users |>
+    dplyr::filter(user == username)
+
+  if (nrow(matching_users) == 0) {
+    warning("No matching user found for deletion.")
+    return(invisible(0L))
+  }
+
+  preview_columns <- c("user", "full_name", "role", "created_at", "updated_at")
+  preview <- matching_users |>
+    dplyr::select(dplyr::any_of(preview_columns))
+
+  message(
+    "The following rows match the requested deletion:\n"
+  )
+  preview |>
+    print(n = Inf)
+
+  proceed <- FALSE
+
+  if (isTRUE(confirm)) {
+    proceed <- TRUE
+  } else if (isFALSE(confirm)) {
+    message("Deletion cancelled.")
+    return(invisible(0L))
+  } else {
+    if (!interactive()) {
+      stop("Set `confirm = TRUE` to proceed with deletion when running non-interactively.")
+    }
+
+    response <- utils::askYesNo("Proceed with deleting the rows shown above?", default = FALSE)
+
+    if (!isTRUE(response)) {
+      message("Deletion cancelled.")
+      return(invisible(0L))
+    }
+
+    proceed <- TRUE
+  }
+
+  # Redundant check for safety
+  if (!isTRUE(proceed)) {
+    message("Deletion cancelled.")
+    return(invisible(0L))
+  }
+
+  deletion_statement <- glue::glue_sql(
+    'DELETE FROM "eviction_addresses"."user" WHERE "user" = {username}',
+    .con = db
+  )
+
+  rows_deleted <- DBI::dbExecute(
+    conn = db,
+    statement = deletion_statement
+  )
+
+  message(glue::glue("🗑️ {rows_deleted} rows(s) deleted."))
 }
 
 #' @title Change Password
