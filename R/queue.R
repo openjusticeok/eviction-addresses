@@ -113,6 +113,12 @@ get_case_from_queue <- function(db) {
       conn,
       dbplyr::sql('SELECT q."case" FROM eviction_addresses.queue q LEFT JOIN eviction_addresses."case" c ON q."case" = c."id" LEFT JOIN public."case" pc ON q."case" = pc.id WHERE "success" IS NOT TRUE AND "working" IS NOT TRUE ORDER BY attempts ASC, pc.status DESC, c.date_filed DESC LIMIT 1 FOR UPDATE OF q SKIP LOCKED;')
     )
+    
+    # Return NULL if no cases available in queue
+    if (nrow(case) == 0) {
+      return(NULL)
+    }
+    
     query <- glue::glue_sql(
       'UPDATE "eviction_addresses"."queue" SET working = TRUE, started_at = CURRENT_TIMESTAMP, stopped_at = NULL WHERE "case" = {case}',
       .con = conn

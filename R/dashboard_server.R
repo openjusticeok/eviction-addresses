@@ -100,6 +100,11 @@ dashboard_server <- function(config) {
     documents <- reactive({
       current_case <- current_case()
 
+      # Return NULL if no case is available (queue is empty)
+      if (is.null(current_case) || is.na(current_case)) {
+        return(NULL)
+      }
+
       res <- get_documents_by_case(db = db, id = current_case)
 
       res
