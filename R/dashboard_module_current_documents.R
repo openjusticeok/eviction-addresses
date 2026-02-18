@@ -36,7 +36,14 @@ currentDocumentsUI <- function(id) {
 currentDocumentsServer <- function(id, current_case, db) {
   moduleServer(id, function(input, output, session) {
     documents <- reactive({
-      res <- get_documents_by_case(db = db, id = current_case())
+      case_id <- current_case()
+      
+      # Return empty data frame if no case is available
+      if (is.null(case_id) || is.na(case_id)) {
+        return(data.frame())
+      }
+      
+      res <- get_documents_by_case(db = db, id = case_id)
       logger::log_debug("Documents retrieved: {res}")
       res
     })

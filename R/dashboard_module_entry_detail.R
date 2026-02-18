@@ -30,8 +30,19 @@ entryDetailUI <- function(id) {
 entryDetailServer <- function(id, current_case, total_cases) {
   moduleServer(id, function(input, output, session) {
     output$current_case_ui <- renderUI({
-      current_case <- jsonlite::fromJSON(current_case())
+      case_json <- current_case()
       queue <- total_cases()
+
+      # Handle empty queue - cases unavailable for processing
+      if (is.null(case_json) || length(case_json) == 0 || is.na(case_json) || (case_json == "")) {
+        return(div(
+          h4("No cases available for processing"),
+          h4(glue::glue("{queue} total in queue"))
+        ))
+      }
+
+      # Parse JSON and display valid case
+      current_case <- jsonlite::fromJSON(case_json)
       div(
         h4(glue::glue("Current case: {current_case$case_number}")),
         h4(glue::glue("{queue} cases in queue"))

@@ -16,4 +16,5 @@ run_job <- function(config) {
     refresh_cases(db)
     refresh_minutes(db)
     refresh_queue(db)
+    reset_stuck_queue_items(db)
 }
