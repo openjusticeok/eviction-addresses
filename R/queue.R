@@ -16,8 +16,8 @@ get_queue_length <- function(db, status = "available") {
   if(status == "available") {
     queue <- queue |>
       dplyr::filter(
-        is.na(.data$success),
-        is.na(.data$working)
+        is.na(.data$success) | .data$success == FALSE,
+        is.na(.data$working) | .data$working == FALSE
       )
   }
 
