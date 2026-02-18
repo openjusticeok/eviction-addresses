@@ -44,12 +44,11 @@ get_queue_length <- function(db, status = "available") {
 #'
 #'
 clean_queue <- function(db) {
-  ## Remove any queue rows where success is true and it's 2 weeks old
-  ## ? Should we check whether the address is found in the db ?
+  ## Remove any queue rows where success is true
 
-  query <- dbplyr::sql("DELETE FROM eviction_addresses.queue WHERE success IS TRUE AND created_at < current_timestamp - interval '14 days';")
+  query <- dbplyr::sql("DELETE FROM eviction_addresses.queue WHERE success IS TRUE;")
   num_deleted_queue_rows <- DBI::dbExecute(db, query)
-  logger::log_debug("{num_deleted_queue_rows} rows deleted")
+  logger::log_info("{num_deleted_queue_rows} completed rows deleted from queue")
 
   return()
 }
