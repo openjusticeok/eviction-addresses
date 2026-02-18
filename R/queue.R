@@ -125,3 +125,61 @@ get_case_from_queue <- function(db) {
   })
 
 }
+
+
+#' @title Reset Stuck Queue Items
+#'
+#' @description
+#' Resets queue items that have been stuck in 'working' status for over an hour.
+#' These are typically cases from crashed or abandoned sessions.
+#' Items that exceed max retry attempts (3) are logged but not reset.
+#'
+#' @param db A database connection
+#' @param max_retries Maximum number of retry attempts before giving up on a case. Defaults to 3.
+#' @param stale_threshold_hours Number of hours before a working case is considered stuck. Defaults to 1.
+#'
+#' @returns Nothing
+#'
+reset_stuck_queue_items <- function(db, max_retries = 3, stale_threshold_hours = 1) {
+  # Find stuck cases: working=TRUE and started over threshold hours ago
+  stuck_query <- glue::glue_sql(.con = db, "
+    SELECT \"case\", attempts 
+    FROM eviction_addresses.queue 
+    WHERE working = TRUE 
+      AND started_at < CURRENT_TIMESTAMP - INTERVAL '{stale_threshold_hours} hours';
+  ")
+  
+  stuck_cases <- DBI::dbGetQuery(db, stuck_query)
+  
+  if (nrow(stuck_cases) == 0) {
+    logger::log_info("No stuck queue items found")
+    return(invisible(NULL))
+  }
+  
+  num_stuck <- nrow(stuck_cases)
+  num_max_retries <- sum(stuck_cases$attempts >= max_retries)
+  num_to_reset <- num_stuck - num_max_retries
+  
+  # Reset cases that haven't exceeded max retries
+  if (num_to_reset > 0) {
+    reset_query <- glue::glue_sql(.con = db, "
+      UPDATE eviction_addresses.queue 
+      SET working = FALSE, 
+          attempts = attempts + 1, 
+          stopped_at = CURRENT_TIMESTAMP 
+      WHERE working = TRUE 
+        AND started_at < CURRENT_TIMESTAMP - INTERVAL '{stale_threshold_hours} hours'
+        AND attempts < {max_retries};
+    ")
+    
+    num_reset <- DBI::dbExecute(db, reset_query)
+    logger::log_info("Reset {num_reset} stuck queue items (out of {num_stuck} total stuck)")
+  }
+  
+  # Log cases that hit max retries
+  if (num_max_retries > 0) {
+    logger::log_warn("{num_max_retries} queue items reached max retry limit ({max_retries}) and will not be reset")
+  }
+  
+  return(invisible(NULL))
+}
