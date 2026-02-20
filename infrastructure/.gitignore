@@ -1,0 +1,33 @@
+# OpenTofu/Terraform state files
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+.terraform.lock.hcl
+
+# Plan files
+*.tfplan
+*.tfplan.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~

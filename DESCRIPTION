@@ -22,7 +22,6 @@ Imports:
     future,
     future.callr,
     glue,
-    googleCloudRunner,
     googleCloudStorageR,
     gt,
     here,
@@ -64,8 +63,7 @@ Suggests:
     webmockr,
     withr
 Remotes:
-    yonicd/covrpage,
-    MarkEdmondson1234/googleCloudRunner
+    yonicd/covrpage
 VignetteBuilder: knitr
 URL: https://openjusticeok.github.io/eviction-addresses/
 Config/testthat/edition: 3

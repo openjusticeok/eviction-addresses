@@ -1,0 +1,144 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main, test]
+  pull_request:
+    branches: [main, test]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ojo-database
+  REGION: us-central1
+  REGISTRY: gcr.io
+
+jobs:
+  # Build and test the R package
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      
+      - name: Setup R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+      
+      - name: Check R package
+        uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
+
+  # Build Docker images
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push'
+    
+    strategy:
+      matrix:
+        service: [api, dashboard, job]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ env.PROJECT_ID }}
+          export_default_credentials: true
+      
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker
+      
+      - name: Set image tag
+        id: image_tag
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "tag=latest" >> $GITHUB_OUTPUT
+            echo "environment=production" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/test" ]]; then
+            echo "tag=test" >> $GITHUB_OUTPUT
+            echo "environment=test" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.sha }}" >> $GITHUB_OUTPUT
+            echo "environment=test" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Build and push Docker image
+        run: |
+          case "${{ matrix.service }}" in
+            api)
+              DOCKERFILE="dockerfiles/Dockerfile.api"
+              ;;
+            dashboard)
+              DOCKERFILE="dockerfiles/Dockerfile.dashboard"
+              ;;
+            job)
+              DOCKERFILE="dockerfiles/Dockerfile.job"
+              ;;
+          esac
+          
+          IMAGE_NAME="${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/eviction-addresses-${{ matrix.service }}"
+          
+          docker build -f $DOCKERFILE -t $IMAGE_NAME:${{ steps.image_tag.outputs.tag }} .
+          docker push $IMAGE_NAME:${{ steps.image_tag.outputs.tag }}
+    
+    outputs:
+      environment: ${{ steps.image_tag.outputs.environment }}
+      tag: ${{ steps.image_tag.outputs.tag }}
+
+  # Deploy infrastructure and services
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ env.PROJECT_ID }}
+          export_default_credentials: true
+      
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: "1.6.0"
+      
+      - name: Initialize OpenTofu
+        working-directory: infrastructure/environments/${{ needs.build.outputs.environment }}
+        run: tofu init
+      
+      - name: Plan infrastructure
+        working-directory: infrastructure/environments/${{ needs.build.outputs.environment }}
+        run: |
+          tofu plan \
+            -var="service_image_tag=${{ needs.build.outputs.tag }}" \
+            -out=tfplan
+      
+      - name: Apply infrastructure
+        working-directory: infrastructure/environments/${{ needs.build.outputs.environment }}
+        run: tofu apply tfplan
+      
+      - name: Output service URLs
+        working-directory: infrastructure/environments/${{ needs.build.outputs.environment }}
+        run: |
+          echo "## Deployed Services" >> $GITHUB_STEP_SUMMARY
+          echo "- API: $(tofu output -raw api_service_url)" >> $GITHUB_STEP_SUMMARY
+          echo "- Dashboard: $(tofu output -raw dashboard_service_url)" >> $GITHUB_STEP_SUMMARY
+          echo "- Job: $(tofu output -raw job_service_url)" >> $GITHUB_STEP_SUMMARY
