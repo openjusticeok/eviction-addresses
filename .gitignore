@@ -49,3 +49,12 @@ build_test.R
 blastula.json
 pay_report*
 service-account.json
+
+.direnv/
+result/
+rv/*
+!rv/scripts/
+
+ssl/
+ssl
+.env

@@ -1,0 +1,9 @@
+# _quarto-public.yml
+#
+# settings for --profile public
+# strips the neutral draft watermarks/banners and hidden text content
+
+format:
+  okpolicy-report-template-html:
+    css:
+      - public.css

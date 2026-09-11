@@ -1,0 +1,64 @@
+[project]
+name = "{{ project_name }}"
+r_version = "4.5"
+
+# A list of repositories to fetch packages from. Order matters: we will try to get a package from each repository in order.
+# The alias is only used in this file if you want to specifically require a dependency to come from a certain repository.
+# Example: { alias = "PPM", url = "https://packagemanager.posit.co/cran/latest" },
+repositories = [
+    { alias = "PPM", url = "https://packagemanager.posit.co/cran/latest", force_source = true },
+    # Pin to arrow v23.0.0 (2026-02-01) to exactly match Nix arrow-cpp 23.0.0.
+    # This lets the R package link against the system library with GCS support
+    # instead of downloading a prebuilt binary without GCS.
+    { alias = "PPM_ARROW", url = "https://packagemanager.posit.co/cran/2026-02-01", force_source = true },
+    # Pin duckdb to v1.5.2 (2026-04-14). The R package always compiles DuckDB
+    # C++ from source; there is no system-library linking mechanism.
+    { alias = "PPM_DUCKDB", url = "https://packagemanager.posit.co/cran/2026-04-14", force_source = true },
+]
+
+# Environment variables passed to specific package compilations.
+# Arrow: the Nix arrow-cpp library has GCS and S3 compiled in, but the R
+# package configure script only enables the R bindings when ArrowOptions.cmake
+# says "ON" — Nix uses "TRUE". We force the feature flags via ARROW_R_CXXFLAGS
+# so the R wrapper code is compiled with GCS and S3 support.
+# V8: downloads a static libv8 binary instead of requiring a system package.
+packages_env_vars = { arrow = { ARROW_R_CXXFLAGS = "-DARROW_R_WITH_GCS -DARROW_R_WITH_S3" }, V8 = { DOWNLOAD_STATIC_LIBV8 = "1" } }
+
+# A list of packages to install and any additional configuration
+# Examples:
+    # "dplyr",
+    # {name = "dplyr", repository = "CRAN"},
+    # {name = "dplyr", git = "https://github.com/tidyverse/dplyr.git", tag = "v1.1.4"},
+dependencies = [
+    "dplyr",
+    # Explicitly list cpp11 before arrow to ensure its headers are available in
+    # the rv library when arrow's C++ source is compiled.
+    "cpp11",
+    # Pin to arrow v23.0.0 provided by PPM on 2026-02-01 to exactly match
+    # the Nix arrow-cpp 23.0.0 library. This links against the system library
+    # with GCS support instead of downloading a prebuilt binary without GCS.
+    { name = "arrow", repository = "PPM_ARROW" },
+    # DuckDB: the R package always compiles DuckDB C++ from source.
+    # { name = "duckdb", repository = "PPM_DUCKDB" },
+    { name = "ojodb", git = "https://github.com/openjusticeok/ojodb.git", branch = "ojodb-v3" },
+    { name = "ojoutils", git = "https://github.com/openjusticeok/ojoutils", branch = "main" },
+    { name = "ojothemes", git = "https://github.com/openjusticeok/ojothemes", branch = "main" },
+    { name = "ojoregex", git = "https://github.com/openjusticeok/ojoregex", branch = "main" },
+    "targets",
+    "assertthat",
+    "base64enc",
+    "devtools",
+    "blastula",
+    "config",
+    "future",
+    "future.callr",
+    "logger",
+    "odbc",
+    "plumber",
+    "shinyauthr",
+    "shinydashboard",
+    "shinyjs",
+    "sodium",
+    { name = "googleCloudRunner", git = "https://github.com/MarkEdmondson1234/googleCloudRunner", branch = "master" },
+    "rmarkdown",
+]

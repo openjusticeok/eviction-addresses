@@ -1,0 +1,402 @@
+---
+title: Oklahoma Policy Institute Report Template
+subtitle: A modern OK Policy starter for HTML-first reports
+format:
+  okpolicy-report-template-html: default
+# Formatting options -----------------------------------------------------------
+logo: "www/okpi-square.png" # Other options are in the /www/ directory
+number-sections: true
+smooth-scroll: true
+title-block-banner: "#2f507f" # The background color for the header banner
+title-block-banner-color: "white" # The text color for the header banner
+fontcolor: "black" # Default text color for the body
+linkcolor: "black" # Default link color for the body
+toc: false # This should be 'false' if your end goal is a PDF 
+knitr: 
+  opts_chunk: 
+    fig.align: center # These are the default chunk options
+    echo: false
+    warning: false
+# Remember that there are other formatting options in /_extensions/okpolicy-report-template/custom.scss
+# You can also edit the header structure in /_extensions/okpolicy-report-template/title-block.html
+# Document info ----------------------------------------------------------------
+author: Analyst Name
+date: last-modified
+description: |
+  This is where you can write a brief description of the publication if needed.
+  If you don't need it for your current project, you can just delete this parameter.
+abstract-title: "Executive Summary"
+abstract: |
+  This is where we'd write an abstract / executive summary. You can change the title
+  for this section by changing the `abstract-title` parameter, and you can 
+  delete the parameter if you don't need it.
+---
+
+```{r}
+#| include: false
+
+# To render to PDF after you've rendered your .html document:
+# pagedown::chrome_print("./report.html", "./report.pdf", format = "pdf")
+
+# We'll build this into the YAML header so you don't have to take this extra step
+# once the {pagedown} people get around to adding quarto support.
+
+library(ojodb)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(scales)
+library(ojothemes)
+
+ojo_set_theme(
+  theme = "okpi"
+)
+```
+
+
+```{r}
+#| include: false
+
+eviction_cases <- ojo_tbl("issue", schema = "oscn") |>
+  filter(str_detect(description, "^FORC")) |>
+  select(case_id) |>
+  inner_join(
+    ojo_tbl("case", schema = "oscn"),
+    by = c("case_id" = "id")
+  ) |>
+  collect()
+
+eviction_documents <- ojo_tbl("issue", schema = "oscn") |>
+  filter(str_detect(description, "^FORC")) |>
+  select(case_id) |>
+  left_join(
+    ojo_tbl("document", schema = "oscn"),
+    by = "case_id"
+  ) |>
+  collect()
+```
+
+```{r}
+doc_status <- eviction_cases |>
+  left_join(
+    eviction_documents |>
+      mutate(
+        on_oscn = !is.na(url),
+        collected = !is.na(internal_url)
+      ) |>
+      summarise(
+        .by = case_id,
+        across(c(on_oscn, collected), any)
+      ),
+    by = "case_id"
+  ) |>
+  mutate(
+    across(c(on_oscn, collected), \(x) coalesce(x, FALSE))
+  )
+
+district_year_pct <- doc_status |>
+  summarise(
+    .by = c(district, case_year),
+    pct_on_oscn = mean(on_oscn),
+    pct_collected = mean(collected)
+  )
+```
+
+```{r}
+#| include: false
+
+document_codes <- ojo_tbl("document", schema = "oscn") |>
+  filter(!is.na(docket_id)) |>
+  select(docket_id, case_id) |>
+  inner_join(
+    ojo_tbl("docket", schema = "oscn") |>
+      select(docket_id = id, code),
+    by = "docket_id"
+  ) |>
+  inner_join(
+    ojo_tbl("case", schema = "oscn") |>
+      select(case_id = id, district),
+    by = "case_id"
+  ) |>
+  semi_join(
+    ojo_tbl("issue", schema = "oscn") |>
+      filter(str_detect(description, "^FORC")) |>
+      select(case_id),
+    by = "case_id"
+  ) |>
+  collect()
+```
+
+```{r}
+document_status <- eviction_documents |>
+  filter(!is.na(url)) |>
+  mutate(
+    status = ifelse(
+      !is.na(internal_url),
+      "Collected",
+      "On OSCN, not collected"
+    )
+  ) |>
+  count(status) |>
+  mutate(pct = n / sum(n))
+
+ggplot(document_status, aes(x = pct, y = status, fill = status)) +
+  ggplot2::geom_col(show.legend = FALSE) +
+  ggplot2::geom_text(aes(label = percent(pct, accuracy = 0.1)), hjust = -0.05) +
+  scale_fill_manual(values = c(
+    "Collected" = palette_okpi_main[1],
+    "On OSCN, not collected" = palette_okpi_main[2]
+  )) +
+  scale_x_continuous(
+    labels = percent,
+    limits = c(0, NA),
+    expand = expansion(mult = c(0, 0.15))
+  ) +
+  labs(
+    title = "Eviction documents on OSCN",
+    x = NULL,
+    y = NULL
+  ) +
+  theme(panel.grid = element_blank())
+```
+
+```{r}
+case_status <- doc_status |>
+  mutate(
+    status = case_when(
+      collected ~ "Documents collected",
+      on_oscn ~ "Documents on OSCN, not collected",
+      .default = "No documents on OSCN"
+    )
+  ) |>
+  count(status) |>
+  mutate(pct = n / sum(n))
+
+ggplot(case_status, aes(x = pct, y = status, fill = status)) +
+  ggplot2::geom_col(show.legend = FALSE) +
+  ggplot2::geom_text(aes(label = percent(pct, accuracy = 0.1)), hjust = -0.05) +
+  scale_fill_manual(values = c(
+    "Documents collected" = palette_okpi_main[1],
+    "Documents on OSCN, not collected" = palette_okpi_main[2],
+    "No documents on OSCN" = palette_okpi_main[5]
+  )) +
+  scale_x_continuous(
+    labels = percent,
+    limits = c(0, NA),
+    expand = expansion(mult = c(0, 0.15))
+  ) +
+  labs(
+    title = "Document coverage of eviction cases",
+    x = NULL,
+    y = NULL
+  ) +
+  theme(panel.grid = element_blank())
+```
+
+```{r}
+docs_per_case <- eviction_documents |>
+  summarise(
+    .by = case_id,
+    n_documents = sum(!is.na(url))
+  ) |>
+  count(n_documents, name = "n_cases") |>
+  mutate(
+    n_documents = ifelse(n_documents >= 10, "10+", as.character(n_documents))
+  ) |>
+  summarise(
+    .by = n_documents,
+    n_cases = sum(n_cases)
+  ) |>
+  mutate(
+    n_documents = factor(n_documents, levels = c(as.character(0:9), "10+"))
+  )
+
+ggplot(docs_per_case, aes(x = n_documents, y = n_cases)) +
+  ggplot2::geom_col(fill = okpi_blue) +
+  scale_y_log10(labels = comma) +
+  labs(
+    title = "Documents per eviction case on OSCN",
+    x = "Number of documents",
+    y = "Number of cases (log scale)"
+  ) +
+  theme(panel.grid = element_blank())
+```
+
+```{r}
+code_counts <- document_codes |>
+  count(code, name = "n_documents") |>
+  mutate(
+    rank = row_number(desc(n_documents)),
+    code_display = ifelse(rank <= 10, as.character(code), "Other")
+  ) |>
+  summarise(
+    .by = code_display,
+    n_documents = sum(n_documents)
+  ) |>
+  mutate(pct = n_documents / sum(n_documents))
+
+ggplot(code_counts, aes(x = pct, y = reorder(code_display, pct))) +
+  ggplot2::geom_col(fill = okpi_blue) +
+  ggplot2::geom_text(
+    aes(label = percent(pct, accuracy = 0.1)),
+    hjust = -0.05
+  ) +
+  scale_x_continuous(
+    labels = percent,
+    limits = c(0, NA),
+    expand = expansion(mult = c(0, 0.15))
+  ) +
+  labs(
+    title = "Docket entry codes on eviction documents",
+    subtitle = "Share of documents, by the code of their docket entry",
+    x = NULL,
+    y = NULL
+  ) +
+  theme(panel.grid = element_blank())
+```
+
+```{r}
+#| fig-height: 12
+
+top_codes <- code_counts |>
+  filter(code_display != "Other") |>
+  slice_max(n_documents, n = 8) |>
+  pull(code_display)
+
+district_code_pct <- document_codes |>
+  mutate(
+    code_display = ifelse(
+      as.character(code) %in% top_codes,
+      as.character(code),
+      "Other"
+    )
+  ) |>
+  count(
+    district,
+    code_display,
+    name = "n_documents"
+  ) |>
+  mutate(
+    .by = district,
+    pct = n_documents / sum(n_documents)
+  )
+
+ggplot(district_code_pct, aes(x = code_display, y = district, fill = pct)) +
+  geom_tile(color = "white", linewidth = 0.2) +
+  scale_fill_gradient(
+    low = "white",
+    high = okpi_blue,
+    name = NULL,
+    labels = percent,
+    na.value = "grey85"
+  ) +
+  scale_y_discrete(limits = rev) +
+  labs(
+    title = "Docket entry codes on eviction documents, by district",
+    subtitle = "Share of each district's documents with each code",
+    x = "Docket entry code",
+    y = "District"
+  ) +
+  theme(
+    panel.grid = element_blank(),
+    legend.position = "top"
+  )
+```
+
+```{r}
+#| include: false
+district_year_pct
+```
+
+```{r}
+#| fig-height: 12
+
+plot_coverage_heatmap <- function(data, fill_var, title) {
+  ggplot(data, aes(x = case_year, y = district, fill = .data[[fill_var]])) +
+    geom_tile(color = "white", linewidth = 0.2) +
+    scale_fill_gradient(
+      low = "white",
+      high = okpi_blue,
+      name = NULL,
+      labels = percent,
+      na.value = "grey85"
+    ) +
+    scale_x_continuous(breaks = breaks_width(2)) +
+    scale_y_discrete(limits = rev) +
+    labs(
+      title = title,
+      x = "Case year",
+      y = "District"
+    ) +
+    theme(
+      panel.grid = element_blank(),
+      legend.position = "top"
+    )
+}
+
+plot_coverage_heatmap(
+  district_year_pct,
+  "pct_on_oscn",
+  "Share of eviction cases with documents on OSCN, by district and year"
+)
+
+plot_coverage_heatmap(
+  district_year_pct,
+  "pct_collected",
+  "Share of eviction cases with documents collected, by district and year"
+)
+```
+
+```{r}
+#| fig-height: 12
+
+district_status <- doc_status |>
+  mutate(
+    status = case_when(
+      collected ~ "Documents collected",
+      on_oscn ~ "Documents on OSCN, not collected",
+      .default = "No documents on OSCN"
+    )
+  ) |>
+  summarise(
+    .by = c(district, status),
+    n_cases = n()
+  ) |>
+  mutate(
+    .by = district,
+    pct = n_cases / sum(n_cases)
+  )
+
+district_order <- district_status |>
+  mutate(
+    .by = district,
+    pct_collected = sum(pct[status == "Documents collected"])
+  ) |>
+  distinct(district, pct_collected) |>
+  arrange(pct_collected) |>
+  pull(district)
+
+ggplot(district_status, aes(x = pct, y = district, fill = status)) +
+  ggplot2::geom_col() +
+  scale_y_discrete(limits = district_order) +
+  scale_x_continuous(
+    labels = percent,
+    limits = c(0, NA),
+    expand = expansion(mult = c(0, 0.02))
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Documents collected" = palette_okpi_main[1],
+      "Documents on OSCN, not collected" = palette_okpi_main[2],
+      "No documents on OSCN" = palette_okpi_main[5]
+    ),
+    name = NULL
+  ) +
+  labs(
+    title = "Document coverage of eviction cases by district",
+    x = NULL,
+    y = NULL
+  ) +
+  theme(panel.grid = element_blank())
+```
+

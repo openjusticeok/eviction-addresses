@@ -1,0 +1,8 @@
+/* override draft styles for the public profile */
+.profile-banner {
+  display: none !important;
+}
+
+body::after {
+  display: none !important;
+}

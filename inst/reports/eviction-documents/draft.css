@@ -1,0 +1,30 @@
+body {
+  padding-bottom: 3rem;
+}
+
+body::after {
+  content: "DRAFT";
+  position: fixed;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%) rotate(-25deg);
+  font-size: 6rem;
+  font-weight: 700;
+  letter-spacing: 0.45rem;
+  color: rgba(0, 0, 0, 0.05);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.profile-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  padding: 0.5rem 1rem;
+  background-color: #f8f9fa;
+  color: #333;
+  font-size: 0.9rem;
+  text-align: center;
+  border-top: 1px solid #ddd;
+}

@@ -1,0 +1,9 @@
+project:
+  type: default
+
+format:
+  okpolicy-report-template-html:
+    css:
+      - draft.css
+    include-before-body:
+      - draft-banner.html

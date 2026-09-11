@@ -1,0 +1,14 @@
+title: okpolicy-report-template
+author: okpolicy
+version: 1.0.0
+quarto-required: ">=1.2.0"
+contributes:
+  formats:
+    html:
+      template-partials:
+        - title-block.html
+      embed-resources: true
+      theme: [yeti, custom.scss]
+      include-in-header:
+        text: |
+          <link rel="icon" type="image/gif" href="www/favicon.gif">

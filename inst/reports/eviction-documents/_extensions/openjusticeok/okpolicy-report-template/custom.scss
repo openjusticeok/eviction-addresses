@@ -1,0 +1,106 @@
+/* Additional formatting options: */
+/*-- scss:defaults --*/
+
+$title-color: #fdbc60 !default;
+/* 
+#fdbc60 = OKPI yellow
+#F6BE00 = OJO yellow
+*/
+
+$subtitle-color: #ffffff !default;
+
+/* Don't edit this part unless you know what you're doing! */
+/*-- scss:rules --*/
+.quarto-title.column-body {
+  display: flex;
+}
+
+/* --- Logo / Header related stuff --- */
+/* Logo spacing */
+#title-block-header
+  > div.quarto-title-banner.page-columns.page-full
+  > div
+  > div.quarto-title.column-body
+  > img {
+  margin-left: 25px;
+  margin-right: 25px;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+/* Shifts title below image and centers them when on mobile */
+@media screen and (max-width: 600px) {
+  .quarto-title.column-body {
+    display: block !important;
+  }
+  div.quarto-title img {
+    display: block;
+    margin: auto !important; /* This will center the image */
+    padding: 10px 0; /* This adds vertical padding. Adjust the value as needed */
+  }
+  .quarto-title-banner {
+    padding-bottom: 2em;
+  }
+}
+
+.description {
+  padding-top: 10px;
+}
+
+/* Fix author wrapping, which is failing for some reason */
+.quarto-title-meta {
+  grid-template-columns: repeat(2, 1fr) !important;
+}
+
+#title-block-header
+  > div.quarto-title-banner.page-columns.page-full
+  > div
+  > div.quarto-title.column-body
+  > div
+  > h1 {
+  color: $title-color;
+}
+
+#title-block-header
+  > div.quarto-title-banner.page-columns.page-full
+  > div
+  > div.quarto-title.column-body
+  > div
+  > p {
+  color: $subtitle-color;
+}
+
+/* This adds a little top padding to the title banner, just an aesthetic improvement */
+.quarto-title-banner {
+  padding-top: 0.5in;
+  padding-bottom: 0.5in;
+}
+
+/* Adds the vertical line next to the title / subtitle and spaces it out a bit */
+.quarto-title .title-subtitle-div {
+  padding-left: 10px;
+  border-left: 5px solid $title-color;
+}
+
+/* --- Margins and pagination --- */
+/* This removes the top margin only on the first page, for the title banner */
+@page :first {
+  margin-top: 0;
+}
+
+/* This sets the default page margins, which again, are different on the first page */
+@page {
+  margin-top: 0.5in;
+  margin-bottom: 0.5in;
+  margin-left: 0in;
+  margin-right: 0in;
+}
+
+/* Replaces the left and right margins with equal padding */
+.quarto-title-banner,
+.quarto-title-meta,
+.abstract,
+.content {
+  padding-left: 0.5in;
+  padding-right: 0.5in;
+}
